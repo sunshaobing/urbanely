@@ -1,7 +1,10 @@
 export interface AuthSession {
+  id: number;
+  username: string;
   name: string;
   role: string;
   phoneMasked: string;
+  token: string;
   loginAt: string;
 }
 
@@ -11,13 +14,24 @@ function safeParse(value: string | null): AuthSession | null {
   if (!value) return null;
   try {
     const parsed = JSON.parse(value) as Partial<AuthSession>;
-    if (!parsed.name || !parsed.role || !parsed.phoneMasked || !parsed.loginAt) {
+    if (
+      !parsed.id ||
+      !parsed.username ||
+      !parsed.name ||
+      !parsed.role ||
+      !parsed.phoneMasked ||
+      !parsed.token ||
+      !parsed.loginAt
+    ) {
       return null;
     }
     return {
+      id: parsed.id,
+      username: parsed.username,
       name: parsed.name,
       role: parsed.role,
       phoneMasked: parsed.phoneMasked,
+      token: parsed.token,
       loginAt: parsed.loginAt,
     };
   } catch {

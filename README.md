@@ -67,6 +67,7 @@ node --test tests/miniprogram-contract.test.mjs
 - API 与管理端：`https://sunrgw.cn`
 - Web 入口：由 `app/dist` 构建产物提供，旧静态管理端已从服务器删除
 - 入口页使用 `Cache-Control: no-store`，避免浏览器继续显示旧界面
+- Web 登录和人员账号管理已连接生产 API；人员新增、编辑、启停和密码修改即时生效
 - 服务器：`101.42.181.122`，Ubuntu 26.04
 - 服务：`pco.service` + Caddy，均设置为开机自启
 - 数据库：全新 SQLite 数据库，未导入历史客户、作业单或附件

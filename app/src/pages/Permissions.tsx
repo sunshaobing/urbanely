@@ -1,158 +1,245 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import {
-  Check,
-  History,
   KeyRound,
-  LockKeyhole,
+  RefreshCw,
   Save,
   Search,
   ShieldCheck,
   UserPlus,
+  X,
 } from "lucide-react";
 import {
-  auditEntries,
-  permissionActions,
-  permissionModules,
-  roles,
-  sensitivePermissionLabels,
-  staff,
-  type PermissionAction,
-  type RoleDefinition,
-  type StaffMember,
-} from "../permissions";
-import { PageHeader } from "../components/PageHeader";
-import { Chip, SectionTitle, StatusPill } from "../components/ui";
+  changeOwnPassword,
+  createPersonnel,
+  listPersonnel,
+  updatePersonnel,
+} from "../api";
+import type { PersonnelInput, PersonnelRecord } from "../api";
 import { CartoonAvatar } from "../components/CartoonAvatar";
+import { PageHeader } from "../components/PageHeader";
+import { StatusPill } from "../components/ui";
 
-const tabs = ["人员", "角色权限", "审计记录"] as const;
-type Tab = (typeof tabs)[number];
+const roleOptions = [
+  { value: "super_admin", label: "超级管理员" },
+  { value: "admin", label: "管理员" },
+  { value: "supervisor", label: "质量监理" },
+  { value: "sealing_engineer", label: "封堵工程师" },
+  { value: "service_engineer", label: "服务工程师" },
+  { value: "engineer", label: "工程师" },
+  { value: "finance", label: "财务" },
+] as const;
 
-function roleById(roleList: RoleDefinition[], id: string) {
-  return roleList.find((role) => role.id === id) ?? roleList[0];
+const roleLabels = Object.fromEntries(roleOptions.map((role) => [role.value, role.label]));
+
+function emptyDraft(): PersonnelInput {
+  return {
+    username: "",
+    password: "",
+    name: "",
+    phone: "",
+    role: "engineer",
+    active: true,
+  };
 }
 
-function actionCount(role: RoleDefinition) {
-  return Object.values(role.permissions).reduce(
-    (total, actions) => total + Object.values(actions).filter(Boolean).length,
-    0,
-  );
+function toDraft(user: PersonnelRecord): PersonnelInput {
+  return {
+    username: user.username,
+    password: "",
+    name: user.name,
+    phone: user.phone,
+    role: user.role,
+    active: user.active,
+  };
 }
 
-function allowedModules(role: RoleDefinition) {
-  return permissionModules
-    .filter((module) => Object.values(role.permissions[module.key]).some(Boolean))
-    .map((module) => module.label);
+function messageOf(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
 }
 
 export function Permissions({ onNotify }: { onNotify: (message: string) => void }) {
-  const [tab, setTab] = useState<Tab>("人员");
-  const [selectedUserId, setSelectedUserId] = useState(staff[0].id);
-  const [staffList, setStaffList] = useState<StaffMember[]>(() => structuredClone(staff));
-  const [roleState, setRoleState] = useState<RoleDefinition[]>(() => structuredClone(roles));
-  const [selectedRoleId, setSelectedRoleId] = useState("manager");
-  const [userQuery, setUserQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"全部" | StaffMember["status"]>("全部");
-  const [auditQuery, setAuditQuery] = useState("");
-  const [roleDirty, setRoleDirty] = useState(false);
+  const [users, setUsers] = useState<PersonnelRecord[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [draft, setDraft] = useState<PersonnelInput>(emptyDraft);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"全部" | "启用" | "停用">("全部");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [addDraft, setAddDraft] = useState<PersonnelInput>(emptyDraft);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const selectedUser = staffList.find((user) => user.id === selectedUserId) ?? staffList[0];
-  const selectedRole = roleById(roleState, selectedRoleId);
-  const selectedUserRole = roleById(roleState, selectedUser.roleId);
+  const selectedUser = users.find((user) => user.id === selectedId) ?? null;
 
-  const filteredStaff = useMemo(() => {
-    const query = userQuery.trim().toLowerCase();
-    return staffList.filter((user) => {
-      const matchQuery =
-        !query ||
-        user.name.toLowerCase().includes(query) ||
-        user.code.toLowerCase().includes(query) ||
-        user.phoneMasked.includes(query) ||
-        user.sites.some((site) => site.toLowerCase().includes(query));
-      return matchQuery && (statusFilter === "全部" || user.status === statusFilter);
+  const loadUsers = async (preferredId?: number) => {
+    setLoading(true);
+    setError("");
+    try {
+      const result = await listPersonnel();
+      setUsers(result.items);
+      const next =
+        result.items.find((user) => user.id === (preferredId ?? selectedId)) ??
+        result.items[0] ??
+        null;
+      setSelectedId(next?.id ?? null);
+      setDraft(next ? toDraft(next) : emptyDraft());
+    } catch (loadError) {
+      setError(messageOf(loadError, "人员列表加载失败"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadUsers();
+  }, []);
+
+  const filteredUsers = useMemo(() => {
+    const keyword = query.trim().toLowerCase();
+    return users.filter((user) => {
+      const matchesQuery =
+        !keyword ||
+        user.name.toLowerCase().includes(keyword) ||
+        user.username.toLowerCase().includes(keyword) ||
+        user.phone.includes(keyword);
+      const matchesStatus =
+        statusFilter === "全部" ||
+        (statusFilter === "启用" ? user.active : !user.active);
+      return matchesQuery && matchesStatus;
     });
-  }, [staffList, statusFilter, userQuery]);
+  }, [query, statusFilter, users]);
 
-  const filteredAudit = useMemo(() => {
-    const query = auditQuery.trim().toLowerCase();
-    if (!query) return auditEntries;
-    return auditEntries.filter(
-      (entry) =>
-        entry.actor.toLowerCase().includes(query) ||
-        entry.action.toLowerCase().includes(query) ||
-        entry.target.toLowerCase().includes(query) ||
-        entry.detail.toLowerCase().includes(query),
-    );
-  }, [auditQuery]);
-
-  const updateUser = (patch: Partial<StaffMember>) => {
-    setStaffList((current) =>
-      current.map((user) => (user.id === selectedUser.id ? { ...user, ...patch } : user)),
-    );
+  const selectUser = (user: PersonnelRecord) => {
+    setSelectedId(user.id);
+    setDraft(toDraft(user));
+    setError("");
   };
 
-  const updateRole = (patch: Partial<RoleDefinition>) => {
-    setRoleState((current) =>
-      current.map((role) => (role.id === selectedRole.id ? { ...role, ...patch } : role)),
-    );
-    setRoleDirty(true);
+  const saveSelected = async () => {
+    if (!selectedUser) return;
+    if (!draft.username.trim() || !draft.name.trim()) {
+      setError("姓名和账号不能为空");
+      return;
+    }
+    if (draft.password && draft.password.length < 6) {
+      setError("新密码至少需要 6 位");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await updatePersonnel(selectedUser.id, {
+        ...draft,
+        username: draft.username.trim(),
+        name: draft.name.trim(),
+        phone: draft.phone.trim(),
+      });
+      await loadUsers(selectedUser.id);
+      onNotify(`已更新 ${draft.name} 的账号信息`);
+    } catch (saveError) {
+      setError(messageOf(saveError, "人员保存失败"));
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const togglePermission = (moduleKey: string, action: PermissionAction) => {
-    const permissions = selectedRole.permissions[moduleKey];
-    updateRole({
-      permissions: {
-        ...selectedRole.permissions,
-        [moduleKey]: { ...permissions, [action]: !permissions[action] },
-      },
-    });
+  const submitCreate = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!addDraft.username.trim() || !addDraft.name.trim()) {
+      setError("姓名和账号不能为空");
+      return;
+    }
+    if (addDraft.password.length < 6) {
+      setError("初始密码至少需要 6 位");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const created = await createPersonnel({
+        ...addDraft,
+        username: addDraft.username.trim(),
+        name: addDraft.name.trim(),
+        phone: addDraft.phone.trim(),
+      });
+      setAddOpen(false);
+      setAddDraft(emptyDraft());
+      await loadUsers(created.id);
+      onNotify(`已新增人员 ${created.name}`);
+    } catch (createError) {
+      setError(messageOf(createError, "新增人员失败"));
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const toggleSensitive = (key: string) => {
-    updateRole({
-      sensitive: { ...selectedRole.sensitive, [key]: !selectedRole.sensitive[key] },
-    });
+  const submitPasswordChange = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (newPassword.length < 6) {
+      setError("新密码至少需要 6 位");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("两次输入的新密码不一致");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await changeOwnPassword(oldPassword, newPassword);
+      setPasswordOpen(false);
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      onNotify("当前账号密码已修改");
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 700);
+    } catch (passwordError) {
+      setError(messageOf(passwordError, "密码修改失败"));
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const saveUser = () => {
-    onNotify(`已保存 ${selectedUser.name} 的角色、范围和门店授权`);
-  };
-
-  const saveRole = () => {
-    setRoleDirty(false);
-    onNotify(`已保存「${selectedRole.name}」的权限矩阵，变更已写入审计日志`);
-  };
-
-  const resetRole = () => {
-    const defaults = roles.find((role) => role.id === selectedRole.id);
-    if (!defaults) return;
-    setRoleState((current) =>
-      current.map((role) => (role.id === selectedRole.id ? structuredClone(defaults) : role)),
-    );
-    setRoleDirty(false);
-    onNotify(`已恢复「${selectedRole.name}」的默认权限`);
-  };
+  const activeCount = users.filter((user) => user.active).length;
+  const adminCount = users.filter((user) =>
+    ["super_admin", "admin"].includes(user.role),
+  ).length;
 
   return (
     <div className="page permissions-page">
       <PageHeader
-        eyebrow="ACCESS CONTROL / RBAC"
-        title="人员与权限"
-        description="把角色、门店范围、模块动作和敏感数据权限放在同一处管理。"
+        eyebrow="ACCESS CONTROL / PERSONNEL"
+        title="人员与账号"
+        description="生产账号、角色、启停状态和密码统一由后端管理。"
         meta={
           <>
             <span className="live-dot" />
-            10 名人员 · 7 个角色 · 最近审计 2 分钟前
+            {users.length} 个账号 · 数据来自生产 API
           </>
         }
         actions={
           <>
-            <button type="button" className="button secondary" onClick={() => onNotify("已打开角色创建表单")}>
+            <button type="button" className="button secondary" onClick={() => setPasswordOpen(true)}>
               <KeyRound size={16} />
-              新建角色
+              修改我的密码
             </button>
-            <button type="button" className="button primary" onClick={() => onNotify("已生成人员邀请链接")}>
+            <button
+              type="button"
+              className="button primary"
+              onClick={() => {
+                setAddDraft(emptyDraft());
+                setAddOpen(true);
+              }}
+            >
               <UserPlus size={16} />
-              邀请人员
+              新增人员
             </button>
           </>
         }
@@ -160,373 +247,332 @@ export function Permissions({ onNotify }: { onNotify: (message: string) => void 
 
       <section className="metrics-strip compact-metrics">
         <div className="mini-metric">
-          <span>在职人员</span>
-          <strong>{staffList.filter((user) => user.status === "在职").length}</strong>
-          <small>含 1 名外包工程师</small>
+          <span>账号总数</span>
+          <strong>{users.length}</strong>
+          <small>当前生产数据库</small>
         </div>
         <div className="mini-metric">
-          <span>角色</span>
-          <strong>{roleState.length}</strong>
-          <small>管理员、运营、项目、工程、监理、财务、客户</small>
+          <span>启用账号</span>
+          <strong>{activeCount}</strong>
+          <small>可正常登录</small>
         </div>
         <div className="mini-metric">
-          <span>授权动作</span>
-          <strong>{roleState.reduce((sum, role) => sum + actionCount(role), 0)}</strong>
-          <small>模块 × 动作的当前授权总数</small>
+          <span>管理账号</span>
+          <strong>{adminCount}</strong>
+          <small>超级管理员与管理员</small>
         </div>
         <div className="mini-metric">
-          <span>待关注</span>
-          <strong>2</strong>
-          <small>1 人培训中 · 1 人休假</small>
+          <span>账号角色</span>
+          <strong>{new Set(users.map((user) => user.role)).size}</strong>
+          <small>按后端角色统计</small>
         </div>
       </section>
 
-      <div className="detail-tabs permissions-tabs">
-        {tabs.map((item) => (
-          <button type="button" key={item} className={tab === item ? "active" : ""} onClick={() => setTab(item)}>
-            {item}
-            {item === "人员" ? <span className="tab-count">{staffList.length}</span> : null}
-            {item === "角色权限" ? <span className="tab-count">{roleState.length}</span> : null}
-            {item === "审计记录" ? <span className="tab-count">{auditEntries.length}</span> : null}
-          </button>
-        ))}
-      </div>
-
-      {tab === "人员" ? (
-        <>
-          <div className="filter-bar">
-            <label className="inline-search">
-              <Search size={15} />
-              <input
-                value={userQuery}
-                onChange={(event) => setUserQuery(event.target.value)}
-                placeholder="搜索姓名、员工编号或门店"
-              />
-            </label>
-            <div className="segmented">
-              {(["全部", "在职", "培训中", "休假", "离职"] as const).map((item) => (
-                <button
-                  type="button"
-                  key={item}
-                  className={statusFilter === item ? "active" : ""}
-                  onClick={() => setStatusFilter(item)}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="permissions-layout">
-            <section className="panel table-panel">
-              <div className="data-table permissions-user-table">
-                <div className="table-head">
-                  <span>人员</span>
-                  <span>角色</span>
-                  <span>负责范围</span>
-                  <span>状态</span>
-                  <span>最近活跃</span>
-                </div>
-                {filteredStaff.map((user) => {
-                  const role = roleById(roleState, user.roleId);
-                  return (
-                    <button
-                      type="button"
-                      className={`table-row ${user.id === selectedUser.id ? "selected" : ""}`}
-                      key={user.id}
-                      onClick={() => setSelectedUserId(user.id)}
-                    >
-                      <span className="permission-user-cell">
-                        <CartoonAvatar name={user.name} size={28} className="user-avatar-small" />
-                        <span className="cell-main">
-                          <strong>{user.name}</strong>
-                          <small>{user.code} · {user.type}</small>
-                        </span>
-                      </span>
-                      <span>{role.name}</span>
-                      <span className="cell-main">
-                        <strong>{user.scope}</strong>
-                        <small>{user.sites.slice(0, 2).join(" · ")}</small>
-                      </span>
-                      <span><StatusPill status={user.status} /></span>
-                      <span className="mono subtle">{user.lastActive}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-            <UserAccessPanel
-              user={selectedUser}
-              role={selectedUserRole}
-              roles={roleState}
-              onUpdate={updateUser}
-              onSave={saveUser}
-              onNotify={onNotify}
-            />
-          </div>
-        </>
-      ) : null}
-
-      {tab === "角色权限" ? (
-        <div className="role-layout">
-          <aside className="panel role-list">
-            <SectionTitle title="角色" subtitle="选择角色后编辑权限矩阵" />
-            {roleState.map((role) => (
-              <button
-                type="button"
-                key={role.id}
-                className={`role-card role-tone-${role.tone} ${role.id === selectedRole.id ? "active" : ""}`}
-                onClick={() => {
-                  setSelectedRoleId(role.id);
-                  setRoleDirty(false);
-                }}
-              >
-                <span className="role-mark"><ShieldCheck size={16} /></span>
-                <span className="role-card-copy">
-                  <strong>{role.name}</strong>
-                  <small>{role.members} 名成员 · {role.scope}</small>
-                </span>
-                {role.id === selectedRole.id ? <Check size={15} /> : null}
-              </button>
-            ))}
-          </aside>
-
-          <section className="panel permission-panel">
-            <div className="permission-panel-head">
-              <div>
-                <span className="eyebrow">ROLE MATRIX</span>
-                <h2>{selectedRole.name}</h2>
-                <p>{selectedRole.description}</p>
-              </div>
-              <label className="scope-control">
-                <span>数据范围</span>
-                <select
-                  value={selectedRole.scope}
-                  onChange={(event) => updateRole({ scope: event.target.value })}
-                >
-                  <option>全部组织</option>
-                  <option>负责客户</option>
-                  <option>负责门店</option>
-                  <option>仅本人任务</option>
-                  <option>自己门店</option>
-                  <option>无</option>
-                </select>
-              </label>
-            </div>
-
-            <div className="permission-matrix-wrap">
-              <table className="permission-matrix">
-                <thead>
-                  <tr>
-                    <th>模块</th>
-                    {permissionActions.map((action) => (
-                      <th key={action}>{action === "审核" ? "审核/验收" : action}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {permissionModules.map((module) => (
-                    <tr key={module.key}>
-                      <td>
-                        <strong>{module.label}</strong>
-                        <small>{module.hint}</small>
-                      </td>
-                      {permissionActions.map((action) => (
-                        <td key={action}>
-                          <label className="perm-check">
-                            <input
-                              type="checkbox"
-                              checked={selectedRole.permissions[module.key][action]}
-                              onChange={() => togglePermission(module.key, action)}
-                              aria-label={`${selectedRole.name} · ${module.label} · ${action}`}
-                            />
-                            <span><Check size={12} /></span>
-                          </label>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="sensitive-section">
-              <SectionTitle title="敏感操作" subtitle="这些权限会直接影响客户隐私和报告证据" />
-              <div className="sensitive-grid">
-                {Object.entries(sensitivePermissionLabels).map(([key, item]) => (
-                  <label className="switch-row" key={key}>
-                    <span className="switch-icon"><LockKeyhole size={14} /></span>
-                    <span className="switch-copy">
-                      <strong>{item.label}</strong>
-                      <small>{item.hint}</small>
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={selectedRole.sensitive[key]}
-                      onChange={() => toggleSensitive(key)}
-                      aria-label={`${selectedRole.name} · ${item.label}`}
-                    />
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="permission-footer">
-              <span className="permission-role-summary">
-                已授权 {actionCount(selectedRole)} 个动作 · {allowedModules(selectedRole).length} 个模块
-              </span>
-              <div>
-                <button type="button" className="button ghost" onClick={resetRole}>恢复默认</button>
-                <button type="button" className="button primary" onClick={saveRole} disabled={!roleDirty}>
-                  <Save size={15} />
-                  保存角色权限
-                </button>
-              </div>
-            </div>
-          </section>
+      {error ? (
+        <div className="personnel-alert">
+          <span>{error}</span>
+          <button type="button" onClick={() => setError("")}><X size={15} /></button>
         </div>
       ) : null}
 
-      {tab === "审计记录" ? (
-        <section className="panel audit-panel">
-          <div className="audit-toolbar">
-            <label className="inline-search">
-              <Search size={15} />
-              <input
-                value={auditQuery}
-                onChange={(event) => setAuditQuery(event.target.value)}
-                placeholder="搜索操作人、对象或动作"
-              />
-            </label>
-            <button type="button" className="button secondary" onClick={() => onNotify("审计日志导出任务已创建")}>
-              <History size={15} />
-              导出审计日志
+      <div className="filter-bar">
+        <label className="inline-search">
+          <Search size={15} />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="搜索姓名、账号或手机号"
+          />
+        </label>
+        <div className="segmented">
+          {(["全部", "启用", "停用"] as const).map((item) => (
+            <button
+              type="button"
+              key={item}
+              className={statusFilter === item ? "active" : ""}
+              onClick={() => setStatusFilter(item)}
+            >
+              {item}
             </button>
-          </div>
-          <div className="audit-list">
-            {filteredAudit.map((entry) => (
-              <div className="audit-item" key={entry.id}>
-                <div className={`audit-icon ${entry.result === "已阻止" ? "blocked" : ""}`}>
-                  {entry.result === "已阻止" ? <LockKeyhole size={16} /> : <History size={16} />}
-                </div>
-                <div className="audit-copy">
-                  <strong>{entry.action}</strong>
-                  <span>{entry.actor} · {entry.target}</span>
-                  <p>{entry.detail}</p>
-                </div>
-                <div className="audit-meta">
-                  <span className={`pill ${entry.result === "已阻止" ? "status-danger" : "status-success"}`}>
-                    {entry.result}
+          ))}
+          <button type="button" onClick={() => void loadUsers()}>
+            <RefreshCw size={15} />
+          </button>
+        </div>
+      </div>
+
+      <div className="permissions-layout">
+        <section className="panel table-panel">
+          <div className="data-table permissions-user-table personnel-table">
+            <div className="table-head">
+              <span>人员</span>
+              <span>账号</span>
+              <span>手机号</span>
+              <span>角色</span>
+              <span>状态</span>
+              <span>创建时间</span>
+            </div>
+            {loading ? (
+              <div className="personnel-empty">正在加载人员...</div>
+            ) : filteredUsers.length ? (
+              filteredUsers.map((user) => (
+                <button
+                  type="button"
+                  className={`table-row ${user.id === selectedId ? "selected" : ""}`}
+                  key={user.id}
+                  onClick={() => selectUser(user)}
+                >
+                  <span className="permission-user-cell">
+                    <CartoonAvatar name={user.name} size={28} className="user-avatar-small" />
+                    <span className="cell-main">
+                      <strong>{user.name}</strong>
+                      <small>#{user.id}</small>
+                    </span>
                   </span>
-                  <span>{entry.time}</span>
-                </div>
-              </div>
-            ))}
+                  <span className="mono">{user.username}</span>
+                  <span>{user.phone || "—"}</span>
+                  <span>{roleLabels[user.role] ?? user.role}</span>
+                  <span><StatusPill status={user.active ? "在职" : "离职"} /></span>
+                  <span className="mono subtle">{user.created_at || "—"}</span>
+                </button>
+              ))
+            ) : (
+              <div className="personnel-empty">没有匹配的人员</div>
+            )}
           </div>
         </section>
+
+        <aside className="panel user-access-panel">
+          {selectedUser ? (
+            <>
+              <div className="user-access-head">
+                <CartoonAvatar name={selectedUser.name} size={48} className="user-avatar-large" />
+                <div>
+                  <span className="eyebrow">PERSONNEL ACCOUNT</span>
+                  <h2>{selectedUser.name}</h2>
+                  <p>{selectedUser.username} · {roleLabels[selectedUser.role] ?? selectedUser.role}</p>
+                </div>
+                <StatusPill status={selectedUser.active ? "在职" : "离职"} />
+              </div>
+
+              <div className="user-access-form personnel-form">
+                <label>
+                  <span>姓名</span>
+                  <input
+                    value={draft.name}
+                    onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+                  />
+                </label>
+                <label>
+                  <span>登录账号</span>
+                  <input
+                    value={draft.username}
+                    onChange={(event) => setDraft({ ...draft, username: event.target.value })}
+                  />
+                </label>
+                <label>
+                  <span>手机号</span>
+                  <input
+                    value={draft.phone}
+                    inputMode="tel"
+                    onChange={(event) => setDraft({ ...draft, phone: event.target.value })}
+                  />
+                </label>
+                <label>
+                  <span>角色</span>
+                  <select
+                    value={draft.role}
+                    onChange={(event) => setDraft({ ...draft, role: event.target.value })}
+                  >
+                    {roleOptions.map((role) => (
+                      <option key={role.value} value={role.value}>{role.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>新密码</span>
+                  <input
+                    type="password"
+                    value={draft.password}
+                    placeholder="不修改请留空"
+                    autoComplete="new-password"
+                    onChange={(event) => setDraft({ ...draft, password: event.target.value })}
+                  />
+                </label>
+                <label className="personnel-switch">
+                  <span>账号状态</span>
+                  <input
+                    type="checkbox"
+                    checked={draft.active}
+                    onChange={(event) => setDraft({ ...draft, active: event.target.checked })}
+                  />
+                  <span>{draft.active ? "启用" : "停用"}</span>
+                </label>
+              </div>
+
+              <div className="user-access-note">
+                <ShieldCheck size={15} />
+                <span>密码留空表示保持原密码；修改后立即生效。</span>
+              </div>
+
+              <button
+                type="button"
+                className="button primary full-width"
+                onClick={() => void saveSelected()}
+                disabled={saving}
+              >
+                <Save size={15} />
+                {saving ? "保存中..." : "保存账号信息"}
+              </button>
+            </>
+          ) : (
+            <div className="personnel-empty">新增人员后，在这里编辑账号。</div>
+          )}
+        </aside>
+      </div>
+
+      {addOpen ? (
+        <div className="personnel-modal-backdrop" role="presentation">
+          <form className="personnel-modal" onSubmit={submitCreate}>
+            <div className="personnel-modal-head">
+              <div>
+                <span className="eyebrow">NEW PERSONNEL</span>
+                <h2>新增人员</h2>
+              </div>
+              <button type="button" onClick={() => setAddOpen(false)} aria-label="关闭">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="personnel-form-grid">
+              <label>
+                <span>姓名</span>
+                <input
+                  required
+                  value={addDraft.name}
+                  onChange={(event) => setAddDraft({ ...addDraft, name: event.target.value })}
+                />
+              </label>
+              <label>
+                <span>登录账号</span>
+                <input
+                  required
+                  value={addDraft.username}
+                  onChange={(event) => setAddDraft({ ...addDraft, username: event.target.value })}
+                />
+              </label>
+              <label>
+                <span>手机号</span>
+                <input
+                  value={addDraft.phone}
+                  inputMode="tel"
+                  onChange={(event) => setAddDraft({ ...addDraft, phone: event.target.value })}
+                />
+              </label>
+              <label>
+                <span>角色</span>
+                <select
+                  value={addDraft.role}
+                  onChange={(event) => setAddDraft({ ...addDraft, role: event.target.value })}
+                >
+                  {roleOptions.map((role) => (
+                    <option key={role.value} value={role.value}>{role.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>初始密码</span>
+                <input
+                  required
+                  minLength={6}
+                  type="password"
+                  autoComplete="new-password"
+                  value={addDraft.password}
+                  onChange={(event) => setAddDraft({ ...addDraft, password: event.target.value })}
+                />
+              </label>
+              <label className="personnel-switch">
+                <span>账号状态</span>
+                <input
+                  type="checkbox"
+                  checked={addDraft.active}
+                  onChange={(event) => setAddDraft({ ...addDraft, active: event.target.checked })}
+                />
+                <span>{addDraft.active ? "启用" : "停用"}</span>
+              </label>
+            </div>
+            {error ? <div className="personnel-modal-error">{error}</div> : null}
+            <div className="personnel-modal-actions">
+              <button type="button" className="button ghost" onClick={() => setAddOpen(false)}>
+                取消
+              </button>
+              <button type="submit" className="button primary" disabled={saving}>
+                <UserPlus size={15} />
+                {saving ? "创建中..." : "创建账号"}
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
+
+      {passwordOpen ? (
+        <div className="personnel-modal-backdrop" role="presentation">
+          <form className="personnel-modal narrow" onSubmit={submitPasswordChange}>
+            <div className="personnel-modal-head">
+              <div>
+                <span className="eyebrow">ACCOUNT SECURITY</span>
+                <h2>修改我的密码</h2>
+              </div>
+              <button type="button" onClick={() => setPasswordOpen(false)} aria-label="关闭">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="personnel-form-grid single">
+              <label>
+                <span>当前密码</span>
+                <input
+                  required
+                  type="password"
+                  autoComplete="current-password"
+                  value={oldPassword}
+                  onChange={(event) => setOldPassword(event.target.value)}
+                />
+              </label>
+              <label>
+                <span>新密码</span>
+                <input
+                  required
+                  minLength={6}
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                />
+              </label>
+              <label>
+                <span>确认新密码</span>
+                <input
+                  required
+                  minLength={6}
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                />
+              </label>
+            </div>
+            {error ? <div className="personnel-modal-error">{error}</div> : null}
+            <div className="personnel-modal-actions">
+              <button type="button" className="button ghost" onClick={() => setPasswordOpen(false)}>
+                取消
+              </button>
+              <button type="submit" className="button primary" disabled={saving}>
+                <KeyRound size={15} />
+                {saving ? "修改中..." : "确认修改"}
+              </button>
+            </div>
+          </form>
+        </div>
       ) : null}
     </div>
   );
 }
-
-function UserAccessPanel({
-  user,
-  role,
-  roles: roleList,
-  onUpdate,
-  onSave,
-  onNotify,
-}: {
-  user: StaffMember;
-  role: RoleDefinition;
-  roles: RoleDefinition[];
-  onUpdate: (patch: Partial<StaffMember>) => void;
-  onSave: () => void;
-  onNotify: (message: string) => void;
-}) {
-  return (
-    <aside className="panel user-access-panel">
-      <div className="user-access-head">
-        <CartoonAvatar name={user.name} size={48} className="user-avatar-large" />
-        <div>
-          <span className="eyebrow">PERSONNEL PROFILE</span>
-          <h2>{user.name}</h2>
-          <p>{user.code} · {user.type}</p>
-        </div>
-        <StatusPill status={user.status} />
-      </div>
-
-      <div className="user-access-form">
-        <label>
-          <span>角色</span>
-          <select value={user.roleId} onChange={(event) => onUpdate({ roleId: event.target.value })}>
-            {roleList.map((item) => (
-              <option value={item.id} key={item.id}>{item.name}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>状态</span>
-          <select
-            value={user.status}
-            onChange={(event) => onUpdate({ status: event.target.value as StaffMember["status"] })}
-          >
-            <option>在职</option>
-            <option>培训中</option>
-            <option>休假</option>
-            <option>离职</option>
-          </select>
-        </label>
-        <label>
-          <span>数据范围</span>
-          <select value={user.scope} onChange={(event) => onUpdate({ scope: event.target.value })}>
-            <option>全部组织</option>
-            <option>负责客户</option>
-            <option>负责门店</option>
-            <option>仅本人任务</option>
-            <option>自己门店</option>
-          </select>
-        </label>
-        <label>
-          <span>联系电话</span>
-          <input value={user.phoneMasked} readOnly />
-        </label>
-      </div>
-
-      <div className="user-scope-section">
-        <SectionTitle title="负责门店" subtitle="变更范围不会自动修改历史单据" />
-        <div className="chip-grid">
-          {user.sites.map((site) => <Chip key={site}>{site}</Chip>)}
-          <button type="button" className="chip chip-add" onClick={() => onNotify("已打开门店范围选择器")}>
-            <span>+</span> 添加门店
-          </button>
-        </div>
-      </div>
-
-      <div className="user-permission-summary">
-        <div>
-          <span>已授权动作</span>
-          <strong>{actionCount(role)}</strong>
-        </div>
-        <div>
-          <span>可访问模块</span>
-          <strong>{allowedModules(role).length}</strong>
-        </div>
-        <div>
-          <span>敏感权限</span>
-          <strong>{Object.values(role.sensitive).filter(Boolean).length}</strong>
-        </div>
-      </div>
-
-      <div className="user-access-note">
-        <ShieldCheck size={15} />
-        <span>{role.name} · {role.scope}。角色变更后，下一次请求立即生效。</span>
-      </div>
-
-      <button type="button" className="button primary full-width" onClick={onSave}>
-        <Save size={15} />
-        保存人员授权
-      </button>
-    </aside>
-  );
-}
-

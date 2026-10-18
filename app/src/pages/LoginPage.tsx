@@ -6,17 +6,32 @@ import {
   Eye,
   EyeOff,
   LockKeyhole,
-  Phone,
   ShieldCheck,
+  UserRound,
 } from "lucide-react";
 import type { AuthSession } from "../auth";
+import { loginWithPassword } from "../api";
+
+const roleNames: Record<string, string> = {
+  super_admin: "超级管理员",
+  admin: "管理员",
+  supervisor: "质量监理",
+  sealing_engineer: "封堵工程师",
+  service_engineer: "服务工程师",
+  engineer: "工程师",
+  finance: "财务",
+};
+
+function maskPhone(phone: string) {
+  return phone.length >= 7 ? `${phone.slice(0, 3)}****${phone.slice(-4)}` : phone;
+}
 
 export function LoginPage({
   onLogin,
 }: {
   onLogin: (session: AuthSession, remember: boolean) => void;
 }) {
-  const [phone, setPhone] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -24,11 +39,11 @@ export function LoginPage({
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setNotice("");
-    if (!/^1[3-9]\d{9}$/.test(phone)) {
-      setError("请输入有效的 11 位手机号码");
+    if (!identifier.trim()) {
+      setError("请输入手机号或管理员账号");
       return;
     }
     if (password.length < 6) {
@@ -37,16 +52,23 @@ export function LoginPage({
     }
     setError("");
     setLoading(true);
-    window.setTimeout(() => {
+    try {
+      const result = await loginWithPassword(identifier.trim(), password);
       const session: AuthSession = {
-        name: "Eric",
-        role: "管理员",
-        phoneMasked: `${phone.slice(0, 3)}****${phone.slice(-4)}`,
+        id: result.user.id,
+        username: result.user.username,
+        name: result.user.name || result.user.username,
+        role: roleNames[result.user.role] ?? result.user.role,
+        phoneMasked: maskPhone(result.user.phone || result.user.username),
+        token: result.access_token,
         loginAt: new Date().toISOString(),
       };
-      setLoading(false);
       onLogin(session, remember);
-    }, 520);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "登录失败，请稍后重试");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -66,21 +88,6 @@ export function LoginPage({
           <span className="eyebrow">PCO FIELD SERVICE</span>
           <h1>让每一次现场服务，都有证据可循。</h1>
           <p>勘测、封堵、复检、签字和报告，在一条业务链里完成。</p>
-        </div>
-
-        <div className="login-stats">
-          <div>
-            <strong>186</strong>
-            <span>客户项目</span>
-          </div>
-          <div>
-            <strong>195</strong>
-            <span>服务单</span>
-          </div>
-          <div>
-            <strong>92.4%</strong>
-            <span>封堵闭环率</span>
-          </div>
         </div>
 
         <div className="login-process">
@@ -105,24 +112,22 @@ export function LoginPage({
         <section className="login-card">
           <span className="eyebrow">SECURE ACCESS</span>
           <h2>登录运营台</h2>
-          <p>使用管理员或现场人员手机号登录。</p>
+          <p>使用已授权手机号或管理员账号登录。</p>
 
           <form onSubmit={submit} noValidate>
             <label className="login-field">
-              <span>手机号码</span>
-              <div className={`login-input ${error && !phone ? "has-error" : ""}`}>
-                <Phone size={16} />
-                <span className="login-prefix">+86</span>
+              <span>账号或手机号</span>
+              <div className={`login-input ${error && !identifier ? "has-error" : ""}`}>
+                <UserRound size={16} />
                 <input
-                  value={phone}
+                  value={identifier}
                   onChange={(event) => {
-                    setPhone(event.target.value.replace(/\D/g, "").slice(0, 11));
+                    setIdentifier(event.target.value);
                     setError("");
                   }}
-                  inputMode="numeric"
-                  autoComplete="tel"
-                  placeholder="请输入 11 位手机号码"
-                  aria-label="手机号码"
+                  autoComplete="username"
+                  placeholder="手机号或管理员账号"
+                  aria-label="账号或手机号"
                   autoFocus
                 />
               </div>
@@ -179,7 +184,7 @@ export function LoginPage({
 
           <div className="login-demo-note">
             <LockKeyhole size={13} />
-            演示环境 · 输入有效手机号和密码即可进入
+            生产环境 · 账号与密码由系统管理员维护
           </div>
         </section>
         <p className="login-foot">上海申汰实业有限公司 · 内部运营系统</p>

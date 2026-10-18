@@ -84,6 +84,8 @@
 - The fresh database contains three accounts (`admin`, `gongcheng`, `fw`), base settings and standard sealing materials, with zero customers, work orders and reports. Random initial passwords are stored only in root-only `/root/pco-initial-credentials.txt`.
 - The deployed auth endpoint accepts either username or phone, so the Mini Program can sign in with the seeded field phone number.
 - The production web root was replaced with the new `app/dist` build. The recovered legacy `static_web` was removed from the server, and Caddy now sends `Cache-Control: no-store` for the entry page.
+- Web login now stores the production API token and resolves the real user from `/api/auth/login`.
+- The Web personnel page now uses `/api/personnel` for list/create/update, supports adding personnel, editing accounts, enabling/disabling accounts, and changing user passwords. The signed-in user can also change their own password through `/api/auth/change-password`.
 
 ## Remaining Gaps
 
