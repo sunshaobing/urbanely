@@ -78,3 +78,11 @@
 - Customer contract attachment coverage is 0/186; backfill tasks are required.
 - Real customer data must not be used in UI fixtures without a privacy review.
 
+## Repository
+
+- Local Git repository initialized on branch `main`.
+- Initial project commit: `a7bd71d`.
+- Remote `origin`: `https://github.com/sunshaobing/urbanely.git`; upstream initial commit `a23942c`.
+- Local commit author: `Eric <urbanely@163.com>`.
+- `tmp/`, `node_modules/`, `dist/`, logs, and local env files are ignored.
+
