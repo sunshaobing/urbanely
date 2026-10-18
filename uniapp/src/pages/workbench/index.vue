@@ -3,9 +3,12 @@ import { computed, ref } from "vue";
 import { onPullDownRefresh, onShow } from "@dcloudio/uni-app";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 import AppTabBar from "../../components/AppTabBar.vue";
+import BrandLogo from "../../components/BrandLogo.vue";
+import CartoonAvatar from "../../components/CartoonAvatar.vue";
 import StatusPill from "../../components/StatusPill.vue";
 import { getDashboardSummary, getWorkOrders } from "../../utils/api";
 import { getSession } from "../../utils/auth";
+import { ensureBrand } from "../../utils/brand";
 import {
   displayDay,
   roleLabel,
@@ -62,6 +65,7 @@ async function load() {
   }
   if (loading.value) return;
   session.value = current;
+  void ensureBrand();
   loading.value = true;
   error.value = "";
   try {
@@ -122,14 +126,13 @@ onPullDownRefresh(async () => {
     <view class="workbench-hero">
       <view class="hero-topline">
         <view class="brand-inline">
-          <view class="brand-dot">ST</view>
+          <BrandLogo :size="30" show-name :name-size="13" light />
           <view>
-            <text class="brand-title">申汰现场</text>
             <text class="brand-sub">封堵勘测系统</text>
           </view>
         </view>
         <view class="profile-shortcut" @tap="openProfile">
-          <text class="profile-initial">{{ session?.name?.slice(0, 1) || "现" }}</text>
+          <CartoonAvatar :name="session?.name || '现场人员'" :size="32" />
           <view class="profile-online" />
         </view>
       </view>
@@ -319,27 +322,8 @@ onPullDownRefresh(async () => {
   gap: 14rpx;
 }
 
-.brand-dot {
-  width: 60rpx;
-  height: 60rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16rpx;
-  background: #e4f1e9;
-  color: #10352a;
-  font-size: 22rpx;
-  font-weight: 800;
-}
-
-.brand-title,
 .brand-sub {
   display: block;
-}
-
-.brand-title {
-  font-size: 26rpx;
-  font-weight: 700;
 }
 
 .brand-sub {
@@ -358,11 +342,6 @@ onPullDownRefresh(async () => {
   border: 1rpx solid rgba(255, 255, 255, 0.18);
   border-radius: 50%;
   background: #285845;
-}
-
-.profile-initial {
-  font-size: 26rpx;
-  font-weight: 700;
 }
 
 .profile-online {

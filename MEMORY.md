@@ -88,7 +88,11 @@
 - The workbench and archive use server summary, work-order status filters, `risk-surveys` and `service-reports`; the field forms use the production draft, upload, signature, submit and PDF endpoints. No local task fixtures are used.
 - Risk survey photos use a five-column wrapping grid with a hard 100-image cap. Survey and sealing flows each capture two handwritten signatures: surveyor/customer and responsible/customer.
 - uni-app type-check, `build:mp-weixin` and H5 build pass. The H5 build was exercised with Playwright against mocked API responses at 390px: login, workbench, task detail, survey first step, risk-photo grid, sealing report, archive and profile had no horizontal overflow or runtime errors.
-- The final `mp-weixin` build contains 68 files and is about 287.7 KB; production builds contain the `https://sunrgw.cn` fallback and no local mock endpoint or test token.
+- The final `mp-weixin` build contains 75 files and is about 309.2 KB; production builds contain the `https://sunrgw.cn` fallback and no local mock endpoint or test token.
+- Enterprise branding now resolves from `GET /api/templates` (`logo_url` / company name) with the backend shield as fallback. Personnel identity uses a portable hash-based cartoon avatar that mirrors the production Web avatar rules.
+- Task detail now renders the ordered 11-stage workflow: survey, survey dual sign, survey approval, sealing dispatch, sealing acceptance, check-in, before photos, after photos, sealing dual sign, sealing approval, report generation.
+- Workflow actions call existing production endpoints for risk-survey approval, service-report creation/status updates, check-in, work-order review and PDF generation. Related survey/sealing records are resolved by work-order id/report number first, then a unique customer match.
+- Service-report and risk-survey forms can reopen existing server records by id, allowing signature/photo completion without creating duplicate documents.
 - The root `project.config.json` now points `miniprogramRoot` at `uniapp/dist/build/mp-weixin/`; the old native Mini Program remains reference-only.
 - The production web root was replaced with the new `app/dist` build. The recovered legacy `static_web` was removed from the server, and Caddy now sends `Cache-Control: no-store` for the entry page.
 - Web login now stores the production API token and resolves the real user from `/api/auth/login`.
@@ -99,6 +103,7 @@
 - Web prototype still uses local sample data; Mini Program login, workbench, report archive and profile now use the production API.
 - COS attachment IDs, retry/backoff, idempotent batch sync and optimistic-conflict handling still need to replace the current direct upload URL flow.
 - The new uni-app capture forms have not yet been exercised against the production account or real device camera/signature hardware; only type, build and mocked visual flows are verified.
+- The backend OpenAPI does not expose a dedicated risk-survey review or sealing-dispatch endpoint, so the client maps those transitions to `status=approved`, `status=assigned` and `status=accepted` on the existing documents. Production role/status validation still needs an end-to-end account test.
 - The sealing table schema is inferred from the PDF; a logged-in Feishu export is still needed for a complete migration.
 - Customer contract attachment coverage is 0/186; backfill tasks are required.
 - Real customer data must not be used in UI fixtures without a privacy review.

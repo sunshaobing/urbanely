@@ -2,25 +2,87 @@
 import { computed, ref } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
+import CartoonAvatar from "../../components/CartoonAvatar.vue";
 import PageHeader from "../../components/PageHeader.vue";
 import StatusPill from "../../components/StatusPill.vue";
-import { getWorkOrder } from "../../utils/api";
+import {
+  checkinServiceReport,
+  getRiskSurvey,
+  getRiskSurveys,
+  getServiceReport,
+  getServiceReports,
+  getWorkOrder,
+  normalizeRiskSurveys,
+  normalizeServiceReports,
+  reviewWorkOrder,
+  saveRiskSurvey,
+  saveServiceReport,
+  toId,
+} from "../../utils/api";
+import { getSession } from "../../utils/auth";
+import { ensureBrand } from "../../utils/brand";
+import { openReportPdf, reportPdfPath } from "../../utils/pdf";
 import { displayDate, displayDay } from "../../utils/present";
-import type { WorkOrder } from "../../utils/types";
+import {
+  deriveWorkflow,
+  dispatchPayload,
+  relatedRiskSurvey,
+  relatedServiceReport,
+  riskSurveyUpdatePayload,
+  serviceReportUpdatePayload,
+} from "../../utils/workflow";
+import type {
+  RiskSurvey,
+  ServiceReport,
+  Session,
+  WorkOrder,
+} from "../../utils/types";
 
 const task = ref<WorkOrder | null>(null);
+const survey = ref<RiskSurvey | null>(null);
+const serviceReport = ref<ServiceReport | null>(null);
+const session = ref<Session | null>(null);
 const taskId = ref(0);
 const loading = ref(true);
+const relatedLoading = ref(false);
+const actionLoading = ref(false);
 const error = ref("");
 
-const workflow = ["待处理", "现场勘测", "结构封堵", "完成归档"];
-
-const workflowIndex = computed(() => {
-  if (!task.value) return 0;
-  if (task.value.status === "completed" || task.value.status === "approved") return 3;
-  if (task.value.status === "pending") return 2;
-  if (task.value.status === "rejected") return 1;
-  return 0;
+const workflow = computed(() =>
+  task.value
+    ? deriveWorkflow(task.value, survey.value, serviceReport.value)
+    : { steps: [], currentIndex: 0 },
+);
+const currentIndex = computed(() => workflow.value.currentIndex);
+const currentStep = computed(() => workflow.value.steps[currentIndex.value] ?? null);
+const progress = computed(() =>
+  workflow.value.steps.length
+    ? Math.round((currentIndex.value / workflow.value.steps.length) * 100)
+    : 0,
+);
+const canApprove = computed(() =>
+  ["super_admin", "admin", "supervisor"].includes(session.value?.role || ""),
+);
+const approvalWaiting = computed(
+  () =>
+    !canApprove.value &&
+    ["surveyApproval", "dispatch", "sealApproval"].includes(
+      currentStep.value?.key || "",
+    ),
+);
+const actionLabel = computed(() => {
+  const key = currentStep.value?.key;
+  if (key === "survey") return "开始勘测";
+  if (key === "surveySign") return "完成勘测双签";
+  if (key === "surveyApproval") return canApprove.value ? "审批勘测报告" : "等待审批";
+  if (key === "dispatch") return canApprove.value ? "派单给封堵" : "等待派单";
+  if (key === "accept") return "封堵接单";
+  if (key === "checkin") return "现场签到";
+  if (key === "beforePhotos") return "补拍施工前影像";
+  if (key === "afterPhotos") return "补拍施工后影像";
+  if (key === "sealSign") return "完成封堵报告双签";
+  if (key === "sealApproval") return canApprove.value ? "审批封堵报告" : "提交审批";
+  return "生成报告";
 });
 
 function errorText(value: unknown) {
@@ -37,10 +99,37 @@ async function load() {
   error.value = "";
   try {
     task.value = await getWorkOrder(taskId.value);
+    session.value = getSession();
+    await loadRelated(task.value);
   } catch (loadError) {
     error.value = errorText(loadError);
   } finally {
     loading.value = false;
+  }
+}
+
+async function loadRelated(current: WorkOrder) {
+  relatedLoading.value = true;
+  try {
+    const filters = current.customer_id
+      ? { customer_id: current.customer_id }
+      : {};
+    const [surveyPayload, reportPayload] = await Promise.allSettled([
+      getRiskSurveys(filters),
+      getServiceReports(filters),
+    ]);
+    const surveys =
+      surveyPayload.status === "fulfilled"
+        ? normalizeRiskSurveys(surveyPayload.value)
+        : [];
+    const reports =
+      reportPayload.status === "fulfilled"
+        ? normalizeServiceReports(reportPayload.value)
+        : [];
+    survey.value = relatedRiskSurvey(current, surveys);
+    serviceReport.value = relatedServiceReport(current, reports);
+  } finally {
+    relatedLoading.value = false;
   }
 }
 
@@ -62,20 +151,154 @@ function copyAddress() {
 
 function openRiskSurvey() {
   if (!task.value) return;
+  const targetStep =
+    survey.value && currentStep.value?.key === "surveySign" ? 4 : 0;
+  const surveyQuery = survey.value ? `&surveyId=${survey.value.id}` : "";
   uni.navigateTo({
-    url: `/pages/risk-survey/index?taskId=${task.value.id}`,
+    url: `/pages/risk-survey/index?taskId=${task.value.id}${surveyQuery}&step=${targetStep}`,
   });
 }
 
 function openServiceReport() {
   if (!task.value) return;
+  if (!serviceReport.value) {
+    uni.showToast({ title: "请先完成勘测审批并派单", icon: "none" });
+    return;
+  }
+  const step =
+    currentStep.value?.key === "sealSign"
+      ? 4
+      : currentStep.value?.key === "beforePhotos" ||
+          currentStep.value?.key === "afterPhotos"
+        ? 2
+        : 0;
   uni.navigateTo({
-    url: `/pages/service-report/index?taskId=${task.value.id}`,
+    url: `/pages/service-report/index?taskId=${task.value.id}&reportId=${serviceReport.value.id}&step=${step}`,
   });
+}
+
+async function approveSurvey() {
+  if (!survey.value) {
+    uni.showToast({ title: "尚未生成勘测记录", icon: "none" });
+    return;
+  }
+  const fullSurvey = await getRiskSurvey(survey.value.id);
+  await saveRiskSurvey(
+    survey.value.id,
+    riskSurveyUpdatePayload(fullSurvey, { status: "approved" }),
+  );
+  uni.showToast({ title: "勘测报告已审批", icon: "success" });
+}
+
+async function dispatchSealing() {
+  if (!task.value || !session.value) return;
+  if (!task.value.customer_id) {
+    throw new Error("作业单缺少客户ID，无法派单");
+  }
+  const created = await saveServiceReport(
+    0,
+    dispatchPayload(task.value, session.value),
+  );
+  if (!toId(created)) {
+    throw new Error("派单成功但服务端未返回封堵单编号");
+  }
+  uni.showToast({ title: "已派单给封堵", icon: "success" });
+}
+
+async function acceptSealing() {
+  if (!serviceReport.value) {
+    throw new Error("尚未生成封堵单");
+  }
+  const fullReport = await getServiceReport(serviceReport.value.id);
+  await saveServiceReport(
+    serviceReport.value.id,
+    serviceReportUpdatePayload(fullReport, {
+      status: "accepted",
+    }),
+  );
+  uni.showToast({ title: "已接单", icon: "success" });
+}
+
+function currentLocation() {
+  return new Promise<string>((resolve) => {
+    uni.getLocation({
+      type: "gcj02",
+      success: (result) =>
+        resolve(`${result.latitude.toFixed(6)},${result.longitude.toFixed(6)}`),
+      fail: () => resolve(task.value?.service_address || "现场签到"),
+    });
+  });
+}
+
+async function checkIn() {
+  if (!serviceReport.value) {
+    throw new Error("尚未生成封堵单");
+  }
+  const location = await currentLocation();
+  await checkinServiceReport(serviceReport.value.id, location);
+  uni.showToast({ title: "现场签到成功", icon: "success" });
+}
+
+async function approveSealing() {
+  if (!serviceReport.value || !task.value) {
+    throw new Error("尚未生成封堵报告");
+  }
+  const fullReport = await getServiceReport(serviceReport.value.id);
+  await saveServiceReport(
+    serviceReport.value.id,
+    serviceReportUpdatePayload(fullReport, {
+      status: "approved",
+    }),
+  );
+  await reviewWorkOrder(task.value.id, "approve", "封堵报告审批通过");
+  uni.showToast({ title: "封堵报告已审批", icon: "success" });
+}
+
+async function runCurrentAction() {
+  const key = currentStep.value?.key;
+  if (!key || actionLoading.value || approvalWaiting.value) return;
+  if (key === "survey" || key === "surveySign") {
+    openRiskSurvey();
+    return;
+  }
+  if (["beforePhotos", "afterPhotos", "sealSign"].includes(key)) {
+    openServiceReport();
+    return;
+  }
+  actionLoading.value = true;
+  try {
+    if (key === "surveyApproval") await approveSurvey();
+    else if (key === "dispatch") await dispatchSealing();
+    else if (key === "accept") await acceptSealing();
+    else if (key === "checkin") await checkIn();
+    else if (key === "sealApproval") await approveSealing();
+    else if (key === "generateReport" && serviceReport.value) {
+      openReportPdf(reportPdfPath("service", serviceReport.value.id));
+      const fullReport = await getServiceReport(serviceReport.value.id);
+      await saveServiceReport(
+        serviceReport.value.id,
+        serviceReportUpdatePayload(fullReport, {
+          status: "completed",
+        }),
+      );
+    }
+    await load();
+  } catch (actionError) {
+    uni.showToast({
+      title:
+        actionError instanceof Error ? actionError.message : "操作失败，请重试",
+      icon: "none",
+      duration: 3000,
+    });
+  } finally {
+    actionLoading.value = false;
+  }
 }
 
 onLoad((query) => {
   taskId.value = Number(query?.id || 0);
+  session.value = getSession();
+  void ensureBrand();
   void load();
 });
 </script>
@@ -139,22 +362,71 @@ onLoad((query) => {
     <template v-else-if="task">
       <view class="page-content detail-content">
         <view class="workflow-card card">
-          <view
-            v-for="(step, index) in workflow"
-            :key="step"
-            class="workflow-step"
-            :class="{ done: index < workflowIndex, active: index === workflowIndex }"
-          >
-            <view class="workflow-node">
-              <UniIcons
-                v-if="index < workflowIndex"
-                type="checkmarkempty"
-                size="14"
-                color="#ffffff"
-              />
-              <text v-else>{{ index + 1 }}</text>
+          <view class="workflow-head">
+            <view>
+              <text class="workflow-kicker">PROCESS / {{ currentIndex + 1 }} OF {{ workflow.steps.length }}</text>
+              <text class="workflow-title">{{ currentStep?.label || "现场流转" }}</text>
+              <text class="workflow-hint">{{ currentStep?.hint || "正在同步流程状态" }}</text>
             </view>
-            <text class="workflow-label">{{ step }}</text>
+            <text class="workflow-percent">{{ progress }}%</text>
+          </view>
+          <view class="workflow-progress">
+            <view class="workflow-progress-fill" :style="{ width: `${progress}%` }" />
+          </view>
+          <view class="process-list">
+            <view
+              v-for="(step, index) in workflow.steps"
+              :key="step.key"
+              class="process-step"
+              :class="{
+                done: step.done,
+                active: index === currentIndex && !step.done,
+              }"
+            >
+              <view class="process-rail">
+                <view class="process-node">
+                  <UniIcons
+                    v-if="step.done"
+                    type="checkmarkempty"
+                    size="13"
+                    color="#ffffff"
+                  />
+                  <text v-else>{{ String(index + 1).padStart(2, "0") }}</text>
+                </view>
+                <view v-if="index < workflow.steps.length - 1" class="process-line" />
+              </view>
+              <view class="process-copy">
+                <text class="process-label">{{ step.label }}</text>
+                <text class="process-hint">{{ step.hint }}</text>
+              </view>
+              <text class="process-state">
+                {{ step.done ? "已完成" : index === currentIndex ? "当前" : "待处理" }}
+              </text>
+            </view>
+          </view>
+        </view>
+
+        <view v-if="survey || serviceReport" class="related-card card">
+          <text class="related-title">关联单据</text>
+          <view v-if="survey" class="related-row">
+            <view class="related-icon">
+              <UniIcons type="search" size="17" color="#1d7659" />
+            </view>
+            <view class="related-copy">
+              <text class="related-name">勘测报告</text>
+              <text class="related-meta">{{ survey.code || `#${survey.id}` }} · {{ survey.status }}</text>
+            </view>
+            <text class="related-count">{{ survey.signatures?.length || 0 }}/2 签</text>
+          </view>
+          <view v-if="serviceReport" class="related-row">
+            <view class="related-icon">
+              <UniIcons type="compose" size="17" color="#1d7659" />
+            </view>
+            <view class="related-copy">
+              <text class="related-name">封堵报告</text>
+              <text class="related-meta">#{{ serviceReport.id }} · {{ serviceReport.status }}</text>
+            </view>
+            <text class="related-count">{{ serviceReport.signatures?.length || 0 }}/2 签</text>
           </view>
         </view>
 
@@ -193,6 +465,13 @@ onLoad((query) => {
             <view class="info-row">
               <text class="info-label">天气</text>
               <text class="info-value">{{ task.weather || "—" }}</text>
+            </view>
+            <view v-if="task.engineer_name" class="info-row">
+              <text class="info-label">现场负责人</text>
+              <view class="person-value">
+                <CartoonAvatar :name="task.engineer_name" :size="20" />
+                <text>{{ task.engineer_name }}</text>
+              </view>
             </view>
           </view>
         </view>
@@ -262,13 +541,17 @@ onLoad((query) => {
       </view>
 
       <view class="bottom-actions safe-bottom">
-        <button class="btn-secondary bottom-button" @tap="openRiskSurvey">
-          <UniIcons type="search" size="18" color="#1d7659" />
-          <text>开始勘测</text>
+        <button class="btn-secondary bottom-button" @tap="load">
+          <UniIcons type="refreshempty" size="18" color="#1d7659" />
+          <text>同步状态</text>
         </button>
-        <button class="btn-primary bottom-button" @tap="openServiceReport">
-          <UniIcons type="compose" size="18" color="#ffffff" />
-          <text>封堵记录</text>
+        <button
+          class="btn-primary bottom-button"
+          :disabled="actionLoading || relatedLoading || approvalWaiting"
+          @tap="runCurrentAction"
+        >
+          <UniIcons type="right" size="18" color="#ffffff" />
+          <text>{{ actionLoading ? "处理中" : actionLabel }}</text>
         </button>
       </view>
     </template>
@@ -367,58 +650,229 @@ onLoad((query) => {
 }
 
 .workflow-card {
+  padding: 22rpx;
+}
+
+.workflow-head {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 4rpx;
-  padding: 24rpx 18rpx;
+  gap: 20rpx;
 }
 
-.workflow-step {
-  flex: 1;
-  min-width: 0;
+.workflow-kicker,
+.workflow-title,
+.workflow-hint {
+  display: block;
+}
+
+.workflow-kicker {
+  color: #1d7659;
+  font-size: 19rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+}
+
+.workflow-title {
+  margin-top: 5rpx;
+  font-size: 31rpx;
+  font-weight: 700;
+}
+
+.workflow-hint {
+  margin-top: 4rpx;
+  color: #65726c;
+  font-size: 21rpx;
+}
+
+.workflow-percent {
+  flex: none;
+  color: #1d7659;
+  font-family: "SFMono-Regular", "Cascadia Code", monospace;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.workflow-progress {
+  height: 8rpx;
+  overflow: hidden;
+  margin-top: 18rpx;
+  border-radius: 8rpx;
+  background: #e6eee8;
+}
+
+.workflow-progress-fill {
+  height: 100%;
+  border-radius: 8rpx;
+  background: #1d7659;
+  transition: width 180ms ease;
+}
+
+.process-list {
+  margin-top: 22rpx;
+}
+
+.process-step {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10rpx;
-  color: #8a968f;
+  align-items: flex-start;
+  gap: 14rpx;
+  min-height: 66rpx;
 }
 
-.workflow-node {
-  width: 42rpx;
-  height: 42rpx;
+.process-rail {
+  position: relative;
+  width: 36rpx;
+  flex: none;
+  display: flex;
+  justify-content: center;
+}
+
+.process-node {
+  position: relative;
+  z-index: 2;
+  width: 34rpx;
+  height: 34rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1rpx solid #d6e1da;
   border-radius: 50%;
-  background: #f6f9f6;
-  font-size: 20rpx;
+  background: #f7faf7;
+  color: #8a968f;
+  font-family: "SFMono-Regular", "Cascadia Code", monospace;
+  font-size: 16rpx;
 }
 
-.workflow-label {
-  font-size: 20rpx;
-  white-space: nowrap;
+.process-line {
+  position: absolute;
+  top: 34rpx;
+  bottom: -2rpx;
+  left: 50%;
+  width: 1rpx;
+  background: #dce6df;
 }
 
-.workflow-step.done .workflow-node {
+.process-copy {
+  flex: 1;
+  min-width: 0;
+  padding-top: 1rpx;
+}
+
+.process-label,
+.process-hint {
+  display: block;
+}
+
+.process-label {
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.process-hint {
+  margin-top: 2rpx;
+  color: #7b8881;
+  font-size: 19rpx;
+  line-height: 1.4;
+}
+
+.process-state {
+  flex: none;
+  padding-top: 3rpx;
+  color: #9aa49f;
+  font-size: 18rpx;
+}
+
+.process-step.done .process-node {
   border-color: #1d7659;
   background: #1d7659;
+  color: #ffffff;
 }
 
-.workflow-step.done {
+.process-step.done .process-line {
+  background: #9ec5b5;
+}
+
+.process-step.done .process-label {
   color: #1d7659;
 }
 
-.workflow-step.active .workflow-node {
+.process-step.done .process-state {
+  color: #3f7452;
+}
+
+.process-step.active .process-node {
   border-color: #1d7659;
   background: #e4f1e9;
   color: #145c46;
   font-weight: 700;
 }
 
-.workflow-step.active {
+.process-step.active .process-label {
   color: #10352a;
   font-weight: 700;
+}
+
+.process-step.active .process-state {
+  color: #1d7659;
+  font-weight: 700;
+}
+
+.related-card {
+  margin-top: 18rpx;
+  padding: 20rpx 22rpx;
+}
+
+.related-title {
+  display: block;
+  margin-bottom: 8rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.related-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 12rpx 0;
+  border-top: 1rpx solid #eaf0ec;
+}
+
+.related-icon {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12rpx;
+  background: #e4f1e9;
+}
+
+.related-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.related-name,
+.related-meta {
+  display: block;
+}
+
+.related-name {
+  font-size: 23rpx;
+  font-weight: 600;
+}
+
+.related-meta {
+  margin-top: 2rpx;
+  color: #65726c;
+  font-size: 19rpx;
+}
+
+.related-count {
+  flex: none;
+  color: #1d7659;
+  font-size: 19rpx;
 }
 
 .section-block {
@@ -468,6 +922,15 @@ onLoad((query) => {
   align-items: center;
   gap: 6rpx;
   color: #1d7659;
+  font-size: 25rpx;
+  font-weight: 600;
+}
+
+.person-value {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  color: #14231d;
   font-size: 25rpx;
   font-weight: 600;
 }

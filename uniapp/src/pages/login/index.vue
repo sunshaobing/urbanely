@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
+import BrandLogo from "../../components/BrandLogo.vue";
 import { login } from "../../utils/api";
 import { saveAuth } from "../../utils/auth";
 
@@ -50,9 +51,8 @@ async function submit() {
     <view class="login-hero">
       <view class="hero-top">
         <view class="brand-lockup">
-          <view class="brand-mark">ST</view>
+          <BrandLogo :size="38" show-name :name-size="13" light />
           <view>
-            <text class="brand-name">申汰封堵勘测</text>
             <text class="brand-en">FIELD OPERATIONS</text>
           </view>
         </view>
@@ -181,32 +181,11 @@ async function submit() {
   gap: 16rpx;
 }
 
-.brand-mark {
-  width: 76rpx;
-  height: 76rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1rpx solid rgba(255, 255, 255, 0.24);
-  border-radius: 16rpx;
-  background: #e4f1e9;
-  color: #10352a;
-  font-size: 26rpx;
-  font-weight: 800;
-}
-
-.brand-name,
 .brand-en {
   display: block;
 }
 
-.brand-name {
-  font-size: 28rpx;
-  font-weight: 700;
-}
-
 .brand-en {
-  margin-top: 4rpx;
   color: #9ec5b5;
   font-size: 18rpx;
   letter-spacing: 1rpx;

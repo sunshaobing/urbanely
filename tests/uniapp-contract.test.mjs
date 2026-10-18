@@ -42,6 +42,10 @@ test("uni-app uses production APIs for tasks, records, uploads and signatures", 
     "/api/drafts",
     "/api/quick-phrases",
     "/api/auth/change-password",
+    "/api/templates",
+    "/review",
+    "/checkin",
+    "/checkout",
   ]) {
     assert.match(api, new RegExp(endpoint.replaceAll("/", "\\/")));
   }
@@ -70,6 +74,76 @@ test("workbench and archive render server data instead of local fixtures", () =>
   assert.match(reports, /openReportPdf/);
   assert.doesNotMatch(workbench, /mockTasks|data\/mock/);
   assert.doesNotMatch(reports, /mockReports|data\/mock/);
+});
+
+test("branding and personnel images reuse backend-facing assets and avatar rules", () => {
+  const brand = read("src/utils/brand.ts");
+  const brandLogo = read("src/components/BrandLogo.vue");
+  const avatar = read("src/components/CartoonAvatar.vue");
+  const workbench = read("src/pages/workbench/index.vue");
+  const profile = read("src/pages/profile/index.vue");
+  const login = read("src/pages/login/index.vue");
+
+  assert.match(brand, /getTemplates/);
+  assert.match(brand, /logo_url/);
+  assert.match(brand, /company_name/);
+  assert.match(brandLogo, /brandState\.logo_url/);
+  assert.match(brandLogo, /brand-fallback/);
+  assert.match(avatar, /hashString/);
+  assert.match(avatar, /skins/);
+  assert.match(avatar, /shirts/);
+  assert.match(workbench, /BrandLogo/);
+  assert.match(workbench, /CartoonAvatar/);
+  assert.match(workbench, /ensureBrand/);
+  assert.match(profile, /CartoonAvatar/);
+  assert.match(login, /BrandLogo/);
+});
+
+test("the field workflow follows survey approval, dispatch, check-in, sealing and report generation", () => {
+  const workflow = read("src/utils/workflow.ts");
+  const detail = read("src/pages/task-detail/index.vue");
+  const api = read("src/utils/api.ts");
+
+  for (const label of [
+    "现场勘测",
+    "勘测报告双签",
+    "勘测审批",
+    "派单给封堵",
+    "封堵接单",
+    "现场签到",
+    "施工前影像",
+    "施工后影像",
+    "封堵报告双签",
+    "封堵审批",
+    "生成报告",
+  ]) {
+    assert.match(workflow, new RegExp(label));
+  }
+  assert.match(workflow, /relatedRiskSurvey/);
+  assert.match(workflow, /relatedServiceReport/);
+  assert.match(workflow, /status: "assigned"/);
+  assert.match(detail, /deriveWorkflow/);
+  assert.match(detail, /approveSurvey/);
+  assert.match(detail, /dispatchSealing/);
+  assert.match(detail, /acceptSealing/);
+  assert.match(detail, /checkIn/);
+  assert.match(detail, /approveSealing/);
+  assert.match(detail, /openReportPdf/);
+  assert.match(api, /reviewWorkOrder/);
+  assert.match(api, /checkinServiceReport/);
+});
+
+test("field forms reopen existing survey and sealing records by server id", () => {
+  const survey = read("src/pages/risk-survey/index.vue");
+  const service = read("src/pages/service-report/index.vue");
+
+  assert.match(survey, /getRiskSurvey/);
+  assert.match(survey, /surveyId/);
+  assert.match(survey, /saveRiskSurvey\(surveyId\.value/);
+  assert.match(service, /getServiceReport/);
+  assert.match(service, /reportId/);
+  assert.match(service, /saveServiceReport\(reportId\.value/);
+  assert.match(service, /originalSignatures/);
 });
 
 test("the redesign keeps a green-led mobile business system", () => {

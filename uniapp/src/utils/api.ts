@@ -164,12 +164,31 @@ export function getWorkOrder(id: number) {
   return request<WorkOrder>(`/api/workorders/${id}`);
 }
 
+export function reviewWorkOrder(
+  id: number,
+  action: "approve" | "reject",
+  comment = "",
+) {
+  return request<unknown>(`/api/workorders/${id}/review`, {
+    method: "POST",
+    data: { action, comment },
+  });
+}
+
+export function getTemplates() {
+  return request<unknown>("/api/templates");
+}
+
 export function getRiskSurveys(
   filters: { keyword?: string; status?: string; customer_id?: number } = {},
 ) {
   return request<unknown>(
     `/api/risk-surveys${queryString(filters)}`,
   ) as Promise<unknown>;
+}
+
+export function getRiskSurvey(surveyId: number) {
+  return request<RiskSurvey>(`/api/risk-surveys/${surveyId}`);
 }
 
 export function getServiceReports(
@@ -210,6 +229,32 @@ export function saveServiceReport(
       data,
     },
   );
+}
+
+export function getServiceReport(reportId: number) {
+  return request<ServiceReport>(`/api/service-reports/${reportId}`);
+}
+
+export function checkinServiceReport(
+  reportId: number,
+  location: string,
+  photoUrl = "",
+) {
+  return request<unknown>(`/api/service-reports/${reportId}/checkin`, {
+    method: "POST",
+    data: { location, photo_url: photoUrl },
+  });
+}
+
+export function checkoutServiceReport(
+  reportId: number,
+  location: string,
+  photoUrl = "",
+) {
+  return request<unknown>(`/api/service-reports/${reportId}/checkout`, {
+    method: "POST",
+    data: { location, photo_url: photoUrl },
+  });
 }
 
 export function signServiceReport(

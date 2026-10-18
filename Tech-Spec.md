@@ -143,6 +143,7 @@ stateDiagram-v2
 
 - 现场端主入口是 `uniapp/`，使用 uni-app + Vue 3 + TypeScript，一套页面代码编译微信小程序和 H5 验证版本。`miniprogram/` 只保留为旧原生实现参考。
 - 页面结构为：登录、工作台、任务详情、现场勘测、封堵记录、报告归档、个人中心、修改密码。
+- 企业 LOGO 从 `GET /api/templates` 读取 `logo_url` 和组织名称；接口不可用时回退到与后端站点一致的安全盾牌标识。人员头像不在前端存放独立照片，而是按姓名稳定生成与生产 Web 端相同规则的卡通头像。
 - 工作台、任务、汇总、报告归档全部读取腾讯云生产 API；页面只负责状态展示和交互，不在前端重算业务指标或合并不同状态的数据集。
 - 现场勘测使用 `/api/risk-surveys`、`/api/risk-surveys/upload`、`/api/risk-surveys/{id}/submit`；结构风险图片支持拍照和相册批量选择，累计最多 100 张，使用 5 列自动换行网格。
 - 封堵记录使用 `/api/service-reports`、`/api/service-reports/upload`、`/api/service-reports/{id}/sign`、`/api/service-reports/{id}/submit`；封堵前后照片只出现在封堵记录中。
@@ -151,6 +152,9 @@ stateDiagram-v2
 - 草稿同时写入本机缓存和 `/api/drafts`。本机缓存保证弱网下不丢表单，服务端草稿用于后续跨设备恢复；已提交状态仍以服务端为唯一事实来源。
 - 当前生产后端使用业务上传接口返回图片 URL；正式对象存储和附件 ID 方案仍作为后续演进方向，不在客户端散落两套上传逻辑。
 - 网络恢复后按“业务单据 → 照片 → 签字 → 提交”顺序同步。上传失败的图片或签名必须保留在本机，不能把未上传路径写入已提交记录。
+- 主流程固定为 11 个节点：勘测 → 勘测报告双签 → 勘测审批 → 派单给封堵 → 封堵接单 → 现场签到 → 施工前影像 → 施工后影像 → 封堵报告双签 → 封堵审批 → 生成报告。
+- 勘测审批通过后将 `risk-surveys` 状态置为 `approved`，再创建状态为 `assigned` 的封堵 `service-reports`。封堵接单使用 `accepted`，现场签到调用 `/api/service-reports/{id}/checkin`，最终审批调用 `/api/workorders/{id}/review`，报告通过 PDF 接口生成。
+- 任务详情只根据服务端关联的勘测单和封堵单状态计算当前节点；每一步操作完成后重新拉取服务端记录，不以本地乐观状态代替审批结果。
 
 ### 6.2 同步规则
 

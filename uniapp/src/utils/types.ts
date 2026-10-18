@@ -90,6 +90,10 @@ export interface WorkOrder {
   created_at: string;
   submitted_at: string;
   completed_at: string;
+  risk_survey_id?: number;
+  service_report_id?: number;
+  review_status?: string;
+  dispatch_status?: string;
   materials: WorkOrderMaterial[];
   sites: WorkOrderSite[];
 }
@@ -181,6 +185,14 @@ export interface ServiceReport {
   follow_up?: string;
   risk_follow?: string;
   customer_comment?: string;
+  work_order_id?: number;
+  work_order_no?: string;
+  dispatch_status?: string;
+  accepted_at?: string;
+  checkin_at?: string;
+  checked_in_at?: string;
+  checkout_at?: string;
+  checkin_location?: string;
   status: string;
   materials?: ServiceReportMaterial[];
   photos?: PhotoRecord[];
@@ -189,6 +201,11 @@ export interface ServiceReport {
   created_at?: string;
   updated_at?: string;
   pdf_url?: string;
+}
+
+export interface BrandTemplates {
+  logo_url: string;
+  company_name: string;
 }
 
 export interface QuickPhrase {

@@ -6,6 +6,7 @@ import PageHeader from "../../components/PageHeader.vue";
 import PhotoGrid from "../../components/PhotoGrid.vue";
 import SignaturePad from "../../components/SignaturePad.vue";
 import {
+  getServiceReport,
   getWorkOrder,
   saveDraft,
   saveServiceReport,
@@ -20,6 +21,7 @@ import { readLocalDraft, removeLocalDraft, writeLocalDraft } from "../../utils/l
 import { nowTime, today } from "../../utils/present";
 import type {
   PhotoDraft,
+  ServiceReport,
   ServiceReportMaterial,
   SignatureRecord,
   WorkOrder,
@@ -47,11 +49,13 @@ interface ServiceDraft {
 const steps = ["服务信息", "材料与部位", "前后照片", "服务记录", "签字提交"];
 const step = ref(0);
 const taskId = ref(0);
+const reportId = ref(0);
 const task = ref<WorkOrder | null>(null);
 const loading = ref(true);
 const error = ref("");
 const saving = ref(false);
 const submitting = ref(false);
+const originalSignatures = ref<Record<string, string>>({});
 
 const form = reactive<ServiceDraft>({
   date: today(),
@@ -98,6 +102,39 @@ function hydrate(saved: ServiceDraft) {
   form.afterPhotos = saved.afterPhotos || [];
   form.responsibleSignature = saved.responsibleSignature || "";
   form.customerSignature = saved.customerSignature || "";
+}
+
+function hydrateReport(report: ServiceReport) {
+  form.date = report.service_date || form.date;
+  form.startTime = report.start_time || form.startTime;
+  form.endTime = report.end_time || "";
+  form.contact = report.contact || form.contact;
+  form.servicePerson = report.service_person || form.servicePerson;
+  form.serviceProject = report.service_project || form.serviceProject;
+  form.taskTag = report.task_tag || form.taskTag;
+  form.content = report.content || "";
+  form.followUp = report.follow_up || "";
+  form.riskFollow = report.risk_follow || "";
+  form.customerComment = report.customer_comment || "";
+  form.materials = (report.materials || []).map((item, index) => ({
+    ...item,
+    sort_order: item.sort_order ?? index,
+  }));
+  form.beforePhotos = (report.risk_photos || []).map((photo, index) => ({
+    path: photo.url,
+    caption: photo.caption || `封堵前 ${index + 1}`,
+  }));
+  form.afterPhotos = (report.photos || []).map((photo, index) => ({
+    path: photo.url,
+    caption: photo.caption || `封堵后 ${index + 1}`,
+  }));
+  const signatures: Record<string, string> = {};
+  for (const signature of report.signatures || []) {
+    signatures[signature.role] = signature.image_url;
+  }
+  originalSignatures.value = signatures;
+  form.responsibleSignature = signatures.responsible || signatures.service || "";
+  form.customerSignature = signatures.customer || "";
 }
 
 function addMaterial() {
@@ -281,19 +318,22 @@ async function submit() {
       },
     ];
     const payload = reportPayload(photos, riskPhotos);
-    const saved = await saveServiceReport(0, payload);
-    const reportId = toId(saved);
-    if (!reportId) {
+    const saved = await saveServiceReport(reportId.value, payload);
+    const activeReportId = reportId.value || toId(saved);
+    if (!activeReportId) {
       throw new Error("服务端未返回封堵记录编号");
     }
     for (const signature of signatures) {
-      await signServiceReport(reportId, {
+      if (originalSignatures.value[signature.role] === signature.image_url) {
+        continue;
+      }
+      await signServiceReport(activeReportId, {
         role: signature.role,
         name: signature.name,
         image_url: signature.image_url,
       });
     }
-    await submitServiceReport(reportId);
+    await submitServiceReport(activeReportId);
     removeLocalDraft(draftKey());
     uni.hideLoading();
     uni.showModal({
@@ -320,6 +360,11 @@ onLoad(async (query) => {
     return;
   }
   taskId.value = Number(query?.taskId || 0);
+  reportId.value = Number(query?.reportId || 0);
+  step.value = Math.min(
+    steps.length - 1,
+    Math.max(0, Number(query?.step || 0)),
+  );
   if (!taskId.value) {
     error.value = "缺少任务编号";
     loading.value = false;
@@ -339,8 +384,13 @@ onLoad(async (query) => {
       sort_order: index,
     }));
     if (!form.materials.length) addMaterial();
-    const saved = readLocalDraft<ServiceDraft>(draftKey());
-    if (saved) hydrate(saved);
+    if (reportId.value) {
+      hydrateReport(await getServiceReport(reportId.value));
+      if (!form.materials.length) addMaterial();
+    } else {
+      const saved = readLocalDraft<ServiceDraft>(draftKey());
+      if (saved) hydrate(saved);
+    }
   } catch (loadError) {
     error.value =
       loadError instanceof Error ? loadError.message : "任务加载失败";

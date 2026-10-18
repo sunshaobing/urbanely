@@ -7,6 +7,7 @@ import PhotoGrid from "../../components/PhotoGrid.vue";
 import SignaturePad from "../../components/SignaturePad.vue";
 import {
   getQuickPhrases,
+  getRiskSurvey,
   getWorkOrder,
   listQuickPhrases,
   saveDraft,
@@ -28,6 +29,7 @@ import {
 import type {
   PhotoDraft,
   QuickPhrase,
+  RiskSurvey,
   RiskSurveyItem,
   SignatureRecord,
   WorkOrder,
@@ -56,6 +58,8 @@ interface RiskDraft {
 const steps = ["现场信息", "风险点", "影像证据", "治理方案", "签字提交"];
 const step = ref(0);
 const taskId = ref(0);
+const surveyId = ref(0);
+const surveyStatus = ref("draft");
 const task = ref<WorkOrder | null>(null);
 const loading = ref(true);
 const error = ref("");
@@ -112,6 +116,36 @@ function hydrate(saved: RiskDraft) {
   form.photos = saved.photos || [];
   form.surveyorSignature = saved.surveyorSignature || "";
   form.customerSignature = saved.customerSignature || "";
+}
+
+function hydrateSurvey(survey: RiskSurvey) {
+  form.date = survey.survey_date || form.date;
+  form.time = survey.survey_time || form.time;
+  form.contact = survey.contact_person || form.contact;
+  form.scope = survey.survey_range || [];
+  form.structure = survey.structure_conditions || [];
+  form.evidence = survey.pest_evidence || [];
+  form.riskLevel = survey.risk_level || "中";
+  form.reviewDate = survey.review_date || "";
+  form.conclusion = survey.conclusion || "";
+  form.items = survey.items?.length
+    ? survey.items
+    : [{ location: "", description: "", suggestion: "" }];
+  form.comprehensivePlan = survey.comprehensive_plan || "";
+  form.disinfectionPlan = survey.disinfection_plan || "";
+  form.environmentSuggestions = survey.environment_suggestions || "";
+  form.preventionMeasures = survey.prevention_measures || "";
+  form.photos = (survey.photos || []).map((photo, index) => ({
+    path: photo.url,
+    caption: photo.caption || `现场照片 ${index + 1}`,
+  }));
+  form.surveyorSignature =
+    survey.signatures?.find((signature) => signature.role === "engineer")
+      ?.image_url || "";
+  form.customerSignature =
+    survey.signatures?.find((signature) => signature.role === "customer")
+      ?.image_url || "";
+  surveyStatus.value = survey.status || "draft";
 }
 
 function toggleValue(
@@ -251,7 +285,7 @@ function surveyPayload(
     pest_type: "鼠",
     risk_level: form.riskLevel,
     conclusion: form.conclusion,
-    status: "draft",
+    status: surveyStatus.value,
     items: form.items.map((item, index) => ({
       location: item.location,
       description: item.description,
@@ -302,12 +336,12 @@ async function submit() {
       },
     ];
     const payload = surveyPayload(photos, signatures);
-    const saved = await saveRiskSurvey(0, payload);
-    const surveyId = toId(saved);
-    if (!surveyId) {
+    const saved = await saveRiskSurvey(surveyId.value, payload);
+    const activeSurveyId = surveyId.value || toId(saved);
+    if (!activeSurveyId) {
       throw new Error("服务端未返回勘测记录编号");
     }
-    await submitRiskSurvey(surveyId);
+    await submitRiskSurvey(activeSurveyId);
     removeLocalDraft(draftKey());
     uni.hideLoading();
     uni.showModal({
@@ -334,6 +368,11 @@ onLoad(async (query) => {
     return;
   }
   taskId.value = Number(query?.taskId || 0);
+  surveyId.value = Number(query?.surveyId || 0);
+  step.value = Math.min(
+    steps.length - 1,
+    Math.max(0, Number(query?.step || 0)),
+  );
   if (!taskId.value) {
     error.value = "缺少任务编号";
     loading.value = false;
@@ -342,8 +381,12 @@ onLoad(async (query) => {
   try {
     task.value = await getWorkOrder(taskId.value);
     form.contact = task.value.contact || "";
-    const saved = readLocalDraft<RiskDraft>(draftKey());
-    if (saved) hydrate(saved);
+    if (surveyId.value) {
+      hydrateSurvey(await getRiskSurvey(surveyId.value));
+    } else {
+      const saved = readLocalDraft<RiskDraft>(draftKey());
+      if (saved) hydrate(saved);
+    }
     try {
       quickPhrases.value = listQuickPhrases(
         await getQuickPhrases("risk_plan"),

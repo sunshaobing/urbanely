@@ -3,8 +3,10 @@ import { ref } from "vue";
 import { onPullDownRefresh, onShow } from "@dcloudio/uni-app";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 import AppTabBar from "../../components/AppTabBar.vue";
+import CartoonAvatar from "../../components/CartoonAvatar.vue";
 import { getDashboardSummary } from "../../utils/api";
 import { clearSession, getSession } from "../../utils/auth";
+import { ensureBrand } from "../../utils/brand";
 import { roleLabel } from "../../utils/present";
 import type { Session } from "../../utils/types";
 
@@ -31,6 +33,7 @@ async function load() {
   }
   if (loading.value) return;
   session.value = current;
+  void ensureBrand();
   loading.value = true;
   error.value = "";
   try {
@@ -101,7 +104,11 @@ onPullDownRefresh(async () => {
       </view>
 
       <view class="identity-card">
-        <image class="profile-avatar" src="/static/tech-avatar.png" mode="aspectFill" />
+        <CartoonAvatar
+          class="profile-avatar"
+          :name="session?.name || '现场人员'"
+          :size="54"
+        />
         <view class="identity-copy">
           <text class="profile-name">{{ session?.name || session?.username || "现场人员" }}</text>
           <text class="profile-role">{{ roleLabel(session?.role || "") }}</text>
@@ -249,12 +256,9 @@ onPullDownRefresh(async () => {
 }
 
 .profile-avatar {
-  width: 108rpx;
-  height: 108rpx;
   flex: none;
   border: 2rpx solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  background: #e4f1e9;
 }
 
 .identity-copy {

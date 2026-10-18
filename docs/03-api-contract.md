@@ -36,6 +36,10 @@
 - `POST /api/service-reports/{report_id}/submit`
 - `GET|POST /api/drafts`
 - `GET /api/quick-phrases`
+- `GET /api/templates`
+- `POST /api/workorders/{order_id}/review`
+- `GET|POST /api/service-reports/{report_id}/checkin`
+- `POST /api/service-reports/{report_id}/checkout`
 - `POST /api/auth/change-password`
 
 `/api/v1` 保留为后续正式 API 版本的约定；迁移时应通过统一 API 客户端切换，不在页面内散落地址。
