@@ -62,6 +62,17 @@ node --test tests/miniprogram-contract.test.mjs
 
 勘测与封堵采集页仍保留本地草稿原型，尚未替换为生产 API 表单。生产接入还需为这两个页面补充任务权限、预签名上传、COS 文件归档和幂等同步。
 
+### 当前生产部署
+
+- API 与管理端：`https://sunrgw.cn`
+- 服务器：`101.42.181.122`，Ubuntu 26.04
+- 服务：`pco.service` + Caddy，均设置为开机自启
+- 数据库：全新 SQLite 数据库，未导入历史客户、作业单或附件
+- 初始账号：`admin`、`gongcheng`、`fw`
+- 初始随机密码仅保存在服务器 `/root/pco-initial-credentials.txt`，权限 `600`
+
+现场测试账号可使用手机号 `13800000004` 登录小程序，密码从上述 root-only 文件获取。管理员可继续通过 `https://sunrgw.cn` 登录管理端。
+
 ### 原型包含
 
 - 运营工作台：待整改、今日作业、逾期复检、封堵闭环率、风险队列。

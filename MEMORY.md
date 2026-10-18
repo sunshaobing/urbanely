@@ -79,6 +79,10 @@
 - The Mini Program workbench now uses the production Tencent Cloud API at `https://sunrgw.cn`; login, dashboard summary, work-order filtering, report archive, and profile summary are server-driven.
 - Workbench presentation uses 8px card radii, light gray shadows, 18/14/12 px type, soft red/orange/green status tags, and a dark bottom navigation with white selected icons.
 - The API client is centralized in `miniprogram/utils/api.ts`; workbench status filters and aggregates come from server responses rather than local mock calculations.
+- On 2026-10-18 the Tencent Cloud instance was reset and the system was redeployed fresh at `101.42.181.122` on Ubuntu 26.04. The old database and attachments were intentionally not restored.
+- Production now runs FastAPI through `pco.service` on `127.0.0.1:8765` behind Caddy with a Let's Encrypt certificate for `https://sunrgw.cn`; both services are enabled at boot and the server timezone is `Asia/Shanghai`.
+- The fresh database contains three accounts (`admin`, `gongcheng`, `fw`), base settings and standard sealing materials, with zero customers, work orders and reports. Random initial passwords are stored only in root-only `/root/pco-initial-credentials.txt`.
+- The deployed auth endpoint accepts either username or phone, so the Mini Program can sign in with the seeded field phone number.
 
 ## Remaining Gaps
 
