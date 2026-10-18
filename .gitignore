@@ -63,6 +63,8 @@ dist/
 app/dist/
 .vite/
 *.tsbuildinfo
+miniprogram/project.private.config.json
+miniprogram/miniprogram_npm/
 
 # Local investigation outputs and sensitive exports
 tmp/

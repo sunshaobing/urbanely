@@ -1,0 +1,105 @@
+.profile-hero {
+  padding-bottom: 34rpx;
+}
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+}
+
+.profile-avatar {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  border: 3rpx solid rgba(255, 255, 255, 0.3);
+}
+
+.profile-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  display: block;
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.profile-role {
+  display: block;
+  margin-top: 4rpx;
+  color: #b8c6bf;
+  font-size: 21rpx;
+}
+
+.profile-phone {
+  display: block;
+  margin-top: 3rpx;
+  color: #8fa299;
+  font-size: 20rpx;
+}
+
+.menu-card {
+  padding: 4rpx 24rpx;
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid #edf0ed;
+}
+
+.menu-row:last-child {
+  border-bottom: 0;
+}
+
+.menu-row.danger .menu-title,
+.menu-row.danger .menu-icon {
+  color: #b42318;
+}
+
+.menu-icon {
+  width: 52rpx;
+  height: 52rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12rpx;
+  background: #eef2ef;
+  color: #0f766e;
+  font-size: 25rpx;
+}
+
+.menu-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.menu-title {
+  display: block;
+  font-size: 25rpx;
+  font-weight: 600;
+}
+
+.menu-sub {
+  display: block;
+  margin-top: 3rpx;
+  color: #6b7771;
+  font-size: 20rpx;
+}
+
+.menu-arrow {
+  color: #9aa59f;
+  font-size: 28rpx;
+}
+
+.profile-note {
+  margin-top: 18rpx;
+  padding: 22rpx;
+  border-radius: 14rpx;
+  background: #e6f4f0;
+}

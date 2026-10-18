@@ -36,10 +36,11 @@
 ## Design Decisions
 
 - Position the product as a chain-supermarket PCO field-service and structural-sealing system, not a generic inspection app.
+- Use a native WeChat Mini Program for field capture and keep the responsive Web app as the operations console. Native canvas, camera and file APIs are the reason for skipping a cross-platform wrapper at this stage.
 - Make `Finding` (隐患点) the core object. A finding owns location, pest evidence, severity, photos, treatment, sealing, acceptance, and recheck.
 - Replace multi-select pseudo-text with master data, reusable templates, and free-text notes.
 - Generate A4 reports from versioned snapshots; keep PDF, signature, and photo hashes.
-- Prioritize a responsive web/PWA field experience and a desktop operations console.
+- Prioritize a native WeChat Mini Program field experience and a responsive desktop operations console.
 - Keep finance/reconciliation in phase 2; the MVP must close the survey-to-sealing-to-recheck loop first.
 
 ## Pitfalls
@@ -69,11 +70,16 @@
 - A4 report previews: survey 2 pages, sealing 4 pages.
 - Verified with `pnpm typecheck`, `pnpm build`, Playwright interaction assertions, desktop/mobile overflow checks, and printed PDF inspection.
 - Local dev server: `http://127.0.0.1:5173/`.
+- Native Mini Program added under `miniprogram/`: login, field task list, inspection, sealing, reports, profile, custom bottom navigation, photo picker, and Canvas 2D signature pad.
+- Inspection photos are limited to `structure_risk` with a hard 100-image cap. The sealing order remains the only place for before/after photos.
+- Mini Program attachments are copied from temporary paths into `wx.env.USER_DATA_PATH` before entering the local queue; syncing or clearing cache removes managed files.
+- Mini Program contract tests cover page registration, photo/signature requirements, durable files, and absence of hard-coded phone credentials or persisted passwords.
+- The local WeChat DevTools CLI rejects `touristappid` in this installation. TypeScript plus the bundled WXML/WXSS compilers pass; real-device preview still requires a valid Mini Program AppID.
 
 ## Remaining Gaps
 
 - No production backend, database, authentication, or file storage yet; the prototype uses local sample data.
-- Offline sync in the prototype is a visual simulation; production needs IndexedDB, idempotent sync, and conflict handling.
+- Offline sync in the prototype is a local queue simulation; production needs `wx.login`, server-side role checks, COS upload, retry/backoff, idempotent sync, and conflict handling.
 - The sealing table schema is inferred from the PDF; a logged-in Feishu export is still needed for a complete migration.
 - Customer contract attachment coverage is 0/186; backfill tasks are required.
 - Real customer data must not be used in UI fixtures without a privacy review.

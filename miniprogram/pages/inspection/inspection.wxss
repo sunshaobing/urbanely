@@ -1,0 +1,89 @@
+.info-list {
+  margin-top: 14rpx;
+}
+
+.time-input {
+  width: 220rpx;
+  text-align: right;
+  font-size: 24rpx;
+}
+
+.structure-grid {
+  margin-top: 20rpx;
+}
+
+.summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.summary-number {
+  display: block;
+  font-size: 46rpx;
+  font-weight: 700;
+}
+
+.summary-label {
+  display: block;
+  color: #6b7771;
+  font-size: 21rpx;
+}
+
+.hint-card,
+.signature-note {
+  margin-top: 18rpx;
+  padding: 22rpx;
+  border-radius: 14rpx;
+  background: #e6f4f0;
+  color: #0a5b55;
+}
+
+.hint-title {
+  display: block;
+  font-size: 25rpx;
+  font-weight: 600;
+}
+
+.hint-text {
+  display: block;
+  margin-top: 5rpx;
+  color: #4a6259;
+  font-size: 21rpx;
+  line-height: 1.55;
+}
+
+.plan-templates {
+  margin-top: 18rpx;
+}
+
+.plan-textarea {
+  margin-top: 18rpx;
+}
+
+.voice-btn {
+  margin-top: 14rpx;
+  color: #0f766e;
+  font-size: 22rpx;
+}
+
+.offline-note {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 16rpx;
+  color: #6b7771;
+  font-size: 20rpx;
+}
+
+.offline-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: #b45309;
+}
+
+.save-draft {
+  width: 150rpx;
+  padding: 0;
+}

@@ -1,0 +1,19 @@
+<view class="photo-picker">
+  <view class="photo-head">
+    <view>
+      <text class="photo-title">{{title}}</text>
+      <text class="photo-hint">{{hint}}</text>
+    </view>
+    <text class="photo-count">{{photos.length}} / {{max}}</text>
+  </view>
+  <view class="photo-grid">
+    <view class="photo-item" wx:for="{{photos}}" wx:key="*this">
+      <image class="photo-image" src="{{item}}" mode="aspectFill" data-index="{{index}}" bindtap="preview" />
+      <view class="photo-remove" data-index="{{index}}" catchtap="remove">×</view>
+    </view>
+    <view wx:if="{{photos.length < max}}" class="photo-add" bindtap="choose">
+      <text class="photo-add-icon">+</text>
+      <text>拍照 / 相册</text>
+    </view>
+  </view>
+</view>

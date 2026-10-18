@@ -1,0 +1,51 @@
+.hero-brand-sub {
+  color: #8fa299;
+}
+
+.hero-title {
+  margin-top: 8rpx;
+  font-size: 42rpx;
+}
+
+.report-card {
+  margin-bottom: 16rpx;
+  padding: 24rpx;
+  border: 1rpx solid #dde3df;
+  border-radius: 16rpx;
+  background: #fff;
+}
+
+.report-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.report-no {
+  color: #6b7771;
+}
+
+.report-title {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 29rpx;
+  font-weight: 700;
+}
+
+.report-site {
+  display: block;
+  margin-top: 5rpx;
+  color: #6b7771;
+  font-size: 22rpx;
+}
+
+.report-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  margin-top: 16rpx;
+  padding-top: 14rpx;
+  border-top: 1rpx solid #edf0ed;
+}

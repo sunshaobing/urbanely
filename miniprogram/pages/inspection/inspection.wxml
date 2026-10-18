@@ -1,0 +1,149 @@
+<view class="page-shell no-nav">
+  <view class="page-header">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <view class="page-header-copy">
+      <text class="page-header-title">现场勘测</text>
+      <text class="page-header-sub">{{taskNo}} · {{draft.site.name}}</text>
+    </view>
+    <text class="pill status-warning">待整改</text>
+  </view>
+
+  <view class="step-bar">
+    <view class="step-meta"><text>STEP {{step + 1}} / {{steps.length}}</text><text>{{steps[step]}}</text></view>
+    <view class="step-track"><view class="step-fill" style="width: {{progress}}%;" /></view>
+  </view>
+
+  <view class="container">
+    <block wx:if="{{step === 0}}">
+      <view class="card">
+        <text class="eyebrow">SITE / CONTACT</text>
+        <text class="section-title">{{draft.site.name}}</text>
+        <text class="task-site">{{draft.site.address}}</text>
+        <view class="info-list">
+          <view class="info-row"><text class="label">门店编码</text><text class="value">{{draft.site.code}}</text></view>
+          <view class="info-row"><text class="label">门店对接人</text><text class="value">{{draft.site.contact}}</text></view>
+          <view class="info-row"><text class="label">联系电话</text><text class="value">{{draft.site.phoneMasked}}</text></view>
+          <view class="info-row"><text class="label">勘测日期</text><picker mode="date" value="{{draft.date}}" bindchange="onDateChange"><text class="value">{{draft.date}} ›</text></picker></view>
+          <view class="info-row"><text class="label">勘测时间</text><input class="time-input" value="{{draft.time}}" bindinput="onTimeInput" /></view>
+        </view>
+      </view>
+
+      <view class="section">
+        <view class="section-head">
+          <view><text class="section-title">勘测范围</text><text class="section-sub">选择本次实际检查的区域</text></view>
+          <text class="pill status-success">{{draft.scope.length}} 项</text>
+        </view>
+        <view class="chip-grid">
+          <view
+            wx:for="{{scopeItems}}"
+            wx:key="label"
+            class="chip {{item.active ? 'active' : ''}}"
+            data-value="{{item.label}}"
+            bindtap="toggleScope"
+          >{{item.label}}</view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:if="{{step === 1}}">
+      <view class="card">
+        <text class="eyebrow">STRUCTURE CHECK</text>
+        <text class="section-title">结构情况</text>
+        <text class="section-sub">按现场实际勾选，后续会自动生成治理方案建议。</text>
+        <view class="chip-grid structure-grid">
+          <view
+            wx:for="{{structureItems}}"
+            wx:key="label"
+            class="chip {{item.active ? 'active' : ''}}"
+            data-value="{{item.label}}"
+            bindtap="toggleStructure"
+          >{{item.label}}</view>
+        </view>
+      </view>
+      <view class="section">
+        <view class="card summary-bar">
+          <view><text class="summary-number">{{draft.structure.length}}</text><text class="summary-label">项结构风险</text></view>
+          <text class="pill status-warning">需封堵 2 项</text>
+        </view>
+      </view>
+    </block>
+
+    <block wx:if="{{step === 2}}">
+      <photo-picker
+        title="结构风险图片"
+        hint="结构漏洞、虫害痕迹、隐患点位实拍；支持拍照和相册批量选择。"
+        max="{{100}}"
+        photos="{{draft.riskPhotos}}"
+        bind:change="onPhotosChange"
+      />
+      <view class="hint-card">
+        <text class="hint-title">拍摄建议</text>
+        <text class="hint-text">每处隐患至少一张全景照片，封堵前不要用同一张照片替代多个部位。</text>
+      </view>
+    </block>
+
+    <block wx:if="{{step === 3}}">
+      <view class="card">
+        <text class="eyebrow">TREATMENT PLAN</text>
+        <text class="section-title">治理方案</text>
+        <text class="section-sub">使用模板快速起草，也可以补充现场细节。</text>
+        <view class="chip-grid plan-templates">
+          <view wx:for="{{templates}}" wx:key="*this" class="chip" data-value="{{item}}" bindtap="insertTemplate">{{item}}</view>
+        </view>
+        <textarea
+          class="textarea plan-textarea"
+          value="{{draft.treatmentPlan}}"
+          placeholder="例如：对墙体穿孔使用防火泥、密封胶和防鼠网封堵；加强门店清洁管理。"
+          bindinput="onPlanInput"
+        />
+        <view class="voice-btn" bindtap="voiceNote">语音补充</view>
+      </view>
+    </block>
+
+    <block wx:if="{{step === 4}}">
+      <view class="signature-note">
+        <text class="hint-title">双方在同一台手机上签字</text>
+        <text class="hint-text">勘测人员先签，再把手机交给客户代表签第二笔。签字前请确认现场情况。</text>
+      </view>
+      <signature-pad
+        title="勘测人员签字确认"
+        signer="{{surveyorName}} · 勘测人员"
+        hint="由勘测人员在本机手写签名"
+        value="{{draft.surveyorSignature}}"
+        bind:signed="onSurveyorSigned"
+      />
+      <signature-pad
+        title="客户代表签字"
+        signer="{{draft.site.contact}} · 客户代表"
+        hint="由客户代表在同一台手机上签名"
+        value="{{draft.customerSignature}}"
+        bind:signed="onCustomerSigned"
+      />
+    </block>
+
+    <block wx:if="{{step === 5}}">
+      <view class="card">
+        <text class="eyebrow">READY TO SUBMIT</text>
+        <text class="section-title">提交勘测单</text>
+        <text class="section-sub">提交后先写入本机队列，联网时同步到服务端。</text>
+        <view class="summary-grid">
+          <view class="summary-item"><text class="label">门店</text><text class="value">{{draft.site.name}}</text></view>
+          <view class="summary-item"><text class="label">结构风险</text><text class="value">{{draft.structure.length}} 项</text></view>
+          <view class="summary-item"><text class="label">结构风险照片</text><text class="value">{{draft.riskPhotos.length}} 张</text></view>
+          <view class="summary-item"><text class="label">双方签字</text><text class="value">{{draft.surveyorSignature && draft.customerSignature ? "已完成" : "待完成"}}</text></view>
+        </view>
+        <view class="offline-note">
+          <text class="offline-dot" />
+          <text>本机队列 · 联网后自动同步</text>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="bottom-actions">
+    <button class="btn-secondary" bindtap="prev" disabled="{{step === 0}}">上一步</button>
+    <button class="btn-ghost save-draft" bindtap="saveDraft">存草稿</button>
+    <button wx:if="{{step < 5}}" class="btn-primary" bindtap="next">下一步</button>
+    <button wx:else class="btn-primary" bindtap="submit">提交并保存</button>
+  </view>
+</view>

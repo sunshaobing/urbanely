@@ -1,0 +1,39 @@
+<view class="page-shell">
+  <view class="hero">
+    <view class="hero-top">
+      <view>
+        <text class="hero-brand-sub">REPORTS / ARCHIVE</text>
+        <text class="hero-title">报告中心</text>
+      </view>
+      <view class="hero-status"><view class="status-dot" /><text>已同步</text></view>
+    </view>
+    <text class="hero-sub">报告由服务端生成正式 PDF，并绑定双方签字与文件哈希。</text>
+  </view>
+
+  <view class="container">
+    <view
+      wx:for="{{reports}}"
+      wx:key="id"
+      class="report-card"
+      data-report="{{item.reportNo}}"
+      bindtap="openReport"
+    >
+      <view class="report-top">
+        <text class="mono report-no">{{item.reportNo}}</text>
+        <text class="pill {{item.status === '双方已签' ? 'status-success' : 'status-warning'}}">{{item.status}}</text>
+      </view>
+      <text class="report-title">{{item.title}}</text>
+      <text class="report-site">{{item.site}}</text>
+      <view class="report-foot">
+        <text class="muted">{{item.date}} · {{item.size}}</text>
+        <text class="task-arrow">查看报告 ›</text>
+      </view>
+    </view>
+    <view class="empty-state">
+      <text class="title">报告 PDF 在服务端生成</text>
+      <text class="detail">小程序只负责现场采集与查看状态，不直接生成正式报告。</text>
+    </view>
+  </view>
+
+  <bottom-nav current="reports" />
+</view>

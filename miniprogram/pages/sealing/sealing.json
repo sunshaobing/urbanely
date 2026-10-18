@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "结构封堵",
+  "usingComponents": {
+    "photo-picker": "/components/photo-picker/index",
+    "signature-pad": "/components/signature-pad/index"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "现场勘测",
+  "usingComponents": {
+    "photo-picker": "/components/photo-picker/index",
+    "signature-pad": "/components/signature-pad/index"
+  }
+}

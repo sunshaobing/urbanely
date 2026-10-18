@@ -1,0 +1,9 @@
+{
+  "desc": "申汰 PCO 现场服务小程序",
+  "rules": [
+    {
+      "action": "allow",
+      "page": "*"
+    }
+  ]
+}

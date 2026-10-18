@@ -1,0 +1,12 @@
+<view class="bottom-nav safe-bottom">
+  <view
+    wx:for="{{items}}"
+    wx:key="key"
+    class="bottom-nav-item {{current === item.key ? 'active' : ''}}"
+    data-key="{{item.key}}"
+    bindtap="onTap"
+  >
+    <image class="bottom-nav-icon" src="{{current === item.key ? item.activeIcon : item.icon}}" mode="aspectFit" />
+    <text>{{item.label}}</text>
+  </view>
+</view>

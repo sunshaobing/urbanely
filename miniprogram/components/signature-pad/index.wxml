@@ -1,0 +1,33 @@
+<view class="signature-card">
+  <view class="signature-head">
+    <view>
+      <text class="signature-title">{{title}}</text>
+      <text class="signature-signer">{{signer}}</text>
+    </view>
+    <text class="signature-state {{signed ? 'is-signed' : ''}}">{{signed ? '已签' : '待签'}}</text>
+  </view>
+  <text class="signature-hint">{{hint}}</text>
+
+  <view wx:if="{{signed}}" class="signature-preview">
+    <image class="signature-image" src="{{signaturePath}}" mode="aspectFit" />
+    <button class="signature-reset" bindtap="reset">重新签名</button>
+  </view>
+  <block wx:else>
+    <canvas
+      id="signature-canvas"
+      type="2d"
+      class="signature-canvas"
+      disable-scroll="true"
+      bindtouchstart="touchStart"
+      bindtouchmove="touchMove"
+      bindtouchend="touchEnd"
+      bindtouchcancel="touchEnd"
+    />
+    <view class="signature-line" />
+    <text class="signature-placeholder">请在此处手写签名</text>
+    <view class="signature-actions">
+      <button class="signature-clear" bindtap="clearCanvas">清除</button>
+      <button class="signature-confirm" bindtap="confirm">确认签名</button>
+    </view>
+  </block>
+</view>

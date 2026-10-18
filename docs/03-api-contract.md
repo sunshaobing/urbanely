@@ -42,6 +42,30 @@ Response:
 
 Server must hash and verify the password, apply rate limiting, and never return or log the password.
 
+### POST `/auth/wechat/login`
+
+The Mini Program sends the short-lived code from `wx.login`; the server exchanges it with WeChat and resolves the internal employee identity.
+
+```json
+{
+  "code": "wx-login-code",
+  "device_id": "dev_..."
+}
+```
+
+Response:
+
+```json
+{
+  "access_token": "…",
+  "refresh_token": "…",
+  "user": { "id": "usr_...", "name": "王工", "roles": ["technician"] },
+  "binding_required": false
+}
+```
+
+If the WeChat identity is not yet bound, `binding_required` is `true` and a separate verified phone/OTP step must bind it to an active employee. Passwords must never be embedded in the Mini Program.
+
 ### POST `/auth/otp/request`
 
 ```json
@@ -328,6 +352,8 @@ Response:
 ```
 
 Idempotency is enforced by `op_id` and `client_id`.
+
+Mini Program clients upload persisted photo and signature files through the attachment flow first, then submit business operations with attachment IDs. A batch is acknowledged only after every referenced attachment ID is committed.
 
 ## 10. Dashboard
 

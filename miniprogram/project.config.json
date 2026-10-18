@@ -1,0 +1,26 @@
+{
+  "description": "申汰 PCO 现场服务小程序",
+  "packOptions": {
+    "ignore": []
+  },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "newFeature": true,
+    "useCompilerPlugins": ["typescript"],
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.7.0",
+  "appid": "touristappid",
+  "projectname": "shentai-pco-field",
+  "miniprogramRoot": "./",
+  "condition": {}
+}

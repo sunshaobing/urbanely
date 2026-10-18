@@ -1,0 +1,20 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/tasks/tasks",
+    "pages/inspection/inspection",
+    "pages/sealing/sealing",
+    "pages/reports/reports",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarTitleText": "申汰 PCO",
+    "navigationBarBackgroundColor": "#14201c",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f4f5f2",
+    "backgroundTextStyle": "dark"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

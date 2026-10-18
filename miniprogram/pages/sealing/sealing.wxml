@@ -1,0 +1,127 @@
+<view class="page-shell no-nav">
+  <view class="page-header">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <view class="page-header-copy">
+      <text class="page-header-title">结构封堵</text>
+      <text class="page-header-sub">{{taskNo}} · {{draft.site.name}}</text>
+    </view>
+    <text class="pill status-warning">待验收</text>
+  </view>
+
+  <view class="step-bar">
+    <view class="step-meta"><text>STEP {{step + 1}} / {{steps.length}}</text><text>{{steps[step]}}</text></view>
+    <view class="step-track"><view class="step-fill" style="width: {{progress}}%;" /></view>
+  </view>
+
+  <view class="container">
+    <block wx:if="{{step === 0}}">
+      <view class="card">
+        <text class="eyebrow">SERVICE INFO</text>
+        <text class="section-title">{{draft.site.name}}</text>
+        <text class="task-site">{{draft.site.address}}</text>
+        <view class="info-list">
+          <view class="info-row"><text class="label">服务日期</text><text class="value">{{draft.date}}</text></view>
+          <view class="info-row"><text class="label">施工负责人</text><text class="value">{{draft.leader}}</text></view>
+          <view class="info-row"><text class="label">现场监理人</text><text class="value">{{draft.supervisor}}</text></view>
+          <view class="info-row"><text class="label">鼠害现状</text><text class="value">{{draft.rodent}}</text></view>
+          <view class="info-row"><text class="label">鼠害密度</text><text class="value">{{draft.density}}</text></view>
+          <view class="info-row"><text class="label">封堵目的</text><text class="value">阻断鼠类入侵通道</text></view>
+        </view>
+      </view>
+      <view class="hint-card">
+        <text class="hint-title">本次封堵部位</text>
+        <text class="hint-text">仓储区水电管道穿墙孔、收银台后方墙体、门头上方。下一步登记施工和材料。</text>
+      </view>
+    </block>
+
+    <block wx:if="{{step === 1}}">
+      <view class="card">
+        <view class="section-head">
+          <view><text class="section-title">封堵部位</text><text class="section-sub">逐项确认是否已完成</text></view>
+          <text class="pill status-success">{{draft.items.length}} 个部位</text>
+        </view>
+        <view
+          wx:for="{{draft.items}}"
+          wx:key="id"
+          class="sealing-row"
+        >
+          <view class="sealing-row-copy">
+            <text class="sealing-location">{{item.location}}</text>
+            <text class="sealing-hole">{{item.holeType}}</text>
+          </view>
+          <text
+            class="pill {{item.result === '已封堵' ? 'status-success' : 'status-warning'}}"
+            data-id="{{item.id}}"
+            bindtap="markSealed"
+          >{{item.result}}</text>
+        </view>
+      </view>
+
+      <view class="section">
+        <view class="section-head">
+          <view><text class="section-title">材料明细</text><text class="section-sub">材料用量会进入成本台账</text></view>
+          <text class="link-btn" bindtap="addMaterial">+ 添加材料</text>
+        </view>
+        <view class="card">
+          <view wx:for="{{draft.materials}}" wx:key="id" class="material-row">
+            <view class="material-copy"><text class="material-name">{{item.name}}</text><text class="material-spec">{{item.spec}}</text></view>
+            <view class="material-qty">
+              <input type="digit" value="{{item.quantity}}" data-index="{{index}}" bindinput="onMaterialQuantity" />
+              <text>{{item.unit}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section">
+        <photo-picker title="封堵前图片" hint="每个封堵部位至少一张，能看清孔洞全貌。" max="{{30}}" photos="{{draft.beforePhotos}}" bind:change="onBeforePhotos" />
+      </view>
+      <view class="section">
+        <photo-picker title="封堵后图片" hint="与封堵前照片成对归档，能看清封堵边缘。" max="{{30}}" photos="{{draft.afterPhotos}}" bind:change="onAfterPhotos" />
+      </view>
+    </block>
+
+    <block wx:if="{{step === 2}}">
+      <view class="signature-note">
+        <text class="hint-title">双方在同一台手机上签字</text>
+        <text class="hint-text">封堵责任人先签，再把手机交给客户代表签第二笔。</text>
+      </view>
+      <signature-pad
+        title="封堵责任人签字"
+        signer="{{draft.leader}}"
+        hint="由封堵责任人在本机手写签名"
+        value="{{draft.responsibleSignature}}"
+        bind:signed="onResponsibleSigned"
+      />
+      <signature-pad
+        title="客户代表签字"
+        signer="{{draft.site.contact}}"
+        hint="由客户代表在同一台手机上签名"
+        value="{{draft.customerSignature}}"
+        bind:signed="onCustomerSigned"
+      />
+    </block>
+
+    <block wx:if="{{step === 3}}">
+      <view class="card">
+        <text class="eyebrow">READY TO SUBMIT</text>
+        <text class="section-title">提交封堵记录</text>
+        <text class="section-sub">提交后进入本机队列，联网时同步到服务端。</text>
+        <view class="summary-grid">
+          <view class="summary-item"><text class="label">门店</text><text class="value">{{draft.site.name}}</text></view>
+          <view class="summary-item"><text class="label">封堵部位</text><text class="value">{{draft.items.length}} 个</text></view>
+          <view class="summary-item"><text class="label">前后照片</text><text class="value">{{draft.beforePhotos.length}} / {{draft.afterPhotos.length}} 张</text></view>
+          <view class="summary-item"><text class="label">双方签字</text><text class="value">{{draft.responsibleSignature && draft.customerSignature ? "已完成" : "待完成"}}</text></view>
+        </view>
+        <view class="offline-note"><text class="offline-dot" /><text>本机队列 · 联网后自动同步</text></view>
+      </view>
+    </block>
+  </view>
+
+  <view class="bottom-actions">
+    <button class="btn-secondary" bindtap="prev" disabled="{{step === 0}}">上一步</button>
+    <button class="btn-ghost save-draft" bindtap="saveDraft">存草稿</button>
+    <button wx:if="{{step < 3}}" class="btn-primary" bindtap="next">下一步</button>
+    <button wx:else class="btn-primary" bindtap="submit">提交并保存</button>
+  </view>
+</view>

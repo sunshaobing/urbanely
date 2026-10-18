@@ -1,0 +1,116 @@
+.signature-card {
+  margin-top: 16rpx;
+  padding: 22rpx;
+  border: 1rpx solid #dde3df;
+  border-radius: 16rpx;
+  background: #fff;
+}
+
+.signature-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.signature-title {
+  display: block;
+  font-size: 27rpx;
+  font-weight: 600;
+}
+
+.signature-signer {
+  display: block;
+  margin-top: 3rpx;
+  color: #6b7771;
+  font-size: 21rpx;
+}
+
+.signature-state {
+  flex: none;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  background: #eef1ee;
+  color: #6b7771;
+  font-size: 19rpx;
+}
+
+.signature-state.is-signed {
+  background: #e6f4f0;
+  color: #0f766e;
+}
+
+.signature-hint {
+  display: block;
+  margin-top: 8rpx;
+  color: #6b7771;
+  font-size: 20rpx;
+}
+
+.signature-canvas {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 260rpx;
+  margin-top: 12rpx;
+  border-radius: 10rpx;
+  background: #fff;
+  touch-action: none;
+}
+
+.signature-line {
+  height: 1rpx;
+  margin: -48rpx 28rpx 0;
+  background: #c9d2cc;
+  pointer-events: none;
+}
+
+.signature-placeholder {
+  display: block;
+  margin-top: 18rpx;
+  color: #9aa59f;
+  font-size: 19rpx;
+  text-align: center;
+}
+
+.signature-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+
+.signature-clear,
+.signature-confirm,
+.signature-reset {
+  flex: 1;
+  min-height: 60rpx;
+  border: 1rpx solid #dde3df;
+  border-radius: 10rpx;
+  background: #fff;
+  color: #35433d;
+  font-size: 21rpx;
+  line-height: 60rpx;
+}
+
+.signature-confirm {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #fff;
+}
+
+.signature-preview {
+  margin-top: 12rpx;
+}
+
+.signature-image {
+  width: 100%;
+  height: 220rpx;
+  border: 1rpx dashed #b8c5be;
+  border-radius: 10rpx;
+  background: #fff;
+}
+
+.signature-reset {
+  margin-top: 10rpx;
+  line-height: 60rpx;
+}

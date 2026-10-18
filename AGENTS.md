@@ -34,6 +34,8 @@ pnpm install
 pnpm dev
 pnpm build
 pnpm typecheck
+pnpm exec tsc --noEmit -p ../miniprogram/tsconfig.json
+node --test tests/miniprogram-contract.test.mjs
 ```
 
 ## Architecture Rules
@@ -56,6 +58,7 @@ pnpm typecheck
 ## Verification
 
 - Run `pnpm typecheck` and `pnpm build` before reporting completion.
+- Run the Mini Program typecheck and contract test before reporting completion.
 - Run the prototype and verify desktop and mobile layouts with Playwright.
 - Check text overflow, overlap, navigation, print preview, and primary workflow actions.
 - Keep changes scoped to the request and preserve unrelated user changes.
