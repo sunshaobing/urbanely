@@ -83,6 +83,7 @@
 - Production now runs FastAPI through `pco.service` on `127.0.0.1:8765` behind Caddy with a Let's Encrypt certificate for `https://sunrgw.cn`; both services are enabled at boot and the server timezone is `Asia/Shanghai`.
 - The fresh database contains three accounts (`admin`, `gongcheng`, `fw`), base settings and standard sealing materials, with zero customers, work orders and reports. Random initial passwords are stored only in root-only `/root/pco-initial-credentials.txt`.
 - The deployed auth endpoint accepts either username or phone, so the Mini Program can sign in with the seeded field phone number.
+- The production web root was replaced with the new `app/dist` build. The recovered legacy `static_web` was removed from the server, and Caddy now sends `Cache-Control: no-store` for the entry page.
 
 ## Remaining Gaps
 
