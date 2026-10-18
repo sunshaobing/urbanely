@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import type { PageKey } from "../types";
 import { CommandPalette } from "./CommandPalette";
+import { CartoonAvatar } from "./CartoonAvatar";
 
 const navItems: Array<{
   key: PageKey;
@@ -193,7 +194,7 @@ export function Layout({ activePage, onNavigate, search, onSearch, children }: L
               <i className="notification-dot" />
             </button>
             <div className="user-chip" title="Eric · 运营负责人">
-              <div className="avatar">E</div>
+              <CartoonAvatar name="Eric" size={34} className="avatar" />
               <div>
                 <strong>Eric</strong>
                 <span>运营负责人</span>

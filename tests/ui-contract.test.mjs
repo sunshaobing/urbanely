@@ -12,10 +12,12 @@ test("integrated shell and workflow landmarks are present", () => {
   const css = read("app/src/styles.css");
 
   assert.match(layout, /CommandPalette/);
+  assert.match(layout, /CartoonAvatar/);
   assert.match(layout, /nav-group-label/);
   assert.match(layout, /sidebar-risk/);
   assert.match(dashboard, /flow-panel/);
   assert.match(dashboard, /flow-node/);
+  assert.match(read("app/src/pages/Permissions.tsx"), /CartoonAvatar/);
 
   for (const className of [
     "command-panel",
@@ -27,6 +29,7 @@ test("integrated shell and workflow landmarks are present", () => {
     "role-card",
     "switch-row",
     "audit-item",
+    "cartoon-avatar",
   ]) {
     assert.match(css, new RegExp(`\\.${className}`));
   }

@@ -88,4 +88,5 @@
 - `AGENTS.md` now requires one Git commit per completed change and relevant tests/validation before delivery.
 - Integrated UI pass: grouped sidebar, workspace context, command palette, dashboard flow map, shared page headers, workflow rails, and responsive table handling.
 - Personnel and access-control module added: staff, seven roles, module/action matrix, sensitive permissions, and audit records.
+- Personnel avatars use deterministic local cartoon SVG illustrations instead of initials or remote image services.
 

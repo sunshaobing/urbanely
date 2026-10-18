@@ -4577,6 +4577,24 @@ button.chip {
   font-weight: 700;
 }
 
+.cartoon-avatar {
+  display: block;
+  flex: none;
+  overflow: hidden;
+  border-radius: 50%;
+  background: transparent;
+  vertical-align: middle;
+}
+
+.avatar.cartoon-avatar,
+.user-avatar-small.cartoon-avatar,
+.user-avatar-large.cartoon-avatar {
+  display: block;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
 .user-access-panel {
   position: sticky;
   top: 82px;

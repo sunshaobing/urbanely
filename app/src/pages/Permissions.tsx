@@ -22,13 +22,10 @@ import {
 } from "../permissions";
 import { PageHeader } from "../components/PageHeader";
 import { Chip, SectionTitle, StatusPill } from "../components/ui";
+import { CartoonAvatar } from "../components/CartoonAvatar";
 
 const tabs = ["人员", "角色权限", "审计记录"] as const;
 type Tab = (typeof tabs)[number];
-
-function initials(name: string) {
-  return name.slice(0, 2);
-}
 
 function roleById(roleList: RoleDefinition[], id: string) {
   return roleList.find((role) => role.id === id) ?? roleList[0];
@@ -239,7 +236,7 @@ export function Permissions({ onNotify }: { onNotify: (message: string) => void 
                       onClick={() => setSelectedUserId(user.id)}
                     >
                       <span className="permission-user-cell">
-                        <span className="user-avatar-small">{initials(user.name)}</span>
+                        <CartoonAvatar name={user.name} size={28} className="user-avatar-small" />
                         <span className="cell-main">
                           <strong>{user.name}</strong>
                           <small>{user.code} · {user.type}</small>
@@ -449,7 +446,7 @@ function UserAccessPanel({
   return (
     <aside className="panel user-access-panel">
       <div className="user-access-head">
-        <div className="user-avatar-large">{initials(user.name)}</div>
+        <CartoonAvatar name={user.name} size={48} className="user-avatar-large" />
         <div>
           <span className="eyebrow">PERSONNEL PROFILE</span>
           <h2>{user.name}</h2>
