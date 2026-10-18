@@ -8,6 +8,7 @@ export type PageKey =
   | "sealing"
   | "services"
   | "customers"
+  | "permissions"
   | "reports"
   | "field";
 

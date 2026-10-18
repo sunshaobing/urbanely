@@ -42,6 +42,10 @@ erDiagram
 | user | id, organization_id, name, phone_masked, email, status |
 | role | id, code, name |
 | user_role | user_id, role_id, scope_type, scope_id |
+| role_permission | role_id, module_key, action, allowed |
+| user_scope | user_id, scope_type, scope_id |
+
+`role_permission.action`：`view`、`create`、`edit`、`approve`、`export`。敏感操作使用独立的 `sensitive_permission` 表或带 `is_sensitive` 标记的权限项。
 
 ### 2.2 Customer / Site / Contract
 

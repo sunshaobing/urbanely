@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Smartphone,
   Store,
+  Users,
   Wrench,
 } from "lucide-react";
 import type { PageKey } from "../types";
@@ -26,10 +27,12 @@ const commands: Array<{
   { page: "services", label: "PCO 服务单", hint: "常规服务与证据完整度", icon: ShieldCheck, group: "页面" },
   { page: "customers", label: "客户与门店", hint: "合同、风险与服务计划", icon: Store, group: "页面" },
   { page: "reports", label: "报告中心", hint: "A4 报告、版本与导出", icon: FileText, group: "页面" },
+  { page: "permissions", label: "人员与权限", hint: "角色、门店范围与敏感权限", icon: Users, group: "页面" },
   { page: "field", label: "现场模式", hint: "手机端离线采集与签字", icon: Smartphone, group: "页面" },
   { page: "inspections", label: "新建勘测", hint: "创建一张新的现场勘测单", icon: ClipboardCheck, group: "快捷操作" },
   { page: "sealing", label: "发起封堵", hint: "从隐患点进入封堵流程", icon: Wrench, group: "快捷操作" },
   { page: "reports", label: "打开报告中心", hint: "预览或导出当前报告", icon: FileText, group: "快捷操作" },
+  { page: "permissions", label: "管理角色权限", hint: "编辑权限矩阵和敏感操作", icon: Users, group: "快捷操作" },
 ];
 
 export function CommandPalette({

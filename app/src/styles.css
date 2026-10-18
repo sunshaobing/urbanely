@@ -4544,6 +4544,578 @@ button.chip {
   gap: 4px;
 }
 
+.permissions-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(340px, 0.72fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.permissions-user-table .table-head,
+.permissions-user-table .table-row {
+  grid-template-columns: minmax(155px, 1.25fr) 92px 145px 88px 88px;
+  min-width: 620px;
+}
+
+.permission-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.user-avatar-small {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--teal-soft);
+  color: var(--teal-dark);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.user-access-panel {
+  position: sticky;
+  top: 82px;
+}
+
+.user-access-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.user-avatar-large {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--teal-soft);
+  color: var(--teal-dark);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.user-access-head > div:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-access-head h2 {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.user-access-head p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.user-access-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.user-access-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.user-access-form select,
+.user-access-form input {
+  width: 100%;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 10px;
+}
+
+.user-scope-section {
+  margin-top: 15px;
+}
+
+.chip-add {
+  border-style: dashed;
+  color: var(--teal);
+  background: transparent;
+  cursor: pointer;
+}
+
+.chip-add span {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.user-permission-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fbfcfa;
+}
+
+.user-permission-summary span {
+  display: block;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.user-permission-summary strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 17px;
+}
+
+.user-access-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 9px;
+  border-radius: 6px;
+  background: var(--teal-soft);
+  color: var(--teal-dark);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.user-access-note svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.user-access-panel > .button {
+  margin-top: 13px;
+}
+
+.role-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.role-list {
+  position: sticky;
+  top: 82px;
+}
+
+.role-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px;
+  margin-bottom: 6px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.role-card:hover {
+  border-color: #9bcfc6;
+}
+
+.role-card.active {
+  border-color: var(--teal);
+  background: var(--teal-soft);
+}
+
+.role-mark {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #eef2ef;
+  color: var(--muted);
+}
+
+.role-tone-teal .role-mark {
+  background: var(--teal-soft);
+  color: var(--teal);
+}
+
+.role-tone-amber .role-mark {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.role-tone-blue .role-mark {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.role-tone-red .role-mark {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.role-card-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.role-card-copy strong {
+  display: block;
+  font-size: 10.5px;
+}
+
+.role-card-copy small {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 8.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-card > svg {
+  flex: none;
+  color: var(--teal);
+}
+
+.permission-panel {
+  padding: 18px;
+}
+
+.permission-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.permission-panel-head h2 {
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.permission-panel-head p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.scope-control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: none;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.scope-control select {
+  height: 32px;
+  min-width: 130px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 10px;
+}
+
+.permission-matrix-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.permission-matrix {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+
+.permission-matrix th,
+.permission-matrix td {
+  padding: 8px 9px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.permission-matrix tr:last-child td {
+  border-bottom: 0;
+}
+
+.permission-matrix th:not(:first-child),
+.permission-matrix td:not(:first-child) {
+  width: 66px;
+  text-align: center;
+}
+
+.permission-matrix thead th {
+  background: #f7f8f6;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.permission-matrix td strong {
+  display: block;
+  font-size: 10px;
+}
+
+.permission-matrix td small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.perm-check {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.perm-check input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.perm-check span {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: transparent;
+}
+
+.perm-check input:checked + span {
+  border-color: var(--teal);
+  background: var(--teal);
+  color: #fff;
+}
+
+.perm-check input:focus-visible + span {
+  outline: 3px solid rgba(15, 118, 110, 0.22);
+}
+
+.sensitive-section {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.sensitive-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.switch-icon {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: #eef2ef;
+  color: var(--muted);
+}
+
+.switch-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.switch-copy strong,
+.switch-copy small {
+  display: block;
+}
+
+.switch-copy strong {
+  font-size: 9.5px;
+}
+
+.switch-copy small {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.switch-row input {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  background: #dfe7e2;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.switch-row input::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(23, 32, 29, 0.18);
+  transition: transform 140ms ease;
+}
+
+.switch-row input:checked {
+  background: var(--teal);
+}
+
+.switch-row input:checked::after {
+  transform: translateX(14px);
+}
+
+.permission-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.permission-role-summary {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.permission-footer > div {
+  display: flex;
+  gap: 6px;
+}
+
+.audit-panel {
+  padding: 16px;
+}
+
+.audit-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.audit-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.audit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.audit-item:first-child {
+  border-top: 0;
+}
+
+.audit-icon {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--teal-soft);
+  color: var(--teal);
+}
+
+.audit-icon.blocked {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.audit-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.audit-copy strong {
+  display: block;
+  font-size: 11px;
+}
+
+.audit-copy span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.audit-copy p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.audit-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex: none;
+  color: var(--muted);
+  font-size: 8px;
+}
+
 @media (max-width: 1240px) {
   .command-trigger span,
   .command-trigger kbd {
@@ -4992,6 +5564,16 @@ button.chip {
   .flow-connector {
     display: none;
   }
+
+  .permissions-layout,
+  .role-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .user-access-panel,
+  .role-list {
+    position: static;
+  }
 }
 
 @media (max-width: 900px) {
@@ -5043,6 +5625,41 @@ button.chip {
 
   .workflow-step {
     min-width: 128px;
+  }
+
+  .permission-panel-head {
+    flex-direction: column;
+  }
+
+  .scope-control,
+  .scope-control select {
+    width: 100%;
+  }
+
+  .sensitive-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .permission-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .permission-footer > div {
+    justify-content: flex-end;
+  }
+
+  .user-access-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .audit-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .audit-toolbar .inline-search {
+    width: 100%;
   }
 
   .command-overlay {

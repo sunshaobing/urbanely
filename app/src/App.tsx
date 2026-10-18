@@ -5,6 +5,7 @@ import { Customers } from "./pages/Customers";
 import { Dashboard } from "./pages/Dashboard";
 import { FieldMode } from "./pages/FieldMode";
 import { Inspections } from "./pages/Inspections";
+import { Permissions } from "./pages/Permissions";
 import { Reports } from "./pages/Reports";
 import { Sealing } from "./pages/Sealing";
 import { ServiceOrders } from "./pages/ServiceOrders";
@@ -62,6 +63,7 @@ export default function App() {
       {activePage === "sealing" ? <Sealing onNotify={notify} onOpenReport={openReport} /> : null}
       {activePage === "services" ? <ServiceOrders onNotify={notify} /> : null}
       {activePage === "customers" ? <Customers onNotify={notify} /> : null}
+      {activePage === "permissions" ? <Permissions onNotify={notify} /> : null}
       {activePage === "reports" ? (
         <Reports
           initialTemplate={reportTemplate}

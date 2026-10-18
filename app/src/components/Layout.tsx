@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Smartphone,
   Store,
+  Users,
   Wrench,
 } from "lucide-react";
 import type { PageKey } from "../types";
@@ -31,6 +32,7 @@ const navItems: Array<{
   { key: "services", label: "服务单", icon: ShieldCheck, hint: "PCO 常规服务" },
   { key: "customers", label: "客户与门店", icon: Store, hint: "合同与服务计划" },
   { key: "reports", label: "报告中心", icon: FileText, hint: "A4 报告与版本" },
+  { key: "permissions", label: "人员与权限", icon: Users, hint: "角色、范围与敏感权限" },
   { key: "field", label: "现场模式", icon: Smartphone, hint: "手机端离线采集" },
 ];
 
@@ -41,12 +43,14 @@ const pageTitles: Record<PageKey, string> = {
   services: "PCO 服务单",
   customers: "客户与门店",
   reports: "报告中心",
+  permissions: "人员与权限",
   field: "现场模式",
 };
 
 const navGroups: Array<{ label: string; keys: PageKey[] }> = [
   { label: "运营", keys: ["dashboard", "inspections", "sealing", "services"] },
   { label: "主数据", keys: ["customers", "reports"] },
+  { label: "管理", keys: ["permissions"] },
   { label: "现场", keys: ["field"] },
 ];
 

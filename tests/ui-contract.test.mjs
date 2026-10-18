@@ -17,13 +17,23 @@ test("integrated shell and workflow landmarks are present", () => {
   assert.match(dashboard, /flow-panel/);
   assert.match(dashboard, /flow-node/);
 
-  for (const className of ["command-panel", "flow-map", "workflow-rail", "user-chip", "nav-group-label"]) {
+  for (const className of [
+    "command-panel",
+    "flow-map",
+    "workflow-rail",
+    "user-chip",
+    "nav-group-label",
+    "permission-matrix",
+    "role-card",
+    "switch-row",
+    "audit-item",
+  ]) {
     assert.match(css, new RegExp(`\\.${className}`));
   }
 });
 
 test("every primary page uses the shared header and detail flows expose a workflow rail", () => {
-  for (const page of ["Dashboard", "Inspections", "Sealing", "ServiceOrders", "Customers", "Reports", "FieldMode"]) {
+  for (const page of ["Dashboard", "Inspections", "Sealing", "ServiceOrders", "Customers", "Reports", "Permissions", "FieldMode"]) {
     assert.match(read(`app/src/pages/${page}.tsx`), /PageHeader/);
   }
 
