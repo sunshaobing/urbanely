@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { Layout } from "./components/Layout";
 import { Toast } from "./components/ui";
+import { clearSession, loadSession, saveSession } from "./auth";
+import type { AuthSession } from "./auth";
 import { Customers } from "./pages/Customers";
 import { Dashboard } from "./pages/Dashboard";
 import { FieldMode } from "./pages/FieldMode";
 import { Inspections } from "./pages/Inspections";
+import { LoginPage } from "./pages/LoginPage";
 import { Permissions } from "./pages/Permissions";
 import { Reports } from "./pages/Reports";
 import { Sealing } from "./pages/Sealing";
@@ -12,6 +15,7 @@ import { ServiceOrders } from "./pages/ServiceOrders";
 import type { PageKey, ReportTemplate } from "./types";
 
 export default function App() {
+  const [session, setSession] = useState<AuthSession | null>(() => loadSession());
   const [activePage, setActivePage] = useState<PageKey>("dashboard");
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState<string | null>(null);
@@ -47,8 +51,29 @@ export default function App() {
     setActivePage("reports");
   };
 
+  if (!session) {
+    return (
+      <LoginPage
+        onLogin={(nextSession, remember) => {
+          saveSession(nextSession, remember);
+          setSession(nextSession);
+        }}
+      />
+    );
+  }
+
   return (
-    <Layout activePage={activePage} onNavigate={navigate} search={search} onSearch={setSearch}>
+    <Layout
+      activePage={activePage}
+      onNavigate={navigate}
+      search={search}
+      onSearch={setSearch}
+      session={session}
+      onLogout={() => {
+        clearSession();
+        setSession(null);
+      }}
+    >
       {activePage === "dashboard" ? (
         <Dashboard onNavigate={navigate} onOpenInspection={openInspection} />
       ) : null}

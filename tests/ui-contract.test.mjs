@@ -30,6 +30,9 @@ test("integrated shell and workflow landmarks are present", () => {
     "switch-row",
     "audit-item",
     "cartoon-avatar",
+    "login-shell",
+    "login-card",
+    "logout-button",
   ]) {
     assert.match(css, new RegExp(`\\.${className}`));
   }

@@ -89,4 +89,5 @@
 - Integrated UI pass: grouped sidebar, workspace context, command palette, dashboard flow map, shared page headers, workflow rails, and responsive table handling.
 - Personnel and access-control module added: staff, seven roles, module/action matrix, sensitive permissions, and audit records.
 - Personnel avatars use deterministic local cartoon SVG illustrations instead of initials or remote image services.
+- Login gate added with phone/password UI, remember-me session, logout, and session restoration. The prototype validates input format only and never stores the password; production must replace it with server-side authentication and rate limiting.
 

@@ -8,6 +8,7 @@ import {
   Command,
   FileText,
   LayoutDashboard,
+  LogOut,
   Plus,
   Search,
   Settings2,
@@ -18,6 +19,7 @@ import {
   Wrench,
 } from "lucide-react";
 import type { PageKey } from "../types";
+import type { AuthSession } from "../auth";
 import { CommandPalette } from "./CommandPalette";
 import { CartoonAvatar } from "./CartoonAvatar";
 
@@ -60,10 +62,20 @@ interface LayoutProps {
   onNavigate: (page: PageKey) => void;
   search: string;
   onSearch: (value: string) => void;
+  session: AuthSession;
+  onLogout: () => void;
   children: ReactNode;
 }
 
-export function Layout({ activePage, onNavigate, search, onSearch, children }: LayoutProps) {
+export function Layout({
+  activePage,
+  onNavigate,
+  search,
+  onSearch,
+  session,
+  onLogout,
+  children,
+}: LayoutProps) {
   const [commandOpen, setCommandOpen] = useState(false);
 
   useEffect(() => {
@@ -193,11 +205,20 @@ export function Layout({ activePage, onNavigate, search, onSearch, children }: L
               <Bell size={18} />
               <i className="notification-dot" />
             </button>
-            <div className="user-chip" title="Eric · 运营负责人">
-              <CartoonAvatar name="Eric" size={34} className="avatar" />
+            <button
+              type="button"
+              className="icon-button logout-button"
+              aria-label="退出登录"
+              title="退出登录"
+              onClick={onLogout}
+            >
+              <LogOut size={16} />
+            </button>
+            <div className="user-chip" title={`${session.name} · ${session.role}`}>
+              <CartoonAvatar name={session.name} size={34} className="avatar" />
               <div>
-                <strong>Eric</strong>
-                <span>运营负责人</span>
+                <strong>{session.name}</strong>
+                <span>{session.role}</span>
               </div>
             </div>
           </div>

@@ -20,6 +20,28 @@
 
 ## 2. Auth
 
+### POST `/auth/login`
+
+```json
+{
+  "phone": "138****0000",
+  "password": "••••••••",
+  "remember": true,
+  "device_id": "dev_..."
+}
+```
+
+Response:
+
+```json
+{
+  "session": { "user_id": "usr_...", "name": "Eric", "role": "admin" },
+  "expires_at": "2026-10-25T10:00:00+08:00"
+}
+```
+
+Server must hash and verify the password, apply rate limiting, and never return or log the password.
+
 ### POST `/auth/otp/request`
 
 ```json
