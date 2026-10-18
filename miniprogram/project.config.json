@@ -4,7 +4,7 @@
     "ignore": []
   },
   "setting": {
-    "urlCheck": false,
+    "urlCheck": true,
     "es6": true,
     "enhance": true,
     "postcss": true,
@@ -19,7 +19,7 @@
   },
   "compileType": "miniprogram",
   "libVersion": "3.7.0",
-  "appid": "wx0baa4706e41f89c1",
+  "appid": "wx9469d5e631279f7b",
   "projectname": "shentai-pco-field",
   "miniprogramRoot": "./",
   "condition": {}

@@ -74,7 +74,7 @@
 - Inspection photos are limited to `structure_risk` with a hard 100-image cap. The sealing order remains the only place for before/after photos.
 - Mini Program attachments are copied from temporary paths into `wx.env.USER_DATA_PATH` before entering the local queue; syncing or clearing cache removes managed files.
 - Mini Program contract tests cover page registration, photo/signature requirements, durable files, and absence of hard-coded phone credentials or persisted passwords.
-- The local WeChat DevTools CLI rejected `touristappid`. The Mini Program now uses AppID `wx0baa4706e41f89c1`; WeChat DevTools accepted the project and produced a 91.6 KB preview build.
+- The local WeChat DevTools CLI rejected `touristappid`. The Mini Program now uses the established production AppID `wx9469d5e631279f7b`; WeChat DevTools accepted the project and produced a 91.6 KB preview build.
 - Login no longer redirects automatically when stale local session data exists. Login storage and page navigation are wrapped so a failed local write or `reLaunch` shows an error instead of closing the page.
 - The Mini Program workbench now uses the production Tencent Cloud API at `https://sunrgw.cn`; login, dashboard summary, work-order filtering, report archive, and profile summary are server-driven.
 - Workbench presentation uses 8px card radii, light gray shadows, 18/14/12 px type, soft red/orange/green status tags, and a dark bottom navigation with white selected icons.
