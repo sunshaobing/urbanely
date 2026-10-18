@@ -57,7 +57,7 @@ test("inspection keeps structure-risk photos only and enforces the 100-photo cap
   assert.match(picker, /selected\.slice\(0, remaining\)/);
   assert.match(picker, /persistTempFiles\(accepted\)/);
   assert.match(pickerStyles, /\.photo-grid\s*\{[\s\S]*?flex-wrap:\s*wrap/);
-  assert.match(pickerStyles, /width:\s*calc\(33\.333%\s*-\s*7rpx\)/);
+  assert.match(pickerStyles, /width:\s*calc\(20%\s*-\s*8rpx\)/);
 });
 
 test("inspection and sealing capture the required two handwritten signatures", () => {

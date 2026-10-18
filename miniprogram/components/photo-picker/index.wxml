@@ -13,7 +13,7 @@
     </view>
     <view wx:if="{{photos.length < max}}" class="photo-add" bindtap="choose">
       <text class="photo-add-icon">+</text>
-      <text>拍照 / 相册</text>
+      <text>添加</text>
     </view>
   </view>
 </view>

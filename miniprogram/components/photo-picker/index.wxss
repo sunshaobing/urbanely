@@ -44,8 +44,8 @@
 .photo-item,
 .photo-add {
   position: relative;
-  width: calc(33.333% - 7rpx);
-  height: 194rpx;
+  width: calc(20% - 8rpx);
+  height: 122rpx;
   overflow: hidden;
   border-radius: 12rpx;
 }
@@ -59,15 +59,15 @@
   position: absolute;
   top: 6rpx;
   right: 6rpx;
-  width: 38rpx;
-  height: 38rpx;
+  width: 32rpx;
+  height: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background: rgba(20, 32, 28, 0.72);
   color: #fff;
-  font-size: 28rpx;
+  font-size: 24rpx;
   line-height: 1;
 }
 
@@ -76,15 +76,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6rpx;
+  gap: 2rpx;
   border: 2rpx dashed #b8c5be;
   background: #fbfcfa;
   color: #6b7771;
-  font-size: 20rpx;
+  font-size: 18rpx;
 }
 
 .photo-add-icon {
   color: #0f766e;
-  font-size: 44rpx;
+  font-size: 32rpx;
   line-height: 1;
 }
