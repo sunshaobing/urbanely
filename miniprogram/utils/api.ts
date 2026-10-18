@@ -8,6 +8,7 @@ interface RequestOptions {
   method?: RequestMethod;
   data?: unknown;
   header?: Record<string, string>;
+  skipAuthRedirect?: boolean;
 }
 
 function errorMessage(statusCode: number, payload: unknown) {
@@ -57,8 +58,12 @@ export function request<T>(path: string, options: RequestOptions = {}): Promise<
       timeout: API_TIMEOUT,
       success: (response: any) => {
         if (response.statusCode === 401) {
-          handleUnauthorized();
-          reject(new Error("登录已过期，请重新登录"));
+          if (options.skipAuthRedirect) {
+            reject(new Error(errorMessage(response.statusCode, response.data)));
+          } else {
+            handleUnauthorized();
+            reject(new Error("登录已过期，请重新登录"));
+          }
           return;
         }
         if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -78,6 +83,7 @@ export function loginWithPassword(username: string, password: string) {
   return request<AuthPayload>("/api/auth/login", {
     method: "POST",
     data: { username, password },
+    skipAuthRedirect: true,
   });
 }
 

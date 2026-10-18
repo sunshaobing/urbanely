@@ -123,6 +123,7 @@ test("the workbench uses the production Tencent Cloud API and no local task data
   assert.match(api, /\/api\/auth\/login/);
   assert.match(api, /\/api\/dashboard\/summary/);
   assert.match(api, /\/api\/workorders/);
+  assert.match(api, /skipAuthRedirect: true/);
   assert.match(tasks, /getDashboardSummary/);
   assert.match(tasks, /getWorkOrders/);
   assert.match(tasks, /getWorkOrder/);
