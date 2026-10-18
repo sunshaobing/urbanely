@@ -85,4 +85,5 @@
 - Remote `origin`: `https://github.com/sunshaobing/urbanely.git`; upstream initial commit `a23942c`.
 - Local commit author: `Eric <urbanely@163.com>`.
 - `tmp/`, `node_modules/`, `dist/`, logs, and local env files are ignored.
+- `AGENTS.md` now requires one Git commit per completed change and relevant tests/validation before delivery.
 

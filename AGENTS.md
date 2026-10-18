@@ -7,6 +7,12 @@
 - Owner: Eric
 - Purpose: Replace the current Feishu Base workflow with a structured PCO field-service system covering customer/site management, pest surveys, structural sealing, service orders, rechecks, reports, signatures, and material records.
 
+## 注意事项（强制）
+
+- 每次改动完成后，都必须创建一个对应的 Git commit，以便后续追踪和回滚。
+- 每次改动后，都必须编写或更新相关测试，并在交付给用户前，确保所有测试和验证全部通过。
+- Definition of done: relevant tests added or updated, `pnpm typecheck` and `pnpm build` pass, and the completed change is committed.
+
 ## Stack
 
 - Prototype: Vite + React + TypeScript
