@@ -22,6 +22,7 @@ function listTextFiles(directory = root) {
 
 test("the mini program registers the required field pages and local components", () => {
   const app = JSON.parse(read("app.json"));
+  const project = JSON.parse(read("project.config.json"));
   const expectedPages = [
     "pages/login/login",
     "pages/tasks/tasks",
@@ -32,6 +33,7 @@ test("the mini program registers the required field pages and local components",
   ];
 
   assert.deepEqual(app.pages, expectedPages);
+  assert.match(project.appid, /^wx[0-9a-f]{16}$/);
 
   for (const page of app.pages) {
     for (const extension of [".ts", ".json", ".wxml", ".wxss"]) {
@@ -99,6 +101,9 @@ test("the field client does not hard-code phone credentials or persist passwords
   assert.doesNotMatch(text, /password\s*:\s*["'][^"']+["']/i);
   assert.doesNotMatch(storage, /password/i);
   assert.match(login, /saveSession\(\{[\s\S]*?phoneMasked:[\s\S]*?\}\);/);
+  assert.doesNotMatch(login, /onLoad\(\)\s*\{[\s\S]*?reLaunch/);
+  assert.match(login, /try \{[\s\S]*?saveSession/);
+  assert.match(login, /error: "登录失败，请稍后重试"/);
 });
 
 test("field detail pages send unauthenticated users back to login", () => {

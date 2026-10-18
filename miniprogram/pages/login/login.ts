@@ -9,11 +9,6 @@ Page({
     loading: false,
     error: "",
   },
-  onLoad() {
-    if (wx.getStorageSync("session")) {
-      wx.reLaunch({ url: "/pages/tasks/tasks" });
-    }
-  },
   onPhoneInput(event: any) {
     this.setData({
       phone: String(event.detail.value || "").replace(/\D/g, "").slice(0, 11),
@@ -38,14 +33,21 @@ Page({
     }
     this.setData({ loading: true, error: "" });
     setTimeout(() => {
-      saveSession({
-        name: technician.name,
-        role: technician.role,
-        phoneMasked: maskPhone(phone),
-        loginAt: new Date().toISOString(),
-      });
-      this.setData({ loading: false });
-      wx.reLaunch({ url: "/pages/tasks/tasks" });
+      try {
+        saveSession({
+          name: technician.name,
+          role: technician.role,
+          phoneMasked: maskPhone(phone),
+          loginAt: new Date().toISOString(),
+        });
+        this.setData({ loading: false });
+        wx.reLaunch({
+          url: "/pages/tasks/tasks",
+          fail: () => this.setData({ error: "登录成功，但页面跳转失败，请重试" }),
+        });
+      } catch {
+        this.setData({ loading: false, error: "登录失败，请稍后重试" });
+      }
     }, 450);
   },
   forgotPassword() {

@@ -12,13 +12,13 @@ export function getSession(): Session | null {
 export function saveSession(session: Session) {
   wx.setStorageSync(SESSION_KEY, session);
   const app = getApp();
-  app.globalData.session = session;
+  if (app?.globalData) app.globalData.session = session;
 }
 
 export function clearSession() {
   wx.removeStorageSync(SESSION_KEY);
   const app = getApp();
-  app.globalData.session = null;
+  if (app?.globalData) app.globalData.session = null;
 }
 
 export function saveDraft(key: string, draft: InspectionDraft | SealingDraft) {
