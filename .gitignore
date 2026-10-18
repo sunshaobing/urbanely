@@ -52,3 +52,28 @@ m4/lt~obsolete.m4
 # can automatically generate from config.status script
 # (which is called by configure script))
 Makefile
+
+# Project dependencies
+node_modules/
+app/node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+app/dist/
+.vite/
+*.tsbuildinfo
+
+# Local investigation outputs and sensitive exports
+tmp/
+*.log
+logs/
+
+# Local environment and editor state
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
