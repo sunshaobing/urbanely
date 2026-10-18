@@ -1,37 +1,49 @@
-<view class="page-shell">
-  <view class="hero">
-    <view class="hero-top">
-      <view>
-        <text class="hero-brand-sub">REPORTS / ARCHIVE</text>
-        <text class="hero-title">报告中心</text>
-      </view>
-      <view class="hero-status"><view class="status-dot" /><text>已同步</text></view>
+<view class="reports-page">
+  <view class="reports-header">
+    <view>
+      <text class="header-kicker">DOCUMENT ARCHIVE</text>
+      <text class="page-title">报告归档</text>
+      <text class="header-meta">{{user.name || user.username || "现场人员"}} · {{reports.length}} 份</text>
     </view>
-    <text class="hero-sub">报告由服务端生成正式 PDF，并绑定双方签字与文件哈希。</text>
+    <text class="refresh-action" bindtap="refresh">{{loading ? "更新中" : "刷新"}}</text>
   </view>
 
-  <view class="container">
-    <view
-      wx:for="{{reports}}"
-      wx:key="id"
-      class="report-card"
-      data-report="{{item.reportNo}}"
-      bindtap="openReport"
-    >
-      <view class="report-top">
-        <text class="mono report-no">{{item.reportNo}}</text>
-        <text class="pill {{item.status === '双方已签' ? 'status-success' : 'status-warning'}}">{{item.status}}</text>
-      </view>
-      <text class="report-title">{{item.title}}</text>
-      <text class="report-site">{{item.site}}</text>
-      <view class="report-foot">
-        <text class="muted">{{item.date}} · {{item.size}}</text>
-        <text class="task-arrow">查看报告 ›</text>
+  <view class="reports-content">
+    <view wx:if="{{loading && reports.length === 0}}" class="state-card">
+      <text class="state-title">正在加载</text>
+      <text class="state-copy">报告归档加载中。</text>
+    </view>
+
+    <view wx:elif="{{error}}" class="state-card">
+      <text class="state-title">报告未加载</text>
+      <text class="state-copy">{{error}}</text>
+      <button class="retry-button" bindtap="refresh">重新加载</button>
+    </view>
+
+    <view wx:elif="{{reports.length > 0}}" class="report-list">
+      <view
+        wx:for="{{reports}}"
+        wx:key="id"
+        class="report-card"
+        data-id="{{item.id}}"
+        bindtap="openReport"
+      >
+        <view class="report-head">
+          <text class="report-no">{{item.report_no}}</text>
+          <text class="report-status">已完成</text>
+        </view>
+        <text class="report-title">{{item.customer_name}}</text>
+        <text class="report-address">{{item.service_address || "地址待补充"}}</text>
+        <view class="report-foot">
+          <text>{{item.displayDate}}</text>
+          <text class="report-link">查看记录</text>
+        </view>
       </view>
     </view>
-    <view class="empty-state">
-      <text class="title">报告 PDF 在服务端生成</text>
-      <text class="detail">小程序只负责现场采集与查看状态，不直接生成正式报告。</text>
+
+    <view wx:else class="state-card">
+      <text class="state-title">暂无已完成报告</text>
+      <text class="state-copy">已完成审核的作业单会显示在这里。</text>
     </view>
   </view>
 

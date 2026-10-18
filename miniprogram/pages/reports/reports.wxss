@@ -1,51 +1,145 @@
-.hero-brand-sub {
-  color: #8fa299;
+.reports-page {
+  min-height: 100vh;
+  padding-bottom: calc(160rpx + env(safe-area-inset-bottom));
+  background: #f5f7f6;
+  color: #18201d;
 }
 
-.hero-title {
-  margin-top: 8rpx;
-  font-size: 42rpx;
+.reports-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32rpx;
+  padding: 48rpx 32rpx 32rpx;
+  border-bottom: 1rpx solid #e8ecea;
+  background: #ffffff;
 }
 
-.report-card {
-  margin-bottom: 16rpx;
-  padding: 24rpx;
-  border: 1rpx solid #dde3df;
+.header-kicker {
+  display: block;
+  color: #0f6b5c;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.page-title {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.header-meta {
+  display: block;
+  margin-top: 16rpx;
+  color: #727d78;
+  font-size: 24rpx;
+}
+
+.refresh-action {
+  min-height: 48rpx;
+  display: flex;
+  align-items: center;
+  color: #0f6b5c;
+  font-size: 24rpx;
+}
+
+.reports-content {
+  padding: 32rpx;
+}
+
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.report-card,
+.state-card {
+  padding: 32rpx;
+  border: 1rpx solid #e8ecea;
   border-radius: 16rpx;
-  background: #fff;
+  background: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(17, 24, 39, 0.06);
 }
 
-.report-top {
+.report-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
 .report-no {
-  color: #6b7771;
+  color: #68736e;
+  font-family: "SFMono-Regular", "Cascadia Code", monospace;
+  font-size: 24rpx;
+}
+
+.report-status {
+  min-height: 48rpx;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16rpx;
+  border-radius: 16rpx;
+  background: #eef7f0;
+  color: #3f6f4e;
+  font-size: 24rpx;
 }
 
 .report-title {
   display: block;
-  margin-top: 14rpx;
-  font-size: 29rpx;
+  margin-top: 16rpx;
+  font-size: 36rpx;
   font-weight: 700;
 }
 
-.report-site {
+.report-address {
   display: block;
-  margin-top: 5rpx;
-  color: #6b7771;
-  font-size: 22rpx;
+  margin-top: 16rpx;
+  color: #727d78;
+  font-size: 24rpx;
 }
 
 .report-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
+  gap: 16rpx;
+  margin-top: 32rpx;
+  padding-top: 32rpx;
+  border-top: 1rpx solid #edf0ee;
+  color: #727d78;
+  font-size: 24rpx;
+}
+
+.report-link {
+  color: #0f6b5c;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.state-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.state-copy {
+  display: block;
   margin-top: 16rpx;
-  padding-top: 14rpx;
-  border-top: 1rpx solid #edf0ed;
+  color: #727d78;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.retry-button {
+  height: 80rpx;
+  margin-top: 32rpx;
+  border-radius: 16rpx;
+  background: #17211f;
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 80rpx;
 }

@@ -8,10 +8,10 @@
     "pages/profile/profile"
   ],
   "window": {
-    "navigationBarTitleText": "申汰 PCO",
-    "navigationBarBackgroundColor": "#14201c",
-    "navigationBarTextStyle": "white",
-    "backgroundColor": "#f4f5f2",
+    "navigationBarTitleText": "封堵勘测",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f7f6",
     "backgroundTextStyle": "dark"
   },
   "style": "v2",

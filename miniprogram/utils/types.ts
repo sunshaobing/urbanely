@@ -1,8 +1,80 @@
 export interface Session {
+  id: number;
+  username: string;
   name: string;
   role: string;
   phoneMasked: string;
   loginAt: string;
+}
+
+export interface AuthUser {
+  id: number;
+  username: string;
+  name: string;
+  phone: string;
+  role: string;
+}
+
+export interface AuthPayload {
+  access_token: string;
+  token_type: string;
+  user: AuthUser;
+}
+
+export interface DashboardSummary {
+  cards: {
+    month_orders: number;
+    total_holes: number;
+    material_usage: number;
+    active_customers: number;
+    sites: number;
+    contracts: number;
+    employees: number;
+    risk_surveys: number;
+    service_reports: number;
+    materials: number;
+    contract_expiring: number;
+    due_inspections: number;
+  };
+  todos: Array<{
+    id: number;
+    report_no: string;
+    customer_name: string;
+    created_at: string;
+  }>;
+}
+
+export type WorkOrderStatus = "draft" | "pending" | "rejected" | "approved" | "completed";
+
+export interface WorkOrder {
+  id: number;
+  report_no: string;
+  report_date: string;
+  customer_name: string;
+  service_address: string;
+  contact: string;
+  contact_phone: string;
+  service_type: string;
+  service_date: string;
+  status: WorkOrderStatus;
+  created_at: string;
+  submitted_at: string;
+  completed_at: string;
+  rejection_reason: string;
+  sites: Array<{
+    id: number;
+    name: string;
+    hole_type: string;
+    before_photo_count: number;
+    after_photo_count: number;
+  }>;
+}
+
+export interface WorkOrderList {
+  total: number;
+  items: WorkOrder[];
+  page: number;
+  page_size: number;
 }
 
 export interface Site {

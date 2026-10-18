@@ -74,13 +74,16 @@
 - Inspection photos are limited to `structure_risk` with a hard 100-image cap. The sealing order remains the only place for before/after photos.
 - Mini Program attachments are copied from temporary paths into `wx.env.USER_DATA_PATH` before entering the local queue; syncing or clearing cache removes managed files.
 - Mini Program contract tests cover page registration, photo/signature requirements, durable files, and absence of hard-coded phone credentials or persisted passwords.
-- The local WeChat DevTools CLI rejected `touristappid`. The Mini Program now uses AppID `wx0baa4706e41f89c1`; WeChat DevTools accepted the project and produced a 76 KB preview build.
+- The local WeChat DevTools CLI rejected `touristappid`. The Mini Program now uses AppID `wx0baa4706e41f89c1`; WeChat DevTools accepted the project and produced a 91.6 KB preview build.
 - Login no longer redirects automatically when stale local session data exists. Login storage and page navigation are wrapped so a failed local write or `reLaunch` shows an error instead of closing the page.
+- The Mini Program workbench now uses the production Tencent Cloud API at `https://sunrgw.cn`; login, dashboard summary, work-order filtering, report archive, and profile summary are server-driven.
+- Workbench presentation uses 8px card radii, light gray shadows, 18/14/12 px type, soft red/orange/green status tags, and a dark bottom navigation with white selected icons.
+- The API client is centralized in `miniprogram/utils/api.ts`; workbench status filters and aggregates come from server responses rather than local mock calculations.
 
 ## Remaining Gaps
 
-- No production backend, database, authentication, or file storage yet; the prototype uses local sample data.
-- Offline sync in the prototype is a local queue simulation; production needs `wx.login`, server-side role checks, COS upload, retry/backoff, idempotent sync, and conflict handling.
+- Web prototype still uses local sample data; Mini Program login, workbench, report archive and profile now use the production API.
+- Mini Program inspection/sealing capture pages still need migration from local drafts to production form APIs, COS upload, retry/backoff, idempotent sync, and conflict handling.
 - The sealing table schema is inferred from the PDF; a logged-in Feishu export is still needed for a complete migration.
 - Customer contract attachment coverage is 0/186; backfill tasks are required.
 - Real customer data must not be used in UI fixtures without a privacy review.

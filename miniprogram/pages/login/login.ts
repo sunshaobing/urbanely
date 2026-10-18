@@ -1,5 +1,6 @@
-import { technician } from "../../data/mock";
-import { maskPhone, saveSession } from "../../utils/storage";
+import { loginWithPassword } from "../../utils/api";
+import { getErrorMessage } from "../../utils/error";
+import { saveAuth } from "../../utils/storage";
 
 Page({
   data: {
@@ -21,7 +22,7 @@ Page({
   togglePassword() {
     this.setData({ showPassword: !this.data.showPassword });
   },
-  login() {
+  async login() {
     const { phone, password } = this.data;
     if (!/^1[3-9]\d{9}$/.test(phone)) {
       this.setData({ error: "请输入有效的 11 位手机号码" });
@@ -32,23 +33,18 @@ Page({
       return;
     }
     this.setData({ loading: true, error: "" });
-    setTimeout(() => {
-      try {
-        saveSession({
-          name: technician.name,
-          role: technician.role,
-          phoneMasked: maskPhone(phone),
-          loginAt: new Date().toISOString(),
-        });
-        this.setData({ loading: false });
-        wx.reLaunch({
-          url: "/pages/tasks/tasks",
-          fail: () => this.setData({ error: "登录成功，但页面跳转失败，请重试" }),
-        });
-      } catch {
-        this.setData({ loading: false, error: "登录失败，请稍后重试" });
-      }
-    }, 450);
+    try {
+      const payload = await loginWithPassword(phone, password);
+      saveAuth(payload);
+      this.setData({ loading: false });
+      wx.reLaunch({
+        url: "/pages/tasks/tasks",
+        fail: () => this.setData({ error: "登录成功，但页面跳转失败，请重试" }),
+      });
+    } catch (error) {
+      const message = getErrorMessage(error, "登录失败，请稍后重试");
+      this.setData({ loading: false, error: message });
+    }
   },
   forgotPassword() {
     wx.showModal({

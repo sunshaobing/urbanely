@@ -18,6 +18,16 @@
 }
 ```
 
+现有生产小程序后端使用 `https://sunrgw.cn/api`，已接入的兼容端点如下：
+
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `GET /api/dashboard/summary`
+- `GET /api/workorders`
+- `GET /api/workorders/{order_id}`
+
+`/api/v1` 保留为后续正式 API 版本的约定；迁移时应通过统一 API 客户端切换，不在页面内散落地址。
+
 ## 2. Auth
 
 ### POST `/auth/login`

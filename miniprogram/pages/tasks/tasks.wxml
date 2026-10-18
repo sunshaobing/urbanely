@@ -1,60 +1,82 @@
-<view class="page-shell">
-  <view class="hero">
-    <view class="hero-top">
-      <view class="hero-brand">
-        <image class="nav-avatar" src="{{user.avatar}}" mode="aspectFill" />
-        <view>
-          <text class="hero-brand-title">早上好，{{user.name}}</text>
-          <text class="hero-brand-sub">{{todayLabel}}</text>
-        </view>
-      </view>
-      <view class="hero-status"><view class="status-dot" /><text>已同步</text></view>
+<view class="workbench-page">
+  <view class="workbench-header">
+    <view class="header-copy">
+      <text class="header-kicker">封堵勘测系统</text>
+      <text class="page-title">工作台</text>
+      <text class="header-meta">{{dateText}} · {{user.name || user.username || "现场人员"}}</text>
     </view>
-    <text class="hero-title">今天有 {{stats.today}} 项现场任务</text>
-    <text class="hero-sub">优先处理高风险和待提交单据。</text>
-    <view class="stat-row">
-      <view class="stat"><text class="stat-value">{{stats.today}}</text><text class="stat-label">今日待办</text></view>
-      <view class="stat"><text class="stat-value">{{stats.pending}}</text><text class="stat-label">待提交</text></view>
-      <view class="stat"><text class="stat-value">{{stats.risk}}</text><text class="stat-label">高风险</text></view>
-    </view>
+    <view class="brand-mark">ST</view>
   </view>
 
-  <view class="container">
-    <view class="segmented">
-      <view
-        wx:for="{{filters}}"
-        wx:key="*this"
-        class="segment {{filter === item ? 'active' : ''}}"
-        data-filter="{{item}}"
-        bindtap="onFilter"
-      >{{item}}</view>
+  <view class="workbench-content">
+    <view wx:if="{{error}}" class="state-card error-state">
+      <text class="state-title">数据未加载</text>
+      <text class="state-copy">{{error}}</text>
+      <button class="retry-button" bindtap="refresh">重新加载</button>
     </view>
 
-    <view class="task-list">
-      <view
-        wx:for="{{filteredTasks}}"
-        wx:key="id"
-        class="task-card"
-        data-id="{{item.id}}"
-        data-type="{{item.type}}"
-        bindtap="openTask"
-      >
-        <view class="task-top">
-          <text class="task-time">{{item.time}} · {{item.title}}</text>
-          <text class="pill risk-{{item.risk}}">{{item.risk === "critical" ? "极高风险" : item.risk === "high" ? "高风险" : item.risk === "medium" ? "中风险" : "低风险"}}</text>
-        </view>
-        <text class="task-title">{{item.site.name}}</text>
-        <text class="task-site">{{item.site.address}}</text>
-        <view class="task-foot">
-          <text class="pill {{item.status === '已完成' ? 'status-success' : item.status === '进行中' ? 'status-warning' : 'status-neutral'}}">{{item.status}}</text>
-          <text class="task-arrow">进入任务 ›</text>
+    <block wx:else>
+      <view class="summary-grid">
+        <view class="summary-card" wx:for="{{summaryCards}}" wx:key="label">
+          <text class="summary-value">{{loading ? "--" : item.value}}</text>
+          <text class="summary-label">{{item.label}}</text>
         </view>
       </view>
-      <view wx:if="{{filteredTasks.length === 0}}" class="empty-state">
-        <text class="title">今天没有待办任务</text>
-        <text class="detail">可以切换到“已完成”查看历史记录。</text>
+
+      <view class="section-header">
+        <text class="section-title">现场任务</text>
+        <text class="refresh-action" bindtap="refresh">{{loading ? "更新中" : "刷新"}}</text>
       </view>
-    </view>
+
+      <view class="filter-bar">
+        <view
+          wx:for="{{filters}}"
+          wx:key="status"
+          class="filter-item filter-{{item.tone}} {{activeStatus === item.status ? 'active' : ''}}"
+          data-status="{{item.status}}"
+          data-label="{{item.label}}"
+          bindtap="selectFilter"
+        >{{item.label}}</view>
+      </view>
+
+      <view wx:if="{{loading && tasks.length === 0}}" class="state-card loading-state">
+        <view class="loading-line" />
+        <view class="loading-line short" />
+        <text class="state-copy">正在加载任务</text>
+      </view>
+
+      <view wx:elif="{{tasks.length > 0}}" class="task-list">
+        <view
+          wx:for="{{tasks}}"
+          wx:key="id"
+          class="task-card"
+          data-id="{{item.id}}"
+          bindtap="openTask"
+        >
+          <view class="task-head">
+            <text class="task-no">{{item.report_no}}</text>
+            <text class="task-status {{item.statusClass}}">{{item.statusLabel}}</text>
+          </view>
+          <text class="task-customer">{{item.customer_name}}</text>
+          <view class="task-detail-row">
+            <text>{{item.service_type || "结构漏洞封堵"}}</text>
+            <text>{{item.displayDate}}</text>
+          </view>
+          <text class="task-address">{{item.service_address || "地址待补充"}}</text>
+          <view class="task-foot">
+            <text class="task-count">{{item.siteCount}} 个封堵部位</text>
+            <text class="task-link">查看详情</text>
+          </view>
+        </view>
+      </view>
+
+      <view wx:else class="state-card">
+        <text class="state-title">暂无{{activeFilterLabel}}任务</text>
+        <text class="state-copy">当前筛选下没有任务。</text>
+      </view>
+
+      <view wx:if="{{updatedAt}}" class="update-note">最后更新 {{updatedAt}}</view>
+    </block>
   </view>
 
   <bottom-nav current="tasks" />

@@ -28,6 +28,7 @@ declare function Component<T extends Record<string, any>>(
 ): void;
 
 declare function getApp<T = { globalData: any }>(): T;
+declare function getCurrentPages(): Array<{ route: string }>;
 
 declare function setTimeout(handler: () => void, timeout?: number): number;
 declare function clearTimeout(id: number): void;

@@ -1,5 +1,7 @@
 {
   "navigationBarTitleText": "报告",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTextStyle": "black",
   "usingComponents": {
     "bottom-nav": "/components/bottom-nav/index"
   }

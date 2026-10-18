@@ -100,10 +100,10 @@ test("the field client does not hard-code phone credentials or persist passwords
   assert.doesNotMatch(text, /(?<!\d)1[3-9]\d{9}(?!\d)/);
   assert.doesNotMatch(text, /password\s*:\s*["'][^"']+["']/i);
   assert.doesNotMatch(storage, /password/i);
-  assert.match(login, /saveSession\(\{[\s\S]*?phoneMasked:[\s\S]*?\}\);/);
+  assert.match(login, /loginWithPassword\(phone, password\)/);
+  assert.match(login, /saveAuth\(payload\)/);
   assert.doesNotMatch(login, /onLoad\(\)\s*\{[\s\S]*?reLaunch/);
-  assert.match(login, /try \{[\s\S]*?saveSession/);
-  assert.match(login, /error: "登录失败，请稍后重试"/);
+  assert.doesNotMatch(login, /setTimeout/);
 });
 
 test("field detail pages send unauthenticated users back to login", () => {
@@ -112,4 +112,48 @@ test("field detail pages send unauthenticated users back to login", () => {
     assert.match(source, /if \(!getSession\(\)\)|const session = getSession\(\);\s*if \(!session\)/);
     assert.match(source, /reLaunch\(\{ url: "\/pages\/login\/login" \}\)/);
   }
+});
+
+test("the workbench uses the production Tencent Cloud API and no local task data", () => {
+  const env = read("config/env.ts");
+  const api = read("utils/api.ts");
+  const tasks = read("pages/tasks/tasks.ts");
+
+  assert.match(env, /API_BASE_URL = "https:\/\/sunrgw\.cn"/);
+  assert.match(api, /\/api\/auth\/login/);
+  assert.match(api, /\/api\/dashboard\/summary/);
+  assert.match(api, /\/api\/workorders/);
+  assert.match(tasks, /getDashboardSummary/);
+  assert.match(tasks, /getWorkOrders/);
+  assert.match(tasks, /getWorkOrder/);
+  assert.doesNotMatch(tasks, /data\/mock/);
+  assert.doesNotMatch(tasks, /stats\.(today|pending|risk)|filteredTasks/);
+});
+
+test("the workbench follows the requested business visual system", () => {
+  const tasks = read("pages/tasks/tasks.wxml");
+  const taskLogic = read("pages/tasks/tasks.ts");
+  const styles = read("pages/tasks/tasks.wxss");
+  const navStyles = read("components/bottom-nav/index.wxss");
+
+  assert.match(taskLogic, /待处理/);
+  assert.match(taskLogic, /进行中/);
+  assert.match(taskLogic, /已完成/);
+  assert.match(tasks, /item\.statusLabel/);
+  assert.match(styles, /border-radius:\s*16rpx/);
+  assert.match(styles, /box-shadow:\s*0 8rpx 24rpx rgba\(17, 24, 39, 0\.06\)/);
+  assert.match(styles, /font-size:\s*36rpx/);
+  assert.match(styles, /font-size:\s*28rpx/);
+  assert.match(styles, /font-size:\s*24rpx/);
+  assert.match(styles, /\.status-pending\s*\{[\s\S]*?background:\s*#fdf1f1/);
+  assert.match(styles, /\.status-active\s*\{[\s\S]*?background:\s*#fff5e8/);
+  assert.match(styles, /\.status-done\s*\{[\s\S]*?background:\s*#eef7f0/);
+  assert.match(navStyles, /background:\s*#17211f/);
+  assert.match(navStyles, /\.bottom-nav-item\.active\s*\{[\s\S]*?color:\s*#fff/);
+});
+
+test("reports and profile pages use server data instead of static fixtures", () => {
+  assert.match(read("pages/reports/reports.ts"), /getWorkOrders\("approved", 1, 50\)/);
+  assert.match(read("pages/profile/profile.ts"), /getDashboardSummary/);
+  assert.doesNotMatch(read("pages/profile/profile.ts"), /clearQueue|syncNow|technician/);
 });

@@ -1,12 +1,13 @@
 .login-page {
   min-height: 100vh;
-  background: #f4f5f2;
+  background: #f5f7f6;
+  color: #18201d;
 }
 
-.login-hero {
-  padding: 54rpx 38rpx 48rpx;
-  background: #14201c;
-  color: #eef6f1;
+.login-header {
+  padding: 48rpx 32rpx 40rpx;
+  border-bottom: 1rpx solid #e8ecea;
+  background: #ffffff;
 }
 
 .login-brand {
@@ -16,115 +17,87 @@
 }
 
 .login-logo {
-  width: 76rpx;
-  height: 76rpx;
+  width: 80rpx;
+  height: 80rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 16rpx;
-  background: #0f766e;
-  color: #fff;
-  font-size: 32rpx;
+  background: #17211f;
+  color: #ffffff;
+  font-size: 28rpx;
   font-weight: 700;
 }
 
 .login-brand-name {
   display: block;
-  font-size: 32rpx;
+  font-size: 28rpx;
   font-weight: 700;
 }
 
 .login-brand-sub {
   display: block;
-  margin-top: 2rpx;
-  color: #8fa299;
-  font-size: 18rpx;
-  letter-spacing: 0;
+  margin-top: 16rpx;
+  color: #7a8580;
+  font-size: 24rpx;
 }
 
-.login-title {
+.login-heading {
   display: block;
-  margin-top: 42rpx;
-  max-width: 620rpx;
-  font-size: 46rpx;
+  margin-top: 48rpx;
+  font-size: 36rpx;
   font-weight: 700;
-  line-height: 1.28;
+  line-height: 1.35;
 }
 
-.login-sub {
+.login-description {
   display: block;
-  margin-top: 14rpx;
-  color: #a9b8b0;
+  margin-top: 16rpx;
+  color: #727d78;
   font-size: 24rpx;
   line-height: 1.6;
 }
 
-.login-stats {
-  display: flex;
-  gap: 14rpx;
-  margin-top: 34rpx;
-  padding-top: 22rpx;
-  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
+.login-body {
+  padding: 32rpx;
 }
 
-.login-stat {
-  flex: 1;
+.login-card {
+  padding: 32rpx;
+  border: 1rpx solid #e8ecea;
+  border-radius: 16rpx;
+  background: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(17, 24, 39, 0.06);
 }
 
-.login-stat-value {
+.form-title {
   display: block;
-  color: #fff;
   font-size: 36rpx;
   font-weight: 700;
 }
 
-.login-stat-label {
+.form-sub {
   display: block;
-  margin-top: 2rpx;
-  color: #8fa299;
-  font-size: 19rpx;
-}
-
-.login-body {
-  padding: 28rpx 28rpx 44rpx;
-}
-
-.login-card {
-  padding: 32rpx 28rpx;
-  border: 1rpx solid #dde3df;
-  border-radius: 16rpx;
-  background: #fff;
-  box-shadow: 0 16rpx 40rpx rgba(23, 32, 29, 0.06);
-}
-
-.login-card-title {
-  display: block;
-  font-size: 38rpx;
-  font-weight: 700;
-}
-
-.login-card-sub {
-  display: block;
-  margin-top: 6rpx;
-  color: #6b7771;
-  font-size: 22rpx;
+  margin-top: 16rpx;
+  color: #727d78;
+  font-size: 24rpx;
 }
 
 .login-input-wrap {
   display: flex;
   align-items: center;
-  gap: 14rpx;
-  height: 86rpx;
-  padding: 0 20rpx;
-  border: 1rpx solid #dde3df;
-  border-radius: 12rpx;
-  background: #fff;
+  gap: 16rpx;
+  height: 80rpx;
+  padding: 0 24rpx;
+  border: 1rpx solid #dfe5e2;
+  border-radius: 16rpx;
+  background: #ffffff;
 }
 
 .login-prefix {
-  padding-right: 14rpx;
-  border-right: 1rpx solid #dde3df;
-  color: #35433d;
+  padding-right: 16rpx;
+  border-right: 1rpx solid #dfe5e2;
+  color: #4f5b56;
   font-size: 24rpx;
 }
 
@@ -132,55 +105,60 @@
   flex: 1;
   min-width: 0;
   height: 80rpx;
-  font-size: 26rpx;
+  font-size: 28rpx;
 }
 
 .login-eye {
   flex: none;
-  color: #0f766e;
-  font-size: 21rpx;
+  color: #0f6b5c;
+  font-size: 24rpx;
 }
 
 .login-error {
   margin-top: 16rpx;
-  color: #b42318;
-  font-size: 21rpx;
+  color: #9a3f3b;
+  font-size: 24rpx;
+  line-height: 1.5;
 }
 
 .login-button {
   width: 100%;
-  height: 88rpx;
-  margin-top: 26rpx;
-  border-radius: 14rpx;
-  background: #0f766e;
-  color: #fff;
+  height: 80rpx;
+  margin-top: 32rpx;
+  border-radius: 16rpx;
+  background: #17211f;
+  color: #ffffff;
   font-size: 28rpx;
   font-weight: 600;
-  line-height: 88rpx;
+  line-height: 80rpx;
+}
+
+.login-button[disabled] {
+  opacity: 0.56;
 }
 
 .login-links {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14rpx;
-  margin-top: 18rpx;
+  gap: 16rpx;
+  margin-top: 16rpx;
 }
 
 .login-link {
-  color: #0f766e;
-  font-size: 21rpx;
+  color: #0f6b5c;
+  font-size: 24rpx;
 }
 
-.login-demo {
-  color: #9aa59f;
-  font-size: 19rpx;
+.login-security {
+  color: #8a938f;
+  font-size: 24rpx;
 }
 
 .login-foot {
   display: block;
-  margin-top: 22rpx;
-  color: #9aa59f;
-  font-size: 19rpx;
+  margin-top: 32rpx;
+  color: #8a938f;
+  font-size: 24rpx;
   text-align: center;
 }

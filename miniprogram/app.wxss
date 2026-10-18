@@ -1,5 +1,5 @@
 page {
-  background: #f4f5f2;
+  background: #f5f7f6;
   color: #17201d;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 28rpx;
@@ -29,7 +29,7 @@ button::after {
 }
 
 .container {
-  padding: 28rpx 28rpx 20rpx;
+  padding: 32rpx;
 }
 
 .hero {
@@ -79,14 +79,14 @@ button::after {
 }
 
 .hero-title {
-  margin-top: 30rpx;
-  font-size: 42rpx;
+  margin-top: 32rpx;
+  font-size: 36rpx;
   font-weight: 700;
   line-height: 1.25;
 }
 
 .hero-sub {
-  margin-top: 8rpx;
+  margin-top: 16rpx;
   color: #a9b8b0;
   font-size: 24rpx;
 }
@@ -139,15 +139,15 @@ button::after {
 }
 
 .card {
-  padding: 26rpx;
+  padding: 32rpx;
   border: 1rpx solid #dde3df;
   border-radius: 16rpx;
   background: #fff;
-  box-shadow: 0 8rpx 24rpx rgba(23, 32, 29, 0.045);
+  box-shadow: 0 8rpx 24rpx rgba(17, 24, 39, 0.06);
 }
 
 .section {
-  margin-top: 22rpx;
+  margin-top: 32rpx;
 }
 
 .section-head {
@@ -160,15 +160,15 @@ button::after {
 
 .section-title {
   display: block;
-  font-size: 30rpx;
+  font-size: 36rpx;
   font-weight: 700;
 }
 
 .section-sub {
   display: block;
-  margin-top: 4rpx;
+  margin-top: 8rpx;
   color: #6b7771;
-  font-size: 22rpx;
+  font-size: 24rpx;
 }
 
 .eyebrow {
@@ -196,10 +196,10 @@ button::after {
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  min-height: 76rpx;
-  padding: 0 28rpx;
-  border-radius: 14rpx;
-  font-size: 26rpx;
+  min-height: 80rpx;
+  padding: 0 32rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
   font-weight: 600;
 }
 
@@ -231,9 +231,9 @@ button::after {
   display: inline-flex;
   align-items: center;
   gap: 6rpx;
-  padding: 5rpx 12rpx;
+  padding: 8rpx 16rpx;
   border-radius: 999rpx;
-  font-size: 20rpx;
+  font-size: 24rpx;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -378,31 +378,31 @@ button::after {
 }
 
 .field {
-  margin-top: 18rpx;
+  margin-top: 32rpx;
 }
 
 .field-label {
   display: block;
-  margin-bottom: 8rpx;
+  margin-bottom: 16rpx;
   color: #6b7771;
-  font-size: 21rpx;
+  font-size: 24rpx;
 }
 
 .input,
 .textarea {
   width: 100%;
-  min-height: 76rpx;
-  padding: 0 20rpx;
+  min-height: 80rpx;
+  padding: 0 24rpx;
   border: 1rpx solid #dde3df;
-  border-radius: 12rpx;
+  border-radius: 16rpx;
   background: #fff;
   color: #17201d;
-  font-size: 26rpx;
+  font-size: 28rpx;
 }
 
 .textarea {
   min-height: 200rpx;
-  padding: 18rpx 20rpx;
+  padding: 24rpx;
   line-height: 1.6;
 }
 
@@ -410,9 +410,9 @@ button::after {
   display: flex;
   justify-content: space-between;
   gap: 20rpx;
-  padding: 14rpx 0;
+  padding: 16rpx 0;
   border-bottom: 1rpx solid #edf0ed;
-  font-size: 24rpx;
+  font-size: 28rpx;
 }
 
 .info-row:last-child {

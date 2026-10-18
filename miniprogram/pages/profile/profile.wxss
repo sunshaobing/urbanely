@@ -1,18 +1,26 @@
-.profile-hero {
-  padding-bottom: 34rpx;
+.profile-page {
+  min-height: 100vh;
+  padding-bottom: calc(160rpx + env(safe-area-inset-bottom));
+  background: #f5f7f6;
+  color: #18201d;
 }
 
-.profile-head {
+.profile-header {
   display: flex;
   align-items: center;
-  gap: 18rpx;
+  gap: 24rpx;
+  padding: 48rpx 32rpx 32rpx;
+  border-bottom: 1rpx solid #e8ecea;
+  background: #ffffff;
 }
 
 .profile-avatar {
   width: 112rpx;
   height: 112rpx;
+  flex: none;
   border-radius: 50%;
-  border: 3rpx solid rgba(255, 255, 255, 0.3);
+  border: 1rpx solid #e0e6e3;
+  background: #edf1ef;
 }
 
 .profile-copy {
@@ -22,56 +30,117 @@
 
 .profile-name {
   display: block;
-  color: #fff;
   font-size: 36rpx;
   font-weight: 700;
 }
 
 .profile-role {
   display: block;
-  margin-top: 4rpx;
-  color: #b8c6bf;
-  font-size: 21rpx;
+  margin-top: 16rpx;
+  color: #4f5b56;
+  font-size: 28rpx;
 }
 
-.profile-phone {
+.profile-meta {
   display: block;
-  margin-top: 3rpx;
-  color: #8fa299;
-  font-size: 20rpx;
+  margin-top: 16rpx;
+  color: #727d78;
+  font-size: 24rpx;
+}
+
+.profile-content {
+  padding: 32rpx;
+}
+
+.metric-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.metric-card,
+.state-card,
+.menu-card {
+  border: 1rpx solid #e8ecea;
+  border-radius: 16rpx;
+  background: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(17, 24, 39, 0.06);
+}
+
+.metric-card {
+  width: calc(50% - 8rpx);
+  padding: 32rpx;
+}
+
+.metric-value {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.metric-label {
+  display: block;
+  margin-top: 16rpx;
+  color: #727d78;
+  font-size: 24rpx;
+}
+
+.state-card {
+  padding: 48rpx 32rpx;
+}
+
+.state-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.state-copy {
+  display: block;
+  margin-top: 16rpx;
+  color: #727d78;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.retry-button {
+  height: 80rpx;
+  margin-top: 32rpx;
+  border-radius: 16rpx;
+  background: #17211f;
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 80rpx;
 }
 
 .menu-card {
-  padding: 4rpx 24rpx;
+  margin-top: 32rpx;
+  padding: 0 32rpx;
 }
 
 .menu-row {
   display: flex;
   align-items: center;
   gap: 16rpx;
-  padding: 22rpx 0;
-  border-bottom: 1rpx solid #edf0ed;
+  padding: 32rpx 0;
+  border-bottom: 1rpx solid #edf0ee;
 }
 
 .menu-row:last-child {
   border-bottom: 0;
 }
 
-.menu-row.danger .menu-title,
-.menu-row.danger .menu-icon {
-  color: #b42318;
-}
-
 .menu-icon {
-  width: 52rpx;
-  height: 52rpx;
+  width: 56rpx;
+  height: 56rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12rpx;
-  background: #eef2ef;
-  color: #0f766e;
-  font-size: 25rpx;
+  border-radius: 16rpx;
+  background: #edf1ef;
+  color: #4f5b56;
+  font-size: 28rpx;
 }
 
 .menu-copy {
@@ -81,25 +150,23 @@
 
 .menu-title {
   display: block;
-  font-size: 25rpx;
+  font-size: 28rpx;
   font-weight: 600;
 }
 
 .menu-sub {
   display: block;
-  margin-top: 3rpx;
-  color: #6b7771;
-  font-size: 20rpx;
+  margin-top: 16rpx;
+  color: #727d78;
+  font-size: 24rpx;
 }
 
 .menu-arrow {
-  color: #9aa59f;
-  font-size: 28rpx;
+  color: #8a938f;
+  font-size: 32rpx;
 }
 
-.profile-note {
-  margin-top: 18rpx;
-  padding: 22rpx;
-  border-radius: 14rpx;
-  background: #e6f4f0;
+.menu-row.danger .menu-title,
+.menu-row.danger .menu-icon {
+  color: #9a3f3b;
 }
