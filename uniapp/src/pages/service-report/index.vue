@@ -1,0 +1,1087 @@
+<script setup lang="ts">
+import { computed, reactive, ref } from "vue";
+import { onLoad } from "@dcloudio/uni-app";
+import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
+import PageHeader from "../../components/PageHeader.vue";
+import PhotoGrid from "../../components/PhotoGrid.vue";
+import SignaturePad from "../../components/SignaturePad.vue";
+import {
+  getWorkOrder,
+  saveDraft,
+  saveServiceReport,
+  signServiceReport,
+  submitServiceReport,
+  toId,
+  uploadMedia,
+  uploadedUrl,
+} from "../../utils/api";
+import { getSession } from "../../utils/auth";
+import { readLocalDraft, removeLocalDraft, writeLocalDraft } from "../../utils/localDraft";
+import { nowTime, today } from "../../utils/present";
+import type {
+  PhotoDraft,
+  ServiceReportMaterial,
+  SignatureRecord,
+  WorkOrder,
+} from "../../utils/types";
+
+interface ServiceDraft {
+  date: string;
+  startTime: string;
+  endTime: string;
+  contact: string;
+  servicePerson: string;
+  serviceProject: string;
+  taskTag: string;
+  content: string;
+  followUp: string;
+  riskFollow: string;
+  customerComment: string;
+  materials: ServiceReportMaterial[];
+  beforePhotos: PhotoDraft[];
+  afterPhotos: PhotoDraft[];
+  responsibleSignature: string;
+  customerSignature: string;
+}
+
+const steps = ["服务信息", "材料与部位", "前后照片", "服务记录", "签字提交"];
+const step = ref(0);
+const taskId = ref(0);
+const task = ref<WorkOrder | null>(null);
+const loading = ref(true);
+const error = ref("");
+const saving = ref(false);
+const submitting = ref(false);
+
+const form = reactive<ServiceDraft>({
+  date: today(),
+  startTime: nowTime(),
+  endTime: "",
+  contact: "",
+  servicePerson: "",
+  serviceProject: "结构漏洞封堵",
+  taskTag: "结构封堵",
+  content: "",
+  followUp: "",
+  riskFollow: "",
+  customerComment: "",
+  materials: [],
+  beforePhotos: [],
+  afterPhotos: [],
+  responsibleSignature: "",
+  customerSignature: "",
+});
+
+const progress = computed(() => Math.round(((step.value + 1) / steps.length) * 100));
+const servicePersonName = computed(
+  () => getSession()?.name || task.value?.engineer_name || "封堵责任人",
+);
+
+function draftKey() {
+  return `service-${taskId.value}`;
+}
+
+function hydrate(saved: ServiceDraft) {
+  form.date = saved.date || form.date;
+  form.startTime = saved.startTime || form.startTime;
+  form.endTime = saved.endTime || "";
+  form.contact = saved.contact || form.contact;
+  form.servicePerson = saved.servicePerson || form.servicePerson;
+  form.serviceProject = saved.serviceProject || form.serviceProject;
+  form.taskTag = saved.taskTag || form.taskTag;
+  form.content = saved.content || "";
+  form.followUp = saved.followUp || "";
+  form.riskFollow = saved.riskFollow || "";
+  form.customerComment = saved.customerComment || "";
+  form.materials = saved.materials?.length ? saved.materials : form.materials;
+  form.beforePhotos = saved.beforePhotos || [];
+  form.afterPhotos = saved.afterPhotos || [];
+  form.responsibleSignature = saved.responsibleSignature || "";
+  form.customerSignature = saved.customerSignature || "";
+}
+
+function addMaterial() {
+  form.materials.push({
+    name: "",
+    qty: 1,
+    unit: "kg",
+    usage_method: "",
+    target: "",
+    region: "",
+    sort_order: form.materials.length,
+  });
+}
+
+function removeMaterial(index: number) {
+  form.materials.splice(index, 1);
+}
+
+function onDateChange(event: { detail: { value: string } }) {
+  form.date = event.detail.value;
+}
+
+function validateStep() {
+  if (step.value === 0 && (!form.date || !form.servicePerson.trim())) {
+    uni.showToast({ title: "请填写服务日期和现场人员", icon: "none" });
+    return false;
+  }
+  if (
+    step.value === 1 &&
+    !form.materials.some((item) => item.name.trim() && Number(item.qty) > 0)
+  ) {
+    uni.showToast({ title: "请至少登记一项材料", icon: "none" });
+    return false;
+  }
+  if (step.value === 2 && (!form.beforePhotos.length || !form.afterPhotos.length)) {
+    uni.showToast({ title: "请补齐封堵前后照片", icon: "none" });
+    return false;
+  }
+  return true;
+}
+
+function nextStep() {
+  if (!validateStep()) return;
+  if (step.value < steps.length - 1) step.value += 1;
+}
+
+function previousStep() {
+  if (step.value > 0) step.value -= 1;
+}
+
+function draftData() {
+  return {
+    task_id: taskId.value,
+    report_no: task.value?.report_no || "",
+    ...form,
+    beforePhotos: form.beforePhotos.map((photo) => ({
+      path: photo.path,
+      caption: photo.caption || "",
+    })),
+    afterPhotos: form.afterPhotos.map((photo) => ({
+      path: photo.path,
+      caption: photo.caption || "",
+    })),
+  };
+}
+
+async function persistDraft() {
+  if (saving.value) return;
+  saving.value = true;
+  writeLocalDraft(draftKey(), draftData());
+  try {
+    await saveDraft("service_report", draftKey(), draftData());
+    uni.showToast({ title: "草稿已保存", icon: "success" });
+  } catch {
+    uni.showToast({ title: "已保存到本机", icon: "none" });
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function uploadPhoto(path: string, caption: string) {
+  if (path.startsWith("data:") || path.startsWith("http")) return path;
+  const payload = await uploadMedia("/api/service-reports/upload", path, {
+    taken_at: new Date().toISOString(),
+    location: task.value?.service_address || "",
+  });
+  const url = uploadedUrl(payload);
+  if (!url) throw new Error(`图片上传失败：${caption || "未命名图片"}`);
+  return url;
+}
+
+async function uploadSignature(path: string) {
+  if (path.startsWith("data:") || path.startsWith("http")) return path;
+  const payload = await uploadMedia("/api/service-reports/upload", path, {
+    taken_at: new Date().toISOString(),
+    location: task.value?.service_address || "",
+  });
+  const url = uploadedUrl(payload);
+  if (!url) throw new Error("签字图片上传失败");
+  return url;
+}
+
+async function uploadPhotoGroup(photos: PhotoDraft[], prefix: string) {
+  const uploaded = [];
+  for (let index = 0; index < photos.length; index += 1) {
+    const photo = photos[index];
+    uploaded.push({
+      url: await uploadPhoto(photo.path, photo.caption || `${prefix} ${index + 1}`),
+      caption: photo.caption || `${prefix} ${index + 1}`,
+      sort_order: index,
+    });
+  }
+  return uploaded;
+}
+
+function reportPayload(
+  photos: Array<{ url: string; caption: string; sort_order: number }>,
+  riskPhotos: Array<{ url: string; caption: string; sort_order: number }>,
+) {
+  return {
+    customer_id: task.value?.customer_id || 0,
+    customer_name: task.value?.customer_name || "",
+    address: task.value?.service_address || "",
+    contact: form.contact,
+    contact_phone: task.value?.contact_phone || "",
+    service_project: form.serviceProject,
+    task_tag: form.taskTag,
+    service_date: form.date,
+    start_time: form.startTime,
+    end_time: form.endTime,
+    service_person: form.servicePerson,
+    content: form.content,
+    follow_up: form.followUp,
+    risk_follow: form.riskFollow,
+    customer_comment: form.customerComment,
+    status: "draft",
+    materials: form.materials.map((item, index) => ({
+      name: item.name,
+      qty: Number(item.qty) || 0,
+      unit: item.unit,
+      usage_method: item.usage_method || "",
+      target: item.target || "",
+      area_size: item.area_size || "",
+      region: item.region || "",
+      sort_order: index,
+    })),
+    photos,
+    risk_photos: riskPhotos,
+  };
+}
+
+async function submit() {
+  if (submitting.value) return;
+  if (!task.value?.customer_id) {
+    uni.showToast({ title: "作业单缺少客户ID，请先同步主数据", icon: "none" });
+    return;
+  }
+  if (!form.beforePhotos.length || !form.afterPhotos.length) {
+    uni.showToast({ title: "请补齐封堵前后照片", icon: "none" });
+    return;
+  }
+  if (!form.responsibleSignature || !form.customerSignature) {
+    uni.showToast({ title: "请完成双方手写签字", icon: "none" });
+    return;
+  }
+  submitting.value = true;
+  uni.showLoading({ title: "正在提交记录", mask: true });
+  try {
+    const riskPhotos = await uploadPhotoGroup(form.beforePhotos, "封堵前");
+    const photos = await uploadPhotoGroup(form.afterPhotos, "封堵后");
+    const signatures: SignatureRecord[] = [
+      {
+        role: "responsible",
+        name: servicePersonName.value,
+        image_url: await uploadSignature(form.responsibleSignature),
+      },
+      {
+        role: "customer",
+        name: form.contact || task.value.contact || "客户代表",
+        image_url: await uploadSignature(form.customerSignature),
+      },
+    ];
+    const payload = reportPayload(photos, riskPhotos);
+    const saved = await saveServiceReport(0, payload);
+    const reportId = toId(saved);
+    if (!reportId) {
+      throw new Error("服务端未返回封堵记录编号");
+    }
+    for (const signature of signatures) {
+      await signServiceReport(reportId, {
+        role: signature.role,
+        name: signature.name,
+        image_url: signature.image_url,
+      });
+    }
+    await submitServiceReport(reportId);
+    removeLocalDraft(draftKey());
+    uni.hideLoading();
+    uni.showModal({
+      title: "封堵记录已提交",
+      content: "封堵前后照片、材料和双方签字已保存。",
+      showCancel: false,
+      success: () => {
+        uni.reLaunch({ url: "/pages/workbench/index" });
+      },
+    });
+  } catch (submitError) {
+    uni.hideLoading();
+    const message =
+      submitError instanceof Error ? submitError.message : "封堵记录提交失败";
+    uni.showToast({ title: message, icon: "none", duration: 3000 });
+  } finally {
+    submitting.value = false;
+  }
+}
+
+onLoad(async (query) => {
+  if (!getSession()) {
+    uni.reLaunch({ url: "/pages/login/index" });
+    return;
+  }
+  taskId.value = Number(query?.taskId || 0);
+  if (!taskId.value) {
+    error.value = "缺少任务编号";
+    loading.value = false;
+    return;
+  }
+  try {
+    task.value = await getWorkOrder(taskId.value);
+    form.contact = task.value.contact || "";
+    form.servicePerson = getSession()?.name || "封堵责任人";
+    form.materials = task.value.materials.map((material, index) => ({
+      name: material.material_name,
+      qty: material.qty || 1,
+      unit: material.unit || "个",
+      usage_method: "",
+      target: "鼠洞封堵",
+      region: "",
+      sort_order: index,
+    }));
+    if (!form.materials.length) addMaterial();
+    const saved = readLocalDraft<ServiceDraft>(draftKey());
+    if (saved) hydrate(saved);
+  } catch (loadError) {
+    error.value =
+      loadError instanceof Error ? loadError.message : "任务加载失败";
+  } finally {
+    loading.value = false;
+  }
+});
+</script>
+
+<template>
+  <view class="service-page">
+    <PageHeader
+      title="封堵记录"
+      :subtitle="task ? `${task.report_no} · ${task.customer_name}` : '结构封堵服务单'"
+      kicker="SEALING REPORT"
+      dark
+      back
+    >
+      <view class="step-summary">
+        <view class="step-meta">
+          <text>STEP {{ step + 1 }} / {{ steps.length }}</text>
+          <text>{{ steps[step] }}</text>
+        </view>
+        <view class="step-track">
+          <view class="step-fill" :style="{ width: `${progress}%` }" />
+        </view>
+      </view>
+    </PageHeader>
+
+    <view v-if="loading" class="page-content">
+      <view class="empty-state">
+        <text class="empty-title">正在加载任务</text>
+        <text class="empty-copy">请稍候，正在读取封堵作业单。</text>
+      </view>
+    </view>
+
+    <view v-else-if="error && !task" class="page-content">
+      <view class="empty-state">
+        <text class="empty-title">无法开始记录</text>
+        <text class="empty-copy">{{ error }}</text>
+      </view>
+    </view>
+
+    <template v-else-if="task">
+      <view class="page-content service-content">
+        <view v-if="step === 0" class="step-panel">
+          <view class="site-card card">
+            <view class="site-topline">
+              <text class="site-kicker">SEALING SITE</text>
+              <text class="site-code mono">{{ task.report_no }}</text>
+            </view>
+            <text class="site-name">{{ task.customer_name }}</text>
+            <text class="site-address">{{ task.service_address || "地址待补充" }}</text>
+            <view class="site-contact">
+              <view>
+                <text class="contact-label">客户对接人</text>
+                <text class="contact-value">{{ task.contact || "—" }}</text>
+              </view>
+              <view>
+                <text class="contact-label">联系电话</text>
+                <text class="contact-value">{{ task.contact_phone || "—" }}</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="form-card card">
+            <view class="field">
+              <text class="field-label">服务日期</text>
+              <picker mode="date" :value="form.date" @change="onDateChange">
+                <view class="picker-value">
+                  <text>{{ form.date }}</text>
+                  <UniIcons type="calendar" size="16" color="#65726c" />
+                </view>
+              </picker>
+            </view>
+            <view class="form-grid">
+              <view class="field compact-field">
+                <text class="field-label">开始时间</text>
+                <input
+                  v-model="form.startTime"
+                  class="field-input"
+                  placeholder="09:00"
+                  placeholder-class="field-placeholder"
+                />
+              </view>
+              <view class="field compact-field">
+                <text class="field-label">结束时间</text>
+                <input
+                  v-model="form.endTime"
+                  class="field-input"
+                  placeholder="11:30"
+                  placeholder-class="field-placeholder"
+                />
+              </view>
+            </view>
+            <view class="field">
+              <text class="field-label">现场联系人</text>
+              <input
+                v-model="form.contact"
+                class="field-input"
+                placeholder="客户现场对接人"
+                placeholder-class="field-placeholder"
+              />
+            </view>
+            <view class="field">
+              <text class="field-label">服务人员</text>
+              <input
+                v-model="form.servicePerson"
+                class="field-input"
+                placeholder="封堵责任人"
+                placeholder-class="field-placeholder"
+              />
+            </view>
+            <view class="form-grid">
+              <view class="field compact-field">
+                <text class="field-label">服务项目</text>
+                <input
+                  v-model="form.serviceProject"
+                  class="field-input"
+                  placeholder="结构漏洞封堵"
+                  placeholder-class="field-placeholder"
+                />
+              </view>
+              <view class="field compact-field">
+                <text class="field-label">任务标签</text>
+                <input
+                  v-model="form.taskTag"
+                  class="field-input"
+                  placeholder="结构封堵"
+                  placeholder-class="field-placeholder"
+                />
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view v-else-if="step === 1" class="step-panel">
+          <view class="section-head">
+            <view>
+              <text class="section-title">封堵部位</text>
+              <text class="section-copy">来自作业单的现场点位</text>
+            </view>
+            <text class="choice-count">{{ task.sites.length }} 个</text>
+          </view>
+          <view v-if="task.sites.length" class="site-list">
+            <view v-for="(site, index) in task.sites" :key="site.id" class="seal-site card">
+              <view class="seal-index">{{ String(index + 1).padStart(2, "0") }}</view>
+              <view class="seal-copy">
+                <text class="seal-name">{{ site.name }}</text>
+                <text class="seal-type">{{ site.hole_type || "结构孔洞" }}</text>
+              </view>
+              <text class="seal-state">已登记</text>
+            </view>
+          </view>
+          <view v-else class="empty-state compact-empty">
+            <text class="empty-title">作业单暂无封堵部位</text>
+            <text class="empty-copy">请先在管理端补充点位信息。</text>
+          </view>
+
+          <view class="section-head material-head">
+            <view>
+              <text class="section-title">材料明细</text>
+              <text class="section-copy">登记本次施工使用的材料与用量</text>
+            </view>
+            <button class="add-item" @tap="addMaterial">
+              <UniIcons type="plus" size="16" color="#1d7659" />
+              <text>添加</text>
+            </button>
+          </view>
+
+          <view class="material-list">
+            <view
+              v-for="(material, index) in form.materials"
+              :key="index"
+              class="material-item card"
+            >
+              <view class="material-head">
+                <text class="material-title">材料 {{ index + 1 }}</text>
+                <view class="remove-item" @tap="removeMaterial(index)">
+                  <UniIcons type="trash" size="16" color="#a8443c" />
+                </view>
+              </view>
+              <input
+                v-model="material.name"
+                class="field-input item-field"
+                placeholder="材料名称"
+                placeholder-class="field-placeholder"
+              />
+              <view class="material-qty-row">
+                <input
+                  v-model.number="material.qty"
+                  class="field-input qty-input"
+                  type="digit"
+                  placeholder="用量"
+                  placeholder-class="field-placeholder"
+                />
+                <input
+                  v-model="material.unit"
+                  class="field-input unit-input"
+                  placeholder="单位"
+                  placeholder-class="field-placeholder"
+                />
+              </view>
+              <input
+                v-model="material.usage_method"
+                class="field-input item-field"
+                placeholder="使用方式，例如填充缝隙"
+                placeholder-class="field-placeholder"
+              />
+              <input
+                v-model="material.region"
+                class="field-input item-field"
+                placeholder="使用区域"
+                placeholder-class="field-placeholder"
+              />
+            </view>
+          </view>
+        </view>
+
+        <view v-else-if="step === 2" class="step-panel">
+          <view class="section-head">
+            <view>
+              <text class="section-title">封堵前后照片</text>
+              <text class="section-copy">前图记录孔洞全貌，后图记录封堵边缘与完成状态</text>
+            </view>
+          </view>
+          <view class="photo-card card">
+            <PhotoGrid
+              v-model:photos="form.beforePhotos"
+              title="封堵前图片"
+              hint="每个封堵部位至少保留一张全景照片"
+              :max="100"
+            />
+          </view>
+          <view class="photo-card card">
+            <PhotoGrid
+              v-model:photos="form.afterPhotos"
+              title="封堵后图片"
+              hint="与封堵前照片成对归档"
+              :max="100"
+            />
+          </view>
+          <view class="hint-card">
+            <text class="hint-title">影像要求</text>
+            <text class="hint-copy">
+              封堵前后照片仅用于封堵服务单，勘测单只保留结构风险图片。
+            </text>
+          </view>
+        </view>
+
+        <view v-else-if="step === 3" class="step-panel">
+          <view class="section-head">
+            <view>
+              <text class="section-title">服务记录</text>
+              <text class="section-copy">补充施工内容、后续建议和客户意见</text>
+            </view>
+          </view>
+          <view class="form-card card">
+            <view class="field">
+              <text class="field-label">服务内容</text>
+              <textarea
+                v-model="form.content"
+                class="field-textarea"
+                placeholder="填写本次封堵施工内容"
+                placeholder-class="field-placeholder"
+              />
+            </view>
+            <view class="field">
+              <text class="field-label">后续跟进</text>
+              <textarea
+                v-model="form.followUp"
+                class="field-textarea short-textarea"
+                placeholder="填写复检安排或后续服务建议"
+                placeholder-class="field-placeholder"
+              />
+            </view>
+            <view class="field">
+              <text class="field-label">风险跟进</text>
+              <textarea
+                v-model="form.riskFollow"
+                class="field-textarea short-textarea"
+                placeholder="填写仍需关注的风险"
+                placeholder-class="field-placeholder"
+              />
+            </view>
+            <view class="field">
+              <text class="field-label">客户意见</text>
+              <textarea
+                v-model="form.customerComment"
+                class="field-textarea short-textarea"
+                placeholder="填写客户现场意见"
+                placeholder-class="field-placeholder"
+              />
+            </view>
+          </view>
+        </view>
+
+        <view v-else class="step-panel">
+          <view class="submit-summary card">
+            <text class="summary-title">提交前确认</text>
+            <view class="summary-grid">
+              <view class="summary-item">
+                <text class="summary-label">封堵部位</text>
+                <text class="summary-value">{{ task.sites.length }} 个</text>
+              </view>
+              <view class="summary-item">
+                <text class="summary-label">材料</text>
+                <text class="summary-value">{{ form.materials.length }} 项</text>
+              </view>
+              <view class="summary-item">
+                <text class="summary-label">封堵前</text>
+                <text class="summary-value">{{ form.beforePhotos.length }} 张</text>
+              </view>
+              <view class="summary-item">
+                <text class="summary-label">封堵后</text>
+                <text class="summary-value">{{ form.afterPhotos.length }} 张</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="signature-note">
+            <text class="signature-note-title">双方在同一台手机上签字</text>
+            <text class="signature-note-copy">
+              封堵责任人先签，再把手机交给客户代表签第二笔；两笔签名完成后才能提交。
+            </text>
+          </view>
+
+          <SignaturePad
+            v-model:value="form.responsibleSignature"
+            title="封堵责任人签字"
+            :signer="`${servicePersonName} · 封堵责任人`"
+            hint="由封堵责任人在本机手写签名"
+          />
+          <view class="signature-gap" />
+          <SignaturePad
+            v-model:value="form.customerSignature"
+            title="客户代表签字"
+            :signer="`${form.contact || task.contact || '客户代表'} · 客户代表`"
+            hint="由客户代表在同一台手机上签名"
+          />
+        </view>
+      </view>
+
+      <view class="bottom-actions safe-bottom">
+        <button
+          class="btn-secondary action-button"
+          :disabled="step === 0"
+          @tap="previousStep"
+        >
+          上一步
+        </button>
+        <button class="draft-button" :disabled="saving" @tap="persistDraft">
+          {{ saving ? "保存中" : "存草稿" }}
+        </button>
+        <button
+          v-if="step < steps.length - 1"
+          class="btn-primary action-button"
+          @tap="nextStep"
+        >
+          下一步
+        </button>
+        <button
+          v-else
+          class="btn-primary action-button"
+          :disabled="submitting"
+          @tap="submit"
+        >
+          {{ submitting ? "提交中" : "提交记录" }}
+        </button>
+      </view>
+    </template>
+  </view>
+</template>
+
+<style scoped>
+.service-page {
+  min-height: 100vh;
+  padding-bottom: calc(138rpx + env(safe-area-inset-bottom));
+  background: #eef4ef;
+}
+
+.step-summary {
+  margin-top: 24rpx;
+}
+
+.step-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-bottom: 10rpx;
+  color: #a5d0be;
+  font-size: 21rpx;
+}
+
+.service-content {
+  padding-top: 24rpx;
+}
+
+.step-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.site-card,
+.form-card,
+.photo-card,
+.submit-summary {
+  padding: 22rpx;
+}
+
+.site-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.site-kicker {
+  color: #1d7659;
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+}
+
+.site-code {
+  color: #65726c;
+  font-size: 20rpx;
+}
+
+.site-name {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.site-address {
+  display: block;
+  margin-top: 8rpx;
+  color: #65726c;
+  font-size: 23rpx;
+  line-height: 1.5;
+}
+
+.site-contact {
+  display: flex;
+  gap: 48rpx;
+  margin-top: 18rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #eaf0ec;
+}
+
+.contact-label,
+.contact-value {
+  display: block;
+}
+
+.contact-label {
+  color: #7b8881;
+  font-size: 20rpx;
+}
+
+.contact-value {
+  margin-top: 3rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.form-grid {
+  display: flex;
+  gap: 16rpx;
+}
+
+.compact-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.picker-value {
+  height: 84rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8rpx;
+  padding: 0 18rpx;
+  border: 1rpx solid #d4dfd7;
+  border-radius: 16rpx;
+  background: #ffffff;
+  color: #14231d;
+  font-size: 25rpx;
+}
+
+.choice-count {
+  color: #1d7659;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.site-list,
+.material-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.seal-site {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 18rpx;
+}
+
+.seal-index {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10rpx;
+  background: #e4f1e9;
+  color: #1d7659;
+  font-family: "SFMono-Regular", "Cascadia Code", monospace;
+  font-size: 18rpx;
+  font-weight: 700;
+}
+
+.seal-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.seal-name,
+.seal-type {
+  display: block;
+}
+
+.seal-name {
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.seal-type {
+  margin-top: 3rpx;
+  color: #65726c;
+  font-size: 21rpx;
+}
+
+.seal-state {
+  flex: none;
+  color: #3f7452;
+  font-size: 21rpx;
+}
+
+.compact-empty {
+  padding: 32rpx 20rpx;
+}
+
+.material-head {
+  margin-top: 6rpx;
+}
+
+.add-item {
+  min-height: 58rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  padding: 0 16rpx;
+  border: 1rpx solid #bdd7c9;
+  border-radius: 12rpx;
+  background: #f0f7f3;
+  color: #1d7659;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.material-item {
+  padding: 20rpx;
+}
+
+.material-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.material-title {
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.remove-item {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-field {
+  margin-top: 12rpx;
+}
+
+.material-qty-row {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+
+.qty-input {
+  flex: 1;
+}
+
+.unit-input {
+  width: 160rpx;
+}
+
+.short-textarea {
+  min-height: 130rpx;
+}
+
+.hint-card {
+  padding: 18rpx 20rpx;
+  border: 1rpx solid #cfe0d6;
+  border-radius: 16rpx;
+  background: #e8f3ec;
+}
+
+.hint-title,
+.hint-copy {
+  display: block;
+}
+
+.hint-title {
+  color: #145c46;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.hint-copy {
+  margin-top: 5rpx;
+  color: #486d5c;
+  font-size: 21rpx;
+  line-height: 1.55;
+}
+
+.summary-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.summary-item {
+  width: calc(50% - 6rpx);
+  padding: 14rpx 16rpx;
+  border-radius: 12rpx;
+  background: #f1f6f2;
+}
+
+.summary-label,
+.summary-value {
+  display: block;
+}
+
+.summary-label {
+  color: #65726c;
+  font-size: 20rpx;
+}
+
+.summary-value {
+  margin-top: 3rpx;
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.signature-note {
+  padding: 18rpx 20rpx;
+  border-radius: 16rpx;
+  background: #fbf0de;
+}
+
+.signature-note-title,
+.signature-note-copy {
+  display: block;
+}
+
+.signature-note-title {
+  color: #8a5c20;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.signature-note-copy {
+  margin-top: 5rpx;
+  color: #8a5c20;
+  font-size: 21rpx;
+  line-height: 1.55;
+}
+
+.signature-gap {
+  height: 2rpx;
+}
+
+.bottom-actions {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
+  display: flex;
+  gap: 10rpx;
+  padding: 16rpx 24rpx;
+  border-top: 1rpx solid #dce6df;
+  background: rgba(245, 248, 244, 0.98);
+}
+
+.action-button {
+  flex: 1;
+  min-height: 78rpx;
+}
+
+.draft-button {
+  min-width: 118rpx;
+  min-height: 78rpx;
+  padding: 0 16rpx;
+  border: 1rpx solid #cbd9d1;
+  border-radius: 16rpx;
+  background: #ffffff;
+  color: #1d7659;
+  font-size: 23rpx;
+  font-weight: 600;
+}
+</style>

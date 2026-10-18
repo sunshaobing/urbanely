@@ -36,6 +36,10 @@ pnpm build
 pnpm typecheck
 pnpm exec tsc --noEmit -p ../miniprogram/tsconfig.json
 node --test tests/miniprogram-contract.test.mjs
+node --test tests/*.test.mjs
+cd ../uniapp
+pnpm type-check
+pnpm build:mp-weixin
 ```
 
 ## Architecture Rules

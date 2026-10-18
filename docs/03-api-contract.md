@@ -25,6 +25,18 @@
 - `GET /api/dashboard/summary`
 - `GET /api/workorders`
 - `GET /api/workorders/{order_id}`
+- `GET|POST /api/risk-surveys`
+- `PUT /api/risk-surveys/{survey_id}`
+- `POST /api/risk-surveys/upload`
+- `POST /api/risk-surveys/{survey_id}/submit`
+- `GET|POST /api/service-reports`
+- `PUT /api/service-reports/{report_id}`
+- `POST /api/service-reports/upload`
+- `POST /api/service-reports/{report_id}/sign`
+- `POST /api/service-reports/{report_id}/submit`
+- `GET|POST /api/drafts`
+- `GET /api/quick-phrases`
+- `POST /api/auth/change-password`
 
 `/api/v1` 保留为后续正式 API 版本的约定；迁移时应通过统一 API 客户端切换，不在页面内散落地址。
 

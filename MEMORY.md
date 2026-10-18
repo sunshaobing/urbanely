@@ -36,11 +36,11 @@
 ## Design Decisions
 
 - Position the product as a chain-supermarket PCO field-service and structural-sealing system, not a generic inspection app.
-- Use a native WeChat Mini Program for field capture and keep the responsive Web app as the operations console. Native canvas, camera and file APIs are the reason for skipping a cross-platform wrapper at this stage.
+- Use uni-app + Vue 3 + TypeScript as the primary field client and compile it to a native WeChat Mini Program. Keep the responsive Web app as the operations console; `miniprogram/` is only a reference implementation.
 - Make `Finding` (隐患点) the core object. A finding owns location, pest evidence, severity, photos, treatment, sealing, acceptance, and recheck.
 - Replace multi-select pseudo-text with master data, reusable templates, and free-text notes.
 - Generate A4 reports from versioned snapshots; keep PDF, signature, and photo hashes.
-- Prioritize a native WeChat Mini Program field experience and a responsive desktop operations console.
+- Prioritize a production-connected uni-app WeChat field experience and a responsive desktop operations console.
 - Keep finance/reconciliation in phase 2; the MVP must close the survey-to-sealing-to-recheck loop first.
 
 ## Pitfalls
@@ -84,6 +84,12 @@
 - The fresh database contains three accounts (`admin`, `gongcheng`, `fw`), base settings and standard sealing materials, with zero customers, work orders and reports. Random initial passwords are stored only in root-only `/root/pco-initial-credentials.txt`.
 - The deployed auth endpoint accepts either username or phone, so the Mini Program can sign in with the seeded field phone number.
 - Mini Program login now preserves backend 401 errors on the login page instead of treating invalid credentials as an expired session; production domain and API connectivity were verified from WeChat DevTools.
+- The uni-app field client was redesigned as a green-led field console with login, workbench, task detail, risk survey, sealing report, document archive, profile and change-password pages.
+- The workbench and archive use server summary, work-order status filters, `risk-surveys` and `service-reports`; the field forms use the production draft, upload, signature, submit and PDF endpoints. No local task fixtures are used.
+- Risk survey photos use a five-column wrapping grid with a hard 100-image cap. Survey and sealing flows each capture two handwritten signatures: surveyor/customer and responsible/customer.
+- uni-app type-check, `build:mp-weixin` and H5 build pass. The H5 build was exercised with Playwright against mocked API responses at 390px: login, workbench, task detail, survey first step, risk-photo grid, sealing report, archive and profile had no horizontal overflow or runtime errors.
+- The final `mp-weixin` build contains 68 files and is about 287.7 KB; production builds contain the `https://sunrgw.cn` fallback and no local mock endpoint or test token.
+- The root `project.config.json` now points `miniprogramRoot` at `uniapp/dist/build/mp-weixin/`; the old native Mini Program remains reference-only.
 - The production web root was replaced with the new `app/dist` build. The recovered legacy `static_web` was removed from the server, and Caddy now sends `Cache-Control: no-store` for the entry page.
 - Web login now stores the production API token and resolves the real user from `/api/auth/login`.
 - The Web personnel page now uses `/api/personnel` for list/create/update, supports adding personnel, editing accounts, enabling/disabling accounts, and changing user passwords. The signed-in user can also change their own password through `/api/auth/change-password`.
@@ -91,7 +97,8 @@
 ## Remaining Gaps
 
 - Web prototype still uses local sample data; Mini Program login, workbench, report archive and profile now use the production API.
-- Mini Program inspection/sealing capture pages still need migration from local drafts to production form APIs, COS upload, retry/backoff, idempotent sync, and conflict handling.
+- COS attachment IDs, retry/backoff, idempotent batch sync and optimistic-conflict handling still need to replace the current direct upload URL flow.
+- The new uni-app capture forms have not yet been exercised against the production account or real device camera/signature hardware; only type, build and mocked visual flows are verified.
 - The sealing table schema is inferred from the PDF; a logged-in Feishu export is still needed for a complete migration.
 - Customer contract attachment coverage is 0/186; backfill tasks are required.
 - Real customer data must not be used in UI fixtures without a privacy review.
