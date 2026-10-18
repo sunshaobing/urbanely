@@ -14,6 +14,7 @@ import {
 import { getSite, tasks, topHazards, weeklyTrend } from "../data";
 import type { PageKey } from "../types";
 import { Metric, RiskPill, SectionTitle, StatusPill } from "../components/ui";
+import { PageHeader } from "../components/PageHeader";
 
 interface DashboardProps {
   onNavigate: (page: PageKey) => void;
@@ -25,23 +26,29 @@ export function Dashboard({ onNavigate, onOpenInspection }: DashboardProps) {
 
   return (
     <div className="page dashboard-page">
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">SUNDAY · 2026.10.18</span>
-          <h1>运营工作台</h1>
-          <p>先处理高风险和逾期复检，再看今天的作业节奏。</p>
-        </div>
-        <div className="page-actions">
-          <button type="button" className="button secondary" onClick={() => onNavigate("reports")}>
-            <FileText size={16} />
-            导出周报
-          </button>
-          <button type="button" className="button primary" onClick={() => onNavigate("inspections")}>
-            <Plus size={16} />
-            新建勘测
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="运营总览 · 2026.10.18"
+        title="运营工作台"
+        description="先处理高风险和逾期复检，再看今天的作业节奏。"
+        meta={
+          <>
+            <span className="live-dot" />
+            数据更新于 2 分钟前 · 8 家门店
+          </>
+        }
+        actions={
+          <>
+            <button type="button" className="button secondary" onClick={() => onNavigate("reports")}>
+              <FileText size={16} />
+              导出周报
+            </button>
+            <button type="button" className="button primary" onClick={() => onNavigate("inspections")}>
+              <Plus size={16} />
+              新建勘测
+            </button>
+          </>
+        }
+      />
 
       <section className="metrics-strip">
         <Metric
@@ -72,6 +79,47 @@ export function Dashboard({ onNavigate, onOpenInspection }: DashboardProps) {
           icon={<CheckCircle2 size={18} />}
           tone="blue"
         />
+      </section>
+
+      <section className="panel flow-panel">
+        <SectionTitle
+          title="闭环运行图"
+          subtitle="从勘测到复检的当前存量，风险最高的环节优先处理"
+          action={<span className="live-badge"><i />实时</span>}
+        />
+        <div className="flow-map">
+          <div className="flow-node flow-teal">
+            <span className="flow-index">01</span>
+            <span className="flow-label">现场勘测</span>
+            <strong>6</strong>
+            <small>待提交 2 · 今日 4</small>
+            <div className="flow-progress"><span style={{ width: "62%" }} /></div>
+          </div>
+          <div className="flow-connector" />
+          <div className="flow-node flow-amber">
+            <span className="flow-index">02</span>
+            <span className="flow-label">隐患整改</span>
+            <strong>8</strong>
+            <small>高风险 3 · 待复检 5</small>
+            <div className="flow-progress"><span style={{ width: "78%" }} /></div>
+          </div>
+          <div className="flow-connector" />
+          <div className="flow-node flow-blue">
+            <span className="flow-index">03</span>
+            <span className="flow-label">结构封堵</span>
+            <strong>5</strong>
+            <small>施工中 3 · 待验收 2</small>
+            <div className="flow-progress"><span style={{ width: "48%" }} /></div>
+          </div>
+          <div className="flow-connector" />
+          <div className="flow-node flow-red">
+            <span className="flow-index">04</span>
+            <span className="flow-label">复检闭环</span>
+            <strong>3</strong>
+            <small>逾期 3 · 今日到期 1</small>
+            <div className="flow-progress"><span style={{ width: "34%" }} /></div>
+          </div>
+        </div>
       </section>
 
       <div className="dashboard-grid">

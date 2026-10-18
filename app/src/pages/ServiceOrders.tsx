@@ -13,6 +13,7 @@ import {
 import { getSite, serviceOrders } from "../data";
 import type { ServiceOrder, ServiceStatus } from "../types";
 import { ProgressBar, RiskPill, SectionTitle, StatusPill } from "../components/ui";
+import { PageHeader } from "../components/PageHeader";
 
 interface ServiceOrdersProps {
   onNotify: (message: string) => void;
@@ -41,19 +42,23 @@ export function ServiceOrders({ onNotify }: ServiceOrdersProps) {
 
   return (
     <div className="page">
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">PCO SERVICE / EVIDENCE</span>
-          <h1>PCO 服务单</h1>
-          <p>服务内容、物料、照片和双签字放在同一张单据里，不再散落在多选项和附件字段中。</p>
-        </div>
-        <div className="page-actions">
+      <PageHeader
+        eyebrow="PCO SERVICE / EVIDENCE"
+        title="PCO 服务单"
+        description="服务内容、物料、照片和双签字放在同一张单据里，不再散落在多选项和附件字段中。"
+        meta={
+          <>
+            <span className="live-dot" />
+            本月 12 张 · 4 张待复核 · 证据完整率 91.2%
+          </>
+        }
+        actions={
           <button type="button" className="button primary" onClick={() => onNotify("已创建 PCO 服务单草稿")}>
             <FileText size={16} />
             新建服务单
           </button>
-        </div>
-      </div>
+        }
+      />
 
       <section className="metrics-strip compact-metrics">
         <div className="mini-metric">

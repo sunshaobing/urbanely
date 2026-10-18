@@ -20,6 +20,8 @@ import type { Finding, Inspection, InspectionStatus, RiskLevel } from "../types"
 import { SurveyReportSheet } from "../components/ReportSheet";
 import { SignatureCapture, SignaturePartyCard } from "../components/SignatureCapture";
 import { useInspectionSignatures } from "../signatureStore";
+import { PageHeader } from "../components/PageHeader";
+import { WorkflowRail } from "../components/WorkflowRail";
 import {
   BackButton,
   Chip,
@@ -79,19 +81,23 @@ export function Inspections({ search, focusId, onNotify, onOpenReport }: Inspect
 
   return (
     <div className="page">
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">SURVEY / FINDINGS</span>
-          <h1>现场勘测</h1>
-          <p>把结构漏洞、虫害证据和整改建议落到具体隐患点。</p>
-        </div>
-        <div className="page-actions">
+      <PageHeader
+        eyebrow="SURVEY / FINDINGS"
+        title="现场勘测"
+        description="把结构漏洞、虫害证据和整改建议落到具体隐患点。"
+        meta={
+          <>
+            <span className="live-dot" />
+            6 张勘测单 · 3 张待整改 · 1 张逾期
+          </>
+        }
+        actions={
           <button type="button" className="button primary" onClick={() => onNotify("已创建一张空白勘测单草稿")}>
             <Plus size={16} />
             新建勘测
           </button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="filter-bar">
         <div className="segmented" role="tablist" aria-label="勘测状态筛选">
@@ -208,6 +214,14 @@ function InspectionDetail({
   const overdue = inspection.recheckDate < "2026-10-18" && inspection.status !== "已闭环";
   const bothSigned = Boolean(signatures.surveyor && signatures.customer);
   const reportInspection = { ...inspection, signatures };
+  const workflowIndex =
+    inspection.status === "待整改"
+      ? 1
+      : inspection.status === "整改中"
+        ? 2
+        : inspection.status === "待复检"
+          ? 3
+          : 4;
 
   useEffect(() => {
     return () => {
@@ -315,6 +329,16 @@ function InspectionDetail({
           </button>
         </div>
       </div>
+
+      <WorkflowRail
+        activeIndex={workflowIndex}
+        steps={[
+          { label: "现场勘测", hint: "报告已生成" },
+          { label: "隐患登记", hint: `${inspection.findings.length} 个隐患点` },
+          { label: "结构封堵", hint: `${inspection.findings.filter((item) => item.status !== "已封堵").length} 项待处理` },
+          { label: "复检闭环", hint: `复检 ${inspection.recheckDate}` },
+        ]}
+      />
 
       <div className="detail-tabs" role="tablist">
         {tabs.map((item) => (

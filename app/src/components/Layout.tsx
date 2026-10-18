@@ -1,9 +1,14 @@
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import {
+  ArrowUpRight,
   Bell,
+  ChevronDown,
   ClipboardCheck,
+  Command,
   FileText,
   LayoutDashboard,
+  Plus,
   Search,
   Settings2,
   ShieldCheck,
@@ -12,6 +17,7 @@ import {
   Wrench,
 } from "lucide-react";
 import type { PageKey } from "../types";
+import { CommandPalette } from "./CommandPalette";
 
 const navItems: Array<{
   key: PageKey;
@@ -38,6 +44,12 @@ const pageTitles: Record<PageKey, string> = {
   field: "现场模式",
 };
 
+const navGroups: Array<{ label: string; keys: PageKey[] }> = [
+  { label: "运营", keys: ["dashboard", "inspections", "sealing", "services"] },
+  { label: "主数据", keys: ["customers", "reports"] },
+  { label: "现场", keys: ["field"] },
+];
+
 interface LayoutProps {
   activePage: PageKey;
   onNavigate: (page: PageKey) => void;
@@ -47,6 +59,19 @@ interface LayoutProps {
 }
 
 export function Layout({ activePage, onNavigate, search, onSearch, children }: LayoutProps) {
+  const [commandOpen, setCommandOpen] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setCommandOpen((current) => !current);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   return (
     <div className="app-shell">
       <aside className="sidebar no-print">
@@ -56,29 +81,55 @@ export function Layout({ activePage, onNavigate, search, onSearch, children }: L
           </div>
           <div>
             <strong>申汰 PCO</strong>
-            <span>FIELD OPERATIONS</span>
+            <span>FIELD OPERATIONS · v0.1</span>
           </div>
         </div>
 
+        <div className="workspace-switch" title="当前工作空间">
+          <span className="workspace-avatar">ST</span>
+          <div>
+            <strong>申汰实业</strong>
+            <span>华东 + 华南 · 8 家门店</span>
+          </div>
+          <ChevronDown size={14} />
+        </div>
+
         <nav className="nav" aria-label="主导航">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = item.key === activePage;
-            return (
-              <button
-                key={item.key}
-                type="button"
-                className={`nav-item ${active ? "active" : ""}`}
-                onClick={() => onNavigate(item.key)}
-                title={item.hint}
-              >
-                <Icon size={18} />
-                <span>{item.label}</span>
-                {active ? <i /> : null}
-              </button>
-            );
-          })}
+          {navGroups.map((group) => (
+            <div className="nav-group" key={group.label}>
+              <span className="nav-group-label">{group.label}</span>
+              {group.keys.map((key) => {
+                const item = navItems.find((navItem) => navItem.key === key);
+                if (!item) return null;
+                const Icon = item.icon;
+                const active = item.key === activePage;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    className={`nav-item ${active ? "active" : ""}`}
+                    onClick={() => onNavigate(item.key)}
+                    title={item.hint}
+                  >
+                    <Icon size={18} />
+                    <span>{item.label}</span>
+                    {active ? <i /> : null}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
+
+        <div className="sidebar-risk">
+          <span className="eyebrow">TODAY'S RISK</span>
+          <strong>3 家门店逾期复检</strong>
+          <p>趣坊·水围店已逾期 3 天，建议优先处理。</p>
+          <button type="button" onClick={() => onNavigate("inspections")}>
+            查看风险队列
+            <ArrowUpRight size={13} />
+          </button>
+        </div>
 
         <div className="sidebar-foot">
           <div className="sync-card">
@@ -97,10 +148,16 @@ export function Layout({ activePage, onNavigate, search, onSearch, children }: L
 
       <div className="workspace">
         <header className="topbar no-print">
-          <div className="crumb">
-            <span>申汰实业</span>
-            <i>/</i>
-            <strong>{pageTitles[activePage]}</strong>
+          <div className="topbar-context">
+            <div className="crumb">
+              <span>申汰实业</span>
+              <i>/</i>
+              <strong>{pageTitles[activePage]}</strong>
+            </div>
+            <span className="system-status">
+              <i />
+              系统运行正常
+            </span>
           </div>
           <div className="topbar-tools">
             <label className="search-box">
@@ -111,15 +168,32 @@ export function Layout({ activePage, onNavigate, search, onSearch, children }: L
                 placeholder="搜索门店、报告编号"
                 aria-label="搜索门店或报告编号"
               />
-              <kbd>⌘ K</kbd>
             </label>
+            <button
+              type="button"
+              className="command-trigger"
+              onClick={() => setCommandOpen(true)}
+              title="打开快捷命令"
+            >
+              <Command size={15} />
+              <span>快捷命令</span>
+              <kbd>⌘ K</kbd>
+            </button>
+            <button type="button" className="quick-create" onClick={() => onNavigate("inspections")}>
+              <Plus size={15} />
+              新建
+            </button>
             <span className="today">2026.10.18 · 周日</span>
             <button type="button" className="icon-button" aria-label="通知" title="通知">
               <Bell size={18} />
               <i className="notification-dot" />
             </button>
-            <div className="avatar" title="Eric · 运营负责人">
-              E
+            <div className="user-chip" title="Eric · 运营负责人">
+              <div className="avatar">E</div>
+              <div>
+                <strong>Eric</strong>
+                <span>运营负责人</span>
+              </div>
             </div>
           </div>
         </header>
@@ -147,6 +221,12 @@ export function Layout({ activePage, onNavigate, search, onSearch, children }: L
             );
           })}
       </nav>
+
+      <CommandPalette
+        open={commandOpen}
+        onClose={() => setCommandOpen(false)}
+        onNavigate={onNavigate}
+      />
     </div>
   );
 }

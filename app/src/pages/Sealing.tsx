@@ -19,6 +19,8 @@ import type { SealingOrder, SealingStatus, SignatureImage } from "../types";
 import { SealingReportSheet } from "../components/ReportSheet";
 import { SignatureCapture, SignaturePartyCard } from "../components/SignatureCapture";
 import { getSealingSignatures, useSealingSignatures } from "../signatureStore";
+import { PageHeader } from "../components/PageHeader";
+import { WorkflowRail } from "../components/WorkflowRail";
 import {
   BackButton,
   Chip,
@@ -60,19 +62,23 @@ export function Sealing({ onNotify, onOpenReport }: SealingProps) {
 
   return (
     <div className="page">
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">SEALING / ACCEPTANCE</span>
-          <h1>结构封堵</h1>
-          <p>把勘测隐患变成施工部位、材料用量和可验收的前后照片。</p>
-        </div>
-        <div className="page-actions">
+      <PageHeader
+        eyebrow="SEALING / ACCEPTANCE"
+        title="结构封堵"
+        description="把勘测隐患变成施工部位、材料用量和可验收的前后照片。"
+        meta={
+          <>
+            <span className="live-dot" />
+            3 张封堵单 · 2 张待验收 · 1 张施工中
+          </>
+        }
+        actions={
           <button type="button" className="button primary" onClick={() => onNotify("已创建封堵单草稿，请选择来源勘测单")}>
             <Plus size={16} />
             新建封堵单
           </button>
-        </div>
-      </div>
+        }
+      />
 
       <section className="metrics-strip compact-metrics">
         <div className="mini-metric">
@@ -185,6 +191,15 @@ function SealingDetail({
   const reportOrder = { ...order, signatures, signed: bothSigned };
   const completed = order.items.filter((item) => item.result === "已封堵").length;
   const progress = Math.round((completed / Math.max(1, order.items.length)) * 100);
+  const workflowIndex = isSigned
+    ? 4
+    : order.status === "草稿"
+      ? 0
+      : order.status === "已排期"
+        ? 1
+        : order.status === "施工中"
+          ? 2
+          : 3;
 
   const update = (patch: Partial<SealingOrder>) => {
     setOrder((current) => ({ ...current, ...patch }));
@@ -253,17 +268,16 @@ function SealingDetail({
         </div>
       </div>
 
-      <div className="process-steps">
-        {["立案", "施工登记", "影像归档", "客户验收", "复检闭环"].map((step, index) => {
-          const active = index <= (isSigned ? 3 : 2);
-          return (
-            <div className={`process-step ${active ? "active" : ""}`} key={step}>
-              <span>{active ? <Check size={13} /> : index + 1}</span>
-              <strong>{step}</strong>
-            </div>
-          );
-        })}
-      </div>
+      <WorkflowRail
+        activeIndex={workflowIndex}
+        steps={[
+          { label: "立案", hint: order.reportNo },
+          { label: "施工登记", hint: `${order.leader} 负责` },
+          { label: "影像归档", hint: `${order.items.filter((item) => item.afterPhoto).length} 组前后照片` },
+          { label: "客户验收", hint: bothSigned ? "双方已签" : "待双方签字" },
+          { label: "复检闭环", hint: order.frequency },
+        ]}
+      />
 
       <div className="detail-tabs">
         {tabs.map((item) => (

@@ -16,6 +16,7 @@ import type { ReportTemplate } from "../types";
 import { SealingReportSheet, SurveyReportSheet } from "../components/ReportSheet";
 import { SectionTitle, StatusPill } from "../components/ui";
 import { useInspectionSignatures, useSealingSignatures } from "../signatureStore";
+import { PageHeader } from "../components/PageHeader";
 
 interface ReportsProps {
   initialTemplate: ReportTemplate;
@@ -60,13 +61,19 @@ export function Reports({
 
   return (
     <div className="page reports-page">
-      <div className="page-heading no-print">
-        <div>
-          <span className="eyebrow">REPORTS / SNAPSHOTS</span>
-          <h1>报告中心</h1>
-          <p>结构化数据生成 A4 快照，报告版本、照片和签字可追溯。</p>
-        </div>
-        <div className="page-actions">
+      <PageHeader
+        className="no-print"
+        eyebrow="REPORTS / SNAPSHOTS"
+        title="报告中心"
+        description="结构化数据生成 A4 快照，报告版本、照片和签字可追溯。"
+        meta={
+          <>
+            <span className="live-dot" />
+            当前模板 v2.3 · 已生成 3 个版本
+          </>
+        }
+        actions={
+          <>
           <button
             type="button"
             className="button secondary"
@@ -87,8 +94,9 @@ export function Reports({
             <Printer size={16} />
             打印 / 导出 PDF
           </button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="reports-layout">
         <aside className="panel report-templates no-print">

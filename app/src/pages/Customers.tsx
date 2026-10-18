@@ -14,6 +14,7 @@ import {
 import { inspections, sealingOrders, serviceOrders, sites } from "../data";
 import type { RiskLevel, Site } from "../types";
 import { ProgressBar, RiskPill, SectionTitle, StatusPill } from "../components/ui";
+import { PageHeader } from "../components/PageHeader";
 
 interface CustomersProps {
   onNotify: (message: string) => void;
@@ -40,19 +41,46 @@ export function Customers({ onNotify }: CustomersProps) {
 
   return (
     <div className="page">
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">CUSTOMERS / SITES</span>
-          <h1>客户与门店</h1>
-          <p>合同、服务频率、风险和未闭环隐患放在同一个门店视图里。</p>
-        </div>
-        <div className="page-actions">
+      <PageHeader
+        eyebrow="CUSTOMERS / SITES"
+        title="客户与门店"
+        description="合同、服务频率、风险和未闭环隐患放在同一个门店视图里。"
+        meta={
+          <>
+            <span className="live-dot" />
+            146 家进行中 · 40 家已终止 · 8 家重点门店
+          </>
+        }
+        actions={
           <button type="button" className="button primary" onClick={() => onNotify("已创建客户草稿")}>
             <Building2 size={16} />
             新建客户
           </button>
+        }
+      />
+
+      <section className="metrics-strip compact-metrics">
+        <div className="mini-metric">
+          <span>进行中客户</span>
+          <strong>146</strong>
+          <small>商超 142 · 企业 4</small>
         </div>
-      </div>
+        <div className="mini-metric">
+          <span>合同待补</span>
+          <strong>3</strong>
+          <small>需要补录合同附件</small>
+        </div>
+        <div className="mini-metric">
+          <span>高风险门店</span>
+          <strong>2</strong>
+          <small>其中 1 家极高风险</small>
+        </div>
+        <div className="mini-metric">
+          <span>未闭环隐患</span>
+          <strong>8</strong>
+          <small>分布在 5 家门店</small>
+        </div>
+      </section>
 
       <div className="filter-bar">
         <label className="inline-search customer-search">

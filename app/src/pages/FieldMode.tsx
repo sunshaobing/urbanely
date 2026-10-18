@@ -19,6 +19,7 @@ import { getSite, inspections } from "../data";
 import { Chip, PhotoTile, ProgressBar, RiskPill, StatusPill } from "../components/ui";
 import { SignatureCapture, SignaturePartyCard } from "../components/SignatureCapture";
 import { useInspectionSignatures } from "../signatureStore";
+import { PageHeader } from "../components/PageHeader";
 
 interface FieldModeProps {
   onNotify: (message: string) => void;
@@ -86,19 +87,23 @@ export function FieldMode({ onNotify }: FieldModeProps) {
 
   return (
     <div className="page field-page">
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">FIELD PWA / OFFLINE FIRST</span>
-          <h1>现场模式</h1>
-          <p>手机端先保证能填、能拍、能存，再考虑网络。</p>
-        </div>
-        <div className="page-actions">
+      <PageHeader
+        eyebrow="FIELD PWA / OFFLINE FIRST"
+        title="现场模式"
+        description="手机端先保证能填、能拍、能存，再考虑网络。"
+        meta={
+          <>
+            <span className="live-dot" />
+            本机：王三毛 · 勘测单 KC-2026-BG-128
+          </>
+        }
+        actions={
           <span className="pill status-success">
             <Wifi size={12} />
             在线 · 已同步
           </span>
-        </div>
-      </div>
+        }
+      />
 
       <div className="field-layout">
         <div className="phone-shell">

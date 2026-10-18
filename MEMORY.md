@@ -86,4 +86,5 @@
 - Local commit author: `Eric <urbanely@163.com>`.
 - `tmp/`, `node_modules/`, `dist/`, logs, and local env files are ignored.
 - `AGENTS.md` now requires one Git commit per completed change and relevant tests/validation before delivery.
+- Integrated UI pass: grouped sidebar, workspace context, command palette, dashboard flow map, shared page headers, workflow rails, and responsive table handling.
 
