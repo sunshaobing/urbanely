@@ -129,6 +129,7 @@ test("the field workflow follows survey approval, dispatch, check-in, sealing an
   assert.match(detail, /checkIn/);
   assert.match(detail, /approveSealing/);
   assert.match(detail, /openReportPdf/);
+  assert.match(detail, /steps\.filter\(\(step\) => step\.done\)\.length/);
   assert.match(api, /reviewWorkOrder/);
   assert.match(api, /checkinServiceReport/);
 });
@@ -186,6 +187,9 @@ test("survey and sealing flows capture both handwritten signatures", () => {
   assert.match(signaturePad, /<canvas/);
   assert.match(signaturePad, /@touchstart/);
   assert.match(signaturePad, /canvasToTempFilePath/);
+  assert.match(signaturePad, /nativeCanvas/);
+  assert.match(signaturePad, /querySelector\?\.\("canvas"\)/);
+  assert.match(signaturePad, /toDataURL/);
   assert.match(survey, /勘测人员签字确认/);
   assert.match(survey, /客户代表签字/);
   assert.match(serviceReport, /封堵责任人签字/);

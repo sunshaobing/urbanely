@@ -57,7 +57,11 @@ const currentIndex = computed(() => workflow.value.currentIndex);
 const currentStep = computed(() => workflow.value.steps[currentIndex.value] ?? null);
 const progress = computed(() =>
   workflow.value.steps.length
-    ? Math.round((currentIndex.value / workflow.value.steps.length) * 100)
+    ? Math.round(
+        (workflow.value.steps.filter((step) => step.done).length /
+          workflow.value.steps.length) *
+          100,
+      )
     : 0,
 );
 const canApprove = computed(() =>

@@ -47,10 +47,24 @@ let context: CanvasLike | null = null;
 let lastX = 0;
 let lastY = 0;
 
+function nativeCanvas() {
+  const CanvasConstructor =
+    typeof HTMLCanvasElement !== "undefined" ? HTMLCanvasElement : null;
+  const dom = canvasRef.value as unknown as
+    | (HTMLElement & {
+        querySelector?: (selector: string) => Element | null;
+      })
+    | null;
+  if (!dom) return null;
+  if (CanvasConstructor && dom instanceof CanvasConstructor) return dom;
+  const inner = dom.querySelector?.("canvas");
+  return CanvasConstructor && inner instanceof CanvasConstructor ? inner : null;
+}
+
 function canvasContext() {
   if (context) return context;
-  const dom = canvasRef.value;
-  if (dom && typeof dom.getContext === "function") {
+  const dom = nativeCanvas();
+  if (dom) {
     context = dom.getContext("2d") as unknown as CanvasLike;
     if (context) {
       context.lineWidth = 5;
@@ -81,7 +95,7 @@ function flush(ctx: CanvasLike) {
 
 function pointFromEvent(event: TouchEvent) {
   const touch = event.touches?.[0] || event.changedTouches?.[0];
-  const dom = canvasRef.value;
+  const dom = nativeCanvas();
   if (dom && touch) {
     const rect = dom.getBoundingClientRect();
     return {
@@ -140,8 +154,8 @@ function clear() {
 
 function saveCanvas() {
   return new Promise<string>((resolve, reject) => {
-    const dom = canvasRef.value;
-    if (dom && typeof dom.toDataURL === "function") {
+    const dom = nativeCanvas();
+    if (dom) {
       resolve(dom.toDataURL("image/png"));
       return;
     }
