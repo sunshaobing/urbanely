@@ -24,6 +24,11 @@ import { ensureBrand } from "../../utils/brand";
 import { openReportPdf, reportPdfPath } from "../../utils/pdf";
 import { displayDate, displayDay } from "../../utils/present";
 import {
+  fieldHome,
+  ownTasks,
+  roleMode,
+} from "../../utils/roles";
+import {
   deriveWorkflow,
   dispatchPayload,
   relatedRiskSurvey,
@@ -53,13 +58,47 @@ const workflow = computed(() =>
     ? deriveWorkflow(task.value, survey.value, serviceReport.value)
     : { steps: [], currentIndex: 0 },
 );
-const currentIndex = computed(() => workflow.value.currentIndex);
-const currentStep = computed(() => workflow.value.steps[currentIndex.value] ?? null);
+const roleView = computed(() => roleMode(session.value?.role || ""));
+const visibleStepKeys = computed(() => {
+  if (roleView.value === "survey") {
+    return ["survey", "surveySign", "surveyApproval"];
+  }
+  if (roleView.value === "sealing") {
+    return [
+      "accept",
+      "checkin",
+      "beforePhotos",
+      "afterPhotos",
+      "sealSign",
+      "sealApproval",
+      "generateReport",
+    ];
+  }
+  return workflow.value.steps.map((step) => step.key);
+});
+const visibleSteps = computed(() =>
+  workflow.value.steps.filter((step) =>
+    visibleStepKeys.value.includes(step.key),
+  ),
+);
+const visibleCurrentIndex = computed(() => {
+  const index = visibleSteps.value.findIndex((step) => !step.done);
+  return index === -1 ? Math.max(0, visibleSteps.value.length - 1) : index;
+});
+const fullCurrentStep = computed(
+  () => workflow.value.steps[workflow.value.currentIndex] ?? null,
+);
+const currentStep = computed(() =>
+  fullCurrentStep.value &&
+  visibleStepKeys.value.includes(fullCurrentStep.value.key)
+    ? fullCurrentStep.value
+    : null,
+);
 const progress = computed(() =>
-  workflow.value.steps.length
+  visibleSteps.value.length
     ? Math.round(
-        (workflow.value.steps.filter((step) => step.done).length /
-          workflow.value.steps.length) *
+        (visibleSteps.value.filter((step) => step.done).length /
+          visibleSteps.value.length) *
           100,
       )
     : 0,
@@ -76,6 +115,11 @@ const approvalWaiting = computed(
 );
 const actionLabel = computed(() => {
   const key = currentStep.value?.key;
+  if (!key) {
+    if (roleView.value === "survey") return "等待后续流程";
+    if (roleView.value === "sealing") return "等待派单";
+    return "流程已完成";
+  }
   if (key === "survey") return "开始勘测";
   if (key === "surveySign") return "完成勘测双签";
   if (key === "surveyApproval") return canApprove.value ? "审批勘测报告" : "等待审批";
@@ -88,6 +132,13 @@ const actionLabel = computed(() => {
   if (key === "sealApproval") return canApprove.value ? "审批封堵报告" : "提交审批";
   return "生成报告";
 });
+const actionDisabled = computed(
+  () =>
+    !currentStep.value ||
+    actionLoading.value ||
+    relatedLoading.value ||
+    approvalWaiting.value,
+);
 
 function errorText(value: unknown) {
   return value instanceof Error ? value.message : "任务加载失败";
@@ -105,6 +156,20 @@ async function load() {
     task.value = await getWorkOrder(taskId.value);
     session.value = getSession();
     await loadRelated(task.value);
+    const mode = roleMode(session.value?.role || "");
+    if (
+      !session.value ||
+      mode === "none" ||
+      ownTasks(
+        [task.value],
+        session.value,
+        mode,
+        serviceReport.value ? [serviceReport.value] : [],
+      ).length === 0
+    ) {
+      uni.reLaunch({ url: fieldHome(session.value?.role || "") });
+      return;
+    }
   } catch (loadError) {
     error.value = errorText(loadError);
   } finally {
@@ -368,9 +433,9 @@ onLoad((query) => {
         <view class="workflow-card card">
           <view class="workflow-head">
             <view>
-              <text class="workflow-kicker">PROCESS / {{ currentIndex + 1 }} OF {{ workflow.steps.length }}</text>
-              <text class="workflow-title">{{ currentStep?.label || "现场流转" }}</text>
-              <text class="workflow-hint">{{ currentStep?.hint || "正在同步流程状态" }}</text>
+              <text class="workflow-kicker">PROCESS / {{ visibleCurrentIndex + 1 }} OF {{ visibleSteps.length }}</text>
+              <text class="workflow-title">{{ currentStep?.label || actionLabel }}</text>
+              <text class="workflow-hint">{{ currentStep?.hint || "当前角色无需处理后续节点" }}</text>
             </view>
             <text class="workflow-percent">{{ progress }}%</text>
           </view>
@@ -379,12 +444,12 @@ onLoad((query) => {
           </view>
           <view class="process-list">
             <view
-              v-for="(step, index) in workflow.steps"
+              v-for="(step, index) in visibleSteps"
               :key="step.key"
               class="process-step"
               :class="{
                 done: step.done,
-                active: index === currentIndex && !step.done,
+                active: index === visibleCurrentIndex && !step.done,
               }"
             >
               <view class="process-rail">
@@ -397,14 +462,14 @@ onLoad((query) => {
                   />
                   <text v-else>{{ String(index + 1).padStart(2, "0") }}</text>
                 </view>
-                <view v-if="index < workflow.steps.length - 1" class="process-line" />
+                <view v-if="index < visibleSteps.length - 1" class="process-line" />
               </view>
               <view class="process-copy">
                 <text class="process-label">{{ step.label }}</text>
                 <text class="process-hint">{{ step.hint }}</text>
               </view>
               <text class="process-state">
-                {{ step.done ? "已完成" : index === currentIndex ? "当前" : "待处理" }}
+                {{ step.done ? "已完成" : index === visibleCurrentIndex ? "当前" : "待处理" }}
               </text>
             </view>
           </view>
@@ -551,7 +616,7 @@ onLoad((query) => {
         </button>
         <button
           class="btn-primary bottom-button"
-          :disabled="actionLoading || relatedLoading || approvalWaiting"
+          :disabled="actionDisabled"
           @tap="runCurrentAction"
         >
           <UniIcons type="right" size="18" color="#ffffff" />

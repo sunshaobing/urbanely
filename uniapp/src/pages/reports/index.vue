@@ -14,6 +14,7 @@ import {
 import { getSession } from "../../utils/auth";
 import { openReportPdf, reportPdfPath } from "../../utils/pdf";
 import { displayDay, riskLabel } from "../../utils/present";
+import { canUseReports, fieldHome } from "../../utils/roles";
 import type { RiskSurvey, ServiceReport } from "../../utils/types";
 
 type ArchiveTab = "risk" | "service";
@@ -44,8 +45,13 @@ function errorText(value: unknown) {
 }
 
 async function load() {
-  if (!getSession()) {
+  const current = getSession();
+  if (!current) {
     uni.reLaunch({ url: "/pages/login/index" });
+    return;
+  }
+  if (!canUseReports(current.role)) {
+    uni.reLaunch({ url: fieldHome(current.role) });
     return;
   }
   if (loading.value) return;

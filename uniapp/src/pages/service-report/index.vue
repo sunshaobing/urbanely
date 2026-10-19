@@ -19,6 +19,7 @@ import {
 import { getSession } from "../../utils/auth";
 import { readLocalDraft, removeLocalDraft, writeLocalDraft } from "../../utils/localDraft";
 import { nowTime, today } from "../../utils/present";
+import { canUseSealing, fieldHome } from "../../utils/roles";
 import type {
   PhotoDraft,
   ServiceReport,
@@ -355,8 +356,13 @@ async function submit() {
 }
 
 onLoad(async (query) => {
-  if (!getSession()) {
+  const current = getSession();
+  if (!current) {
     uni.reLaunch({ url: "/pages/login/index" });
+    return;
+  }
+  if (!canUseSealing(current.role)) {
+    uni.reLaunch({ url: fieldHome(current.role) });
     return;
   }
   taskId.value = Number(query?.taskId || 0);

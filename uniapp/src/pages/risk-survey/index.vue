@@ -19,6 +19,7 @@ import {
 } from "../../utils/api";
 import { getSession } from "../../utils/auth";
 import { readLocalDraft, removeLocalDraft, writeLocalDraft } from "../../utils/localDraft";
+import { canUseSurvey, fieldHome } from "../../utils/roles";
 import {
   nowTime,
   pestEvidenceOptions,
@@ -363,8 +364,13 @@ async function submit() {
 }
 
 onLoad(async (query) => {
-  if (!getSession()) {
+  const current = getSession();
+  if (!current) {
     uni.reLaunch({ url: "/pages/login/index" });
+    return;
+  }
+  if (!canUseSurvey(current.role)) {
+    uni.reLaunch({ url: fieldHome(current.role) });
     return;
   }
   taskId.value = Number(query?.taskId || 0);

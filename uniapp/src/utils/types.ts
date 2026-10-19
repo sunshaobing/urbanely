@@ -84,7 +84,14 @@ export interface WorkOrder {
   density: string;
   engineer_id?: number;
   engineer_name?: string;
+  supervisor_id?: number;
   supervisor_name?: string;
+  assignee_id?: number;
+  assignee_name?: string;
+  operator_id?: number;
+  operator_name?: string;
+  owner_id?: number;
+  owner_name?: string;
   status: WorkOrderStatus;
   rejection_reason: string;
   created_at: string;

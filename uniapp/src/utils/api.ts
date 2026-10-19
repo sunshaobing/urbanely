@@ -150,12 +150,18 @@ export function getDashboardSummary() {
   return request<DashboardSummary>("/api/dashboard/summary");
 }
 
-export function getWorkOrders(status: string, page = 1, pageSize = 20) {
+export function getWorkOrders(
+  status: string,
+  page = 1,
+  pageSize = 20,
+  engineerId = 0,
+) {
   return request<WorkOrderList>(
     `/api/workorders${queryString({
       status,
       page,
       page_size: pageSize,
+      engineer_id: engineerId || undefined,
     })}`,
   );
 }

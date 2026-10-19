@@ -6,85 +6,94 @@ import AppTabBar from "../../components/AppTabBar.vue";
 import BrandLogo from "../../components/BrandLogo.vue";
 import CartoonAvatar from "../../components/CartoonAvatar.vue";
 import StatusPill from "../../components/StatusPill.vue";
-import { getDashboardSummary, getWorkOrders } from "../../utils/api";
+import {
+  getServiceReports,
+  getWorkOrders,
+  normalizeServiceReports,
+} from "../../utils/api";
 import { getSession } from "../../utils/auth";
 import { ensureBrand } from "../../utils/brand";
+import { displayDay, roleLabel, todayLabel } from "../../utils/present";
 import {
-  displayDay,
-  roleLabel,
-  statusOptions,
-  todayLabel,
-} from "../../utils/present";
-import type { Session, WorkOrder } from "../../utils/types";
+  isCompletedTask,
+  ownTasks,
+  roleMode,
+  type FieldMode,
+} from "../../utils/roles";
+import type { ServiceReport, Session, WorkOrder } from "../../utils/types";
 
 const session = ref<Session | null>(null);
 const fieldKind = ref<"" | "risk" | "sealing">("");
-const activeStatus = ref("draft");
-const tasks = ref<WorkOrder[]>([]);
-const summary = ref({
-  monthOrders: 0,
-  pendingReview: 0,
-  dueInspections: 0,
-  totalHoles: 0,
-});
+const roleView = ref<FieldMode>("both");
+const activeGroup = ref<"open" | "done">("open");
+const allTasks = ref<WorkOrder[]>([]);
+const serviceReports = ref<ServiceReport[]>([]);
 const loading = ref(false);
-const loadingTasks = ref(false);
 const error = ref("");
 const updatedAt = ref("");
 
-const pageTitle = computed(() =>
-  fieldKind.value === "risk"
+const effectiveKind = computed<"" | "risk" | "sealing">(() => {
+  if (roleView.value === "survey") return "risk";
+  if (roleView.value === "sealing") return "sealing";
+  return fieldKind.value;
+});
+const pageTitle = computed(() => {
+  if (roleView.value === "survey") return "勘测工作台";
+  if (roleView.value === "sealing") return "封堵工作台";
+  return effectiveKind.value === "risk"
     ? "勘测任务"
-    : fieldKind.value === "sealing"
+    : effectiveKind.value === "sealing"
       ? "封堵任务"
-      : "现场任务",
-);
+      : "现场任务";
+});
 const pageKicker = computed(() =>
-  fieldKind.value === "risk"
+  effectiveKind.value === "risk"
     ? "SURVEY FIELD"
-    : fieldKind.value === "sealing"
+    : effectiveKind.value === "sealing"
       ? "SEALING FIELD"
       : "FIELD WORKBENCH",
 );
 const actionText = computed(() =>
-  fieldKind.value === "risk"
+  effectiveKind.value === "risk"
     ? "处理勘测"
-    : fieldKind.value === "sealing"
+    : effectiveKind.value === "sealing"
       ? "处理封堵"
       : "查看任务",
 );
 const tabCurrent = computed<"workbench" | "risk" | "sealing">(() =>
-  fieldKind.value === "risk"
+  effectiveKind.value === "risk"
     ? "risk"
-    : fieldKind.value === "sealing"
+    : effectiveKind.value === "sealing"
       ? "sealing"
       : "workbench",
 );
-
-const activeLabel = computed(
-  () => statusOptions.find((item) => item.value === activeStatus.value)?.label ?? "任务",
+const activeLabel = computed(() =>
+  activeGroup.value === "open" ? "未完成" : "已完成",
 );
+const visibleTasks = computed(() =>
+  allTasks.value.filter((task) =>
+    activeGroup.value === "done" ? isCompletedTask(task) : !isCompletedTask(task),
+  ),
+);
+const openCount = computed(
+  () => allTasks.value.filter((task) => !isCompletedTask(task)).length,
+);
+const doneCount = computed(
+  () => allTasks.value.filter((task) => isCompletedTask(task)).length,
+);
+const totalHoles = computed(() =>
+  allTasks.value.reduce((sum, task) => sum + (task.sites?.length || 0), 0),
+);
+const taskMetricLabel = computed(() =>
+  roleView.value === "both" ? "任务总数" : "我的任务",
+);
+const groupOptions = computed(() => [
+  { value: "open" as const, label: "未完成", count: openCount.value },
+  { value: "done" as const, label: "已完成", count: doneCount.value },
+]);
 
 function errorText(value: unknown) {
   return value instanceof Error ? value.message : "现场数据加载失败";
-}
-
-async function loadTasks() {
-  if (!getSession()) {
-    uni.reLaunch({ url: "/pages/login/index" });
-    return;
-  }
-  loadingTasks.value = true;
-  error.value = "";
-  try {
-    const result = await getWorkOrders(activeStatus.value, 1, 20);
-    tasks.value = result.items;
-  } catch (loadError) {
-    error.value = errorText(loadError);
-    tasks.value = [];
-  } finally {
-    loadingTasks.value = false;
-  }
 }
 
 async function load() {
@@ -95,38 +104,45 @@ async function load() {
   }
   if (loading.value) return;
   session.value = current;
+  roleView.value = roleMode(current.role);
+  if (roleView.value === "none") {
+    uni.reLaunch({ url: "/pages/profile/index" });
+    return;
+  }
   void ensureBrand();
   loading.value = true;
   error.value = "";
   try {
-    const [dashboard, pending, orders] = await Promise.all([
-      getDashboardSummary(),
-      getWorkOrders("pending", 1, 1),
-      getWorkOrders(activeStatus.value, 1, 20),
-    ]);
-    summary.value = {
-      monthOrders: dashboard.cards.month_orders,
-      pendingReview: pending.total,
-      dueInspections: dashboard.cards.due_inspections,
-      totalHoles: dashboard.cards.total_holes,
-    };
-    tasks.value = orders.items;
+    const orders = await getWorkOrders(
+      "",
+      1,
+      200,
+      roleView.value === "survey" ? current.id : 0,
+    );
+    let reports: ServiceReport[] = [];
+    if (roleView.value === "sealing") {
+      try {
+        reports = normalizeServiceReports(await getServiceReports());
+      } catch {
+        reports = [];
+      }
+    }
+    serviceReports.value = reports;
+    allTasks.value = ownTasks(orders.items, current, roleView.value, reports);
     const now = new Date();
     updatedAt.value = `${String(now.getHours()).padStart(2, "0")}:${String(
       now.getMinutes(),
     ).padStart(2, "0")}`;
   } catch (loadError) {
     error.value = errorText(loadError);
-    tasks.value = [];
+    allTasks.value = [];
   } finally {
     loading.value = false;
   }
 }
 
-function selectStatus(status: string) {
-  if (loadingTasks.value || activeStatus.value === status) return;
-  activeStatus.value = status;
-  void loadTasks();
+function selectGroup(group: "open" | "done") {
+  activeGroup.value = group;
 }
 
 function openTask(task: WorkOrder) {
@@ -143,8 +159,16 @@ function openProfile() {
 
 onLoad((query) => {
   const kind = query?.kind;
-  fieldKind.value = kind === "risk" || kind === "sealing" ? kind : "";
-  activeStatus.value = fieldKind.value === "sealing" ? "pending" : "draft";
+  const current = getSession();
+  const mode = roleMode(current?.role || "");
+  fieldKind.value =
+    mode === "survey"
+      ? "risk"
+      : mode === "sealing"
+        ? "sealing"
+        : kind === "risk" || kind === "sealing"
+          ? kind
+          : "";
 });
 
 onShow(() => {
@@ -186,18 +210,18 @@ onPullDownRefresh(async () => {
 
       <view class="hero-metrics">
         <view class="hero-metric">
-          <text class="metric-value">{{ loading ? "--" : summary.monthOrders }}</text>
-          <text class="metric-label">本月任务</text>
+          <text class="metric-value">{{ loading ? "--" : allTasks.length }}</text>
+          <text class="metric-label">{{ taskMetricLabel }}</text>
         </view>
         <view class="metric-divider" />
         <view class="hero-metric">
-          <text class="metric-value">{{ loading ? "--" : summary.pendingReview }}</text>
-          <text class="metric-label">待审核</text>
+          <text class="metric-value">{{ loading ? "--" : openCount }}</text>
+          <text class="metric-label">未完成</text>
         </view>
         <view class="metric-divider" />
         <view class="hero-metric">
-          <text class="metric-value">{{ loading ? "--" : summary.dueInspections }}</text>
-          <text class="metric-label">到期复检</text>
+          <text class="metric-value">{{ loading ? "--" : doneCount }}</text>
+          <text class="metric-label">已完成</text>
         </view>
       </view>
     </view>
@@ -211,7 +235,7 @@ onPullDownRefresh(async () => {
           <view>
             <text class="ops-title">今日现场</text>
             <text class="ops-sub">
-              {{ summary.totalHoles }} 个封堵部位 · 数据实时同步
+              {{ totalHoles }} 个封堵部位 · 数据实时同步
             </text>
           </view>
         </view>
@@ -240,7 +264,7 @@ onPullDownRefresh(async () => {
           <text class="section-title">{{ pageKicker }}</text>
           <text class="section-copy">按服务状态查看今天要处理的工作</text>
         </view>
-        <view class="reports-link" @tap="openReports">
+        <view v-if="roleView === 'both'" class="reports-link" @tap="openReports">
           <text>报告归档</text>
           <UniIcons type="right" size="14" color="#1d7659" />
         </view>
@@ -248,17 +272,18 @@ onPullDownRefresh(async () => {
 
       <view class="status-tabs">
         <view
-          v-for="item in statusOptions"
+          v-for="item in groupOptions"
           :key="item.value"
           class="status-tab"
-          :class="{ active: activeStatus === item.value }"
-          @tap="selectStatus(item.value)"
+          :class="{ active: activeGroup === item.value }"
+          @tap="selectGroup(item.value)"
         >
           <text>{{ item.label }}</text>
+          <text class="tab-count">{{ item.count }}</text>
         </view>
       </view>
 
-      <view v-if="loading && !tasks.length" class="task-skeleton">
+      <view v-if="loading && !visibleTasks.length" class="task-skeleton">
         <view v-for="item in 3" :key="item" class="skeleton-card card">
           <view class="skeleton-line short" />
           <view class="skeleton-line" />
@@ -266,9 +291,9 @@ onPullDownRefresh(async () => {
         </view>
       </view>
 
-      <view v-else-if="tasks.length" class="task-list">
+      <view v-else-if="visibleTasks.length" class="task-list">
         <view
-          v-for="task in tasks"
+          v-for="task in visibleTasks"
           :key="task.id"
           class="task-card card pressable"
           @tap="openTask(task)"
@@ -595,9 +620,23 @@ onPullDownRefresh(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8rpx;
   border-radius: 12rpx;
   color: #65726c;
   font-size: 23rpx;
+}
+
+.tab-count {
+  min-width: 30rpx;
+  height: 30rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8rpx;
+  background: #dbe9e1;
+  color: #1d7659;
+  font-family: "SFMono-Regular", "Cascadia Code", monospace;
+  font-size: 18rpx;
 }
 
 .status-tab.active {

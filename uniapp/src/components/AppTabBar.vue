@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
+import { getSession } from "../utils/auth";
+import { roleMode } from "../utils/roles";
 
 type TabKey = "workbench" | "risk" | "sealing" | "reports" | "profile";
 
@@ -7,13 +9,16 @@ const props = defineProps<{
   current: TabKey;
 }>();
 
-const items: Array<{
+type TabItem = {
   key: TabKey;
   label: string;
   icon: string;
   activeIcon: string;
   url: string;
-}> = [
+};
+
+const mode = roleMode(getSession()?.role || "");
+const allItems: TabItem[] = [
   {
     key: "workbench",
     label: "任务",
@@ -50,6 +55,15 @@ const items: Array<{
     url: "/pages/profile/index",
   },
 ];
+
+const items: TabItem[] =
+  mode === "survey"
+    ? allItems.filter((item) => ["risk", "profile"].includes(item.key))
+    : mode === "sealing"
+      ? allItems.filter((item) => ["sealing", "profile"].includes(item.key))
+      : mode === "both"
+        ? allItems
+        : allItems.filter((item) => item.key === "profile");
 
 function navigate(key: TabKey, url: string) {
   if (props.current === key) return;

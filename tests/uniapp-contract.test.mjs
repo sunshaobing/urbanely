@@ -51,6 +51,7 @@ test("uni-app uses production APIs for tasks, records, uploads and signatures", 
   }
   assert.match(api, /https:\/\/sunrgw\.cn/);
   assert.match(api, /uni\.uploadFile/);
+  assert.match(api, /engineer_id/);
   assert.match(pdf, /\/api\/risk-surveys\/\$\{id\}\/pdf/);
   assert.match(pdf, /\/api\/service-reports\/\$\{id\}\/pdf/);
   assert.match(auth, /access_token/);
@@ -62,10 +63,12 @@ test("workbench and archive render server data instead of local fixtures", () =>
   const reports = read("src/pages/reports/index.vue");
   const present = read("src/utils/present.ts");
 
-  assert.match(workbench, /getDashboardSummary/);
   assert.match(workbench, /getWorkOrders/);
-  assert.match(workbench, /activeStatus/);
-  assert.match(workbench, /statusOptions/);
+  assert.match(workbench, /getServiceReports/);
+  assert.match(workbench, /ownTasks/);
+  assert.match(workbench, /roleMode/);
+  assert.match(workbench, /activeGroup/);
+  assert.match(workbench, /groupOptions/);
   assert.match(present, /待处理/);
   assert.match(present, /进行中/);
   assert.match(present, /已完成/);
@@ -74,6 +77,37 @@ test("workbench and archive render server data instead of local fixtures", () =>
   assert.match(reports, /openReportPdf/);
   assert.doesNotMatch(workbench, /mockTasks|data\/mock/);
   assert.doesNotMatch(reports, /mockReports|data\/mock/);
+});
+
+test("survey and sealing roles have separate navigation and own-task scopes", () => {
+  const roles = read("src/utils/roles.ts");
+  const tabbar = read("src/components/AppTabBar.vue");
+  const workbench = read("src/pages/workbench/index.vue");
+  const detail = read("src/pages/task-detail/index.vue");
+  const survey = read("src/pages/risk-survey/index.vue");
+  const sealing = read("src/pages/service-report/index.vue");
+  const reports = read("src/pages/reports/index.vue");
+
+  assert.match(roles, /"sealing_engineer"/);
+  assert.match(roles, /"engineer"/);
+  assert.match(roles, /export function roleMode/);
+  assert.match(roles, /export function ownTasks/);
+  assert.match(roles, /export function fieldHome/);
+  assert.match(roles, /isCompletedTask/);
+  assert.match(roles, /engineer_id/);
+  assert.match(roles, /supervisor_id/);
+  assert.match(tabbar, /mode === "survey"/);
+  assert.match(tabbar, /mode === "sealing"/);
+  assert.match(workbench, /未完成/);
+  assert.match(workbench, /已完成/);
+  assert.match(workbench, /roleView\.value === "survey"/);
+  assert.match(workbench, /roleView\.value === "sealing"/);
+  assert.match(detail, /visibleStepKeys/);
+  assert.match(detail, /surveyApproval/);
+  assert.match(detail, /generateReport/);
+  assert.match(survey, /canUseSurvey/);
+  assert.match(sealing, /canUseSealing/);
+  assert.match(reports, /canUseReports/);
 });
 
 test("branding and personnel images reuse backend-facing assets and avatar rules", () => {
@@ -129,7 +163,10 @@ test("the field workflow follows survey approval, dispatch, check-in, sealing an
   assert.match(detail, /checkIn/);
   assert.match(detail, /approveSealing/);
   assert.match(detail, /openReportPdf/);
-  assert.match(detail, /steps\.filter\(\(step\) => step\.done\)\.length/);
+  assert.match(
+    detail,
+    /visibleSteps\.value\.filter\(\(step\) => step\.done\)\.length/,
+  );
   assert.match(api, /reviewWorkOrder/);
   assert.match(api, /checkinServiceReport/);
 });
