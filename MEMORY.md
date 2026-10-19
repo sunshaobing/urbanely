@@ -106,6 +106,7 @@
 - On 2026-10-19 the live Web root `/home/ubuntu/pco/static_web` was updated to `index-DZzSCM7e.js` / `index-BFdKJ9XM.css`; the previous root was backed up as `static_web.bak-20261019-1000`. `https://sunrgw.cn` now serves the new build.
 - WeChat DevTools was reopened against the repository root so `miniprogramRoot: uniapp/dist/build/mp-weixin/` is used. A real `cli preview` compile succeeded with AppID `wx9469d5e631279f7b` at 510.5 KB.
 - The Mini Program base library was reduced from `3.7.0` to `2.21.2` to avoid rejecting older WeChat clients that do not need the newest runtime. The rebuilt preview compiled successfully at 527.3 KB with the lower base library.
+- The account-level `基础库最低可用版本` must also stay at `2.21.2`; it was found set to `3.17.0`, which produces the "当前微信版本较低" error on older clients. Changing that account setting requires an admin or operator QR verification.
 - The Mini Program release identity was bumped from `1.0.0/100` to `1.1.0/110` so the new role-isolated workflow can be distinguished from the older online release in WeChat version management.
 - On 2026-10-19 the online release was still `2.0.5`, built from code submitted on 2026-10-09, so it predates the new field console. The rebuilt `3.0.0` package (527.3 KB) was uploaded and submitted for WeChat review at 10:47.
 - WeChat development settings list `https://sunrgw.cn` as the `request`, `uploadFile` and `downloadFile` legal domain. The privacy guide declares location and selected photo/video processing for internal enterprise management.
