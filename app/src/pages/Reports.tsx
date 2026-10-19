@@ -1,22 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import type { CSSProperties } from "react";
-import {
-  CheckCircle2,
-  Download,
-  FileCheck2,
-  FileText,
-  History,
-  Printer,
-  QrCode,
-  RefreshCw,
-  ShieldCheck,
-} from "lucide-react";
-import { getInspection, getSealingOrder, getSite, reportVersions } from "../data";
-import type { ReportTemplate } from "../types";
+import { Download, FileCheck2, FileText, Printer, RefreshCw, Wrench } from "lucide-react";
+import { openBackendPdf } from "../api";
+import type { ReportTemplate, Site } from "../types";
+import { buildSites, toInspection, toSealingOrder } from "../backendMappers";
 import { SealingReportSheet, SurveyReportSheet } from "../components/ReportSheet";
-import { SectionTitle, StatusPill } from "../components/ui";
-import { useInspectionSignatures, useSealingSignatures } from "../signatureStore";
 import { PageHeader } from "../components/PageHeader";
+import { SectionTitle, StatusPill } from "../components/ui";
+import { useLiveData } from "../liveData";
 
 interface ReportsProps {
   initialTemplate: ReportTemplate;
@@ -31,243 +21,177 @@ export function Reports({
   initialSealingId,
   onNotify,
 }: ReportsProps) {
+  const {
+    customers,
+    error,
+    lastUpdated,
+    refresh,
+    refreshing,
+    riskSurveys,
+    serviceReports,
+    sites,
+    workorders,
+  } = useLiveData();
+  const liveSites = useMemo(
+    () => buildSites(customers, sites, workorders, riskSurveys),
+    [customers, riskSurveys, sites, workorders],
+  );
+  const siteById = new Map(liveSites.map((site) => [site.id, site]));
+  const inspections = useMemo(
+    () => riskSurveys.map((survey) => toInspection(survey, workorders, customers, sites)),
+    [customers, riskSurveys, sites, workorders],
+  );
+  const orders = useMemo(
+    () => serviceReports.map((report) => toSealingOrder(report, workorders, customers, sites)),
+    [customers, serviceReports, sites, workorders],
+  );
   const [template, setTemplate] = useState<ReportTemplate>(initialTemplate);
-  const [inspectionId, setInspectionId] = useState(initialInspectionId);
-  const [sealingId, setSealingId] = useState(initialSealingId);
-  const [zoom, setZoom] = useState(75);
+  const [inspectionId, setInspectionId] = useState(initialInspectionId || inspections[0]?.id || "");
+  const [sealingId, setSealingId] = useState(initialSealingId || orders[0]?.id || "");
+  const selectedInspection = inspections.find((item) => item.id === inspectionId) || inspections[0];
+  const selectedOrder = orders.find((item) => item.id === sealingId) || orders[0];
+  const selectedSite =
+    siteById.get(template === "survey" ? selectedInspection?.siteId || "" : selectedOrder?.siteId || "") ||
+    ({
+      id: "unknown",
+      code: "—",
+      name: "—",
+      customer: "—",
+      customerType: "客户",
+      address: "地址待补充",
+      region: "",
+      contact: "—",
+      phoneMasked: "—",
+      risk: "medium",
+      lastService: "—",
+      nextService: "—",
+      openFindings: 0,
+      contractStatus: "待补",
+      frequency: "按合同",
+    } satisfies Site);
 
   useEffect(() => {
-    setTemplate(initialTemplate);
-    setInspectionId(initialInspectionId);
-    setSealingId(initialSealingId);
-  }, [initialTemplate, initialInspectionId, initialSealingId]);
+    if (!inspectionId && inspections[0]) setInspectionId(inspections[0].id);
+    if (!sealingId && orders[0]) setSealingId(orders[0].id);
+  }, [inspectionId, inspections, orders, sealingId]);
 
-  const inspection = getInspection(inspectionId);
-  const sealing = getSealingOrder(sealingId);
-  const [inspectionSignatures] = useInspectionSignatures(inspection.id);
-  const [sealingSignatures] = useSealingSignatures(sealing.id);
-  const inspectionSigned = Boolean(inspectionSignatures.surveyor && inspectionSignatures.customer);
-  const sealingSigned = Boolean(sealingSignatures.responsible && sealingSignatures.customer);
-  const reportInspection = { ...inspection, signatures: inspectionSignatures };
-  const reportSealing = { ...sealing, signatures: sealingSignatures, signed: sealingSigned };
-  const canExport = template === "survey" ? inspectionSigned : sealingSigned;
-  const site = getSite(template === "survey" ? inspection.siteId : sealing.siteId);
-  const versions = useMemo(
-    () => reportVersions.filter((version) => version.template === template),
-    [template],
-  );
-
-  const reportNo = template === "survey" ? inspection.reportNo : sealing.reportNo;
+  const openPdf = async () => {
+    try {
+      if (template === "survey" && selectedInspection) {
+        await openBackendPdf(`/api/risk-surveys/${selectedInspection.id}/pdf`);
+      } else if (template === "sealing" && selectedOrder) {
+        await openBackendPdf(`/api/service-reports/${selectedOrder.id}/pdf`);
+      } else {
+        throw new Error("后端暂无报告数据");
+      }
+      onNotify("已从后端打开 PDF");
+    } catch (pdfError) {
+      onNotify(pdfError instanceof Error ? pdfError.message : "PDF 打开失败");
+    }
+  };
 
   return (
-    <div className="page reports-page">
+    <div className="page">
       <PageHeader
-        className="no-print"
-        eyebrow="REPORTS / SNAPSHOTS"
+        eyebrow="LIVE REPORTS"
         title="报告中心"
-        description="结构化数据生成 A4 快照，报告版本、照片和签字可追溯。"
+        description="勘测报告和封堵报告直接来自生产后端，PDF 由后端实时生成。"
         meta={
           <>
             <span className="live-dot" />
-            当前模板 v2.3 · 已生成 3 个版本
+            {error ? `同步异常：${error}` : `${riskSurveys.length} 份勘测 · ${serviceReports.length} 份封堵 · ${lastUpdated}`}
           </>
         }
         actions={
-          <>
-          <button
-            type="button"
-            className="button secondary"
-            disabled={!canExport}
-            title={canExport ? "生成新的报告版本" : "完成双方签字后才能生成正式版本"}
-            onClick={() => onNotify("已生成新的报告版本，正在后台渲染 PDF")}
-          >
-            <RefreshCw size={16} />
-            生成新版本
+          <button type="button" className="button secondary" disabled={refreshing} onClick={() => void refresh()}>
+            <RefreshCw size={15} className={refreshing ? "spin" : undefined} />
+            {refreshing ? "刷新中" : "立即刷新"}
           </button>
-          <button
-            type="button"
-            className="button primary"
-            disabled={!canExport}
-            title={canExport ? "打印或导出 PDF" : "完成双方签字后才能导出 PDF"}
-            onClick={() => window.print()}
-          >
-            <Printer size={16} />
-            打印 / 导出 PDF
-          </button>
-          </>
         }
       />
 
       <div className="reports-layout">
         <aside className="panel report-templates no-print">
-          <SectionTitle title="报告模板" subtitle="当前组织启用的模板" />
-          <button
-            type="button"
-            className={`template-card ${template === "survey" ? "active" : ""}`}
-            onClick={() => setTemplate("survey")}
-          >
-            <div className="template-icon">
-              <FileText size={20} />
-            </div>
-            <div>
-              <strong>现场勘测报告</strong>
-              <span>KC-YYYY-BG-NNN</span>
-              <small>结构隐患、虫害证据、治理方案、复检计划</small>
-            </div>
+          <SectionTitle title="报告模板" subtitle="实时后端报告" />
+          <button type="button" className={`template-card ${template === "survey" ? "active" : ""}`} onClick={() => setTemplate("survey")}>
+            <FileText size={18} />
+            <div><strong>现场勘测报告</strong><span>{riskSurveys.length} 份记录</span></div>
           </button>
-          <button
-            type="button"
-            className={`template-card ${template === "sealing" ? "active" : ""}`}
-            onClick={() => setTemplate("sealing")}
-          >
-            <div className="template-icon">
-              <ShieldCheck size={20} />
-            </div>
-            <div>
-              <strong>结构(鼠患)封堵服务单</strong>
-              <span>STFD-YYYY-NNN</span>
-              <small>封堵部位、材料、前后照片、验收与签字</small>
-            </div>
+          <button type="button" className={`template-card ${template === "sealing" ? "active" : ""}`} onClick={() => setTemplate("sealing")}>
+            <Wrench size={18} />
+            <div><strong>结构封堵报告</strong><span>{serviceReports.length} 份记录</span></div>
           </button>
 
-          <div className="template-divider" />
-          <SectionTitle title="输出设置" />
-          <div className="output-settings">
-            <div>
-              <span>纸张</span>
-              <strong>A4 纵向</strong>
-            </div>
-            <div>
-              <span>模板版本</span>
-              <strong>v2.3</strong>
-            </div>
-            <div>
-              <span>照片</span>
-              <strong>按部位成对输出</strong>
-            </div>
-            <div>
-              <span>水印</span>
-              <strong>关闭</strong>
-            </div>
+          <div className="report-record-list">
+            {template === "survey"
+              ? inspections.map((item) => (
+                  <button type="button" key={item.id} className={item.id === selectedInspection?.id ? "active" : ""} onClick={() => setInspectionId(item.id)}>
+                    <span className="mono">{item.reportNo}</span>
+                    <strong>{siteById.get(item.siteId)?.name || "—"}</strong>
+                    <small>{item.date} · {item.status}</small>
+                  </button>
+                ))
+              : orders.map((item) => (
+                  <button type="button" key={item.id} className={item.id === selectedOrder?.id ? "active" : ""} onClick={() => setSealingId(item.id)}>
+                    <span className="mono">{item.reportNo}</span>
+                    <strong>{siteById.get(item.siteId)?.name || "—"}</strong>
+                    <small>{item.date} · {item.status}</small>
+                  </button>
+                ))}
           </div>
         </aside>
 
         <section className="report-preview panel">
           <div className="report-toolbar no-print">
             <div>
-              <span className="mono">{reportNo}</span>
-              <strong>{template === "survey" ? "现场勘测报告" : "结构(鼠患)封堵服务单"}</strong>
+              <span className="mono">{template === "survey" ? selectedInspection?.reportNo || "—" : selectedOrder?.reportNo || "—"}</span>
+              <StatusPill status={template === "survey" ? selectedInspection?.status || "—" : selectedOrder?.status || "—"} />
             </div>
             <div className="report-toolbar-actions">
-              <label className="zoom-control">
-                <span>{zoom}%</span>
-                <input
-                  type="range"
-                  min="60"
-                  max="110"
-                  value={zoom}
-                  onChange={(event) => setZoom(Number(event.target.value))}
-                  aria-label="报告缩放"
-                />
-              </label>
-              <button type="button" className="button ghost" onClick={() => onNotify("已复制报告只读验证链接")}>
-                <QrCode size={15} />
-                验证链接
+              <button type="button" className="button ghost" onClick={() => window.print()}>
+                <Printer size={15} />
+                打印
+              </button>
+              <button type="button" className="button primary" onClick={() => void openPdf()}>
+                <Download size={15} />
+                后端 PDF
               </button>
             </div>
           </div>
-          <div className="report-scroll">
-            <div
-              className="report-zoom"
-              style={{ width: 794, zoom: zoom / 100 } as CSSProperties}
-            >
-              {template === "survey" ? (
-                <SurveyReportSheet inspection={reportInspection} site={site} />
-              ) : (
-                <SealingReportSheet order={reportSealing} site={site} />
-              )}
-            </div>
+          <div className="report-canvas">
+            {template === "survey" && selectedInspection ? (
+              <SurveyReportSheet inspection={selectedInspection} site={selectedSite} />
+            ) : template === "sealing" && selectedOrder ? (
+              <SealingReportSheet order={selectedOrder} site={selectedSite} />
+            ) : (
+              <div className="personnel-empty">后端暂无报告数据。</div>
+            )}
           </div>
         </section>
 
         <aside className="panel report-meta no-print">
-          <SectionTitle title="报告信息" subtitle="快照生成后不可直接修改" />
-          <div className="meta-list">
-            <div>
-              <span>报告编号</span>
-              <strong className="mono">{reportNo}</strong>
-            </div>
-            <div>
-              <span>客户</span>
-              <strong>{site.customer}</strong>
-            </div>
-            <div>
-              <span>门店</span>
-              <strong>{site.name}</strong>
-            </div>
-            <div>
-              <span>当前版本</span>
-              <strong>v{versions[0]?.version ?? 1}</strong>
-            </div>
-            <div>
-              <span>签字状态</span>
-              {template === "sealing" ? (
-                <StatusPill status={sealingSigned ? "双方已签" : "待签字"} />
-              ) : (
-                <StatusPill status={inspectionSigned ? "双方已签" : "待客户签字"} />
-              )}
-            </div>
-            <div>
-              <span>文件哈希</span>
-              <strong className="mono hash">8f3a…c21e</strong>
-            </div>
+          <SectionTitle title="报告状态" subtitle="来自实时 API" />
+          <div className="check-list">
+            <div className="check-item done"><FileCheck2 size={15} />数据已同步</div>
+            <div className="check-item done"><FileText size={15} />PDF 由服务端生成</div>
           </div>
-
-          <div className="report-checks">
-            <div className="done">
-              <CheckCircle2 size={15} />
-              数据字段完整
-            </div>
-            <div className="done">
-              <CheckCircle2 size={15} />
-              照片与隐患点绑定
-            </div>
-            <div className={template === "sealing" && !sealingSigned ? "warn" : "done"}>
-              {template === "sealing" && !sealingSigned ? <FileCheck2 size={15} /> : <CheckCircle2 size={15} />}
-              {template === "sealing" && !sealingSigned ? "等待双方签字" : "签字文件已归档"}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="button secondary full-width"
-            disabled={!canExport}
-            title={canExport ? "下载当前版本" : "完成双方签字后才能下载"}
-            onClick={() => onNotify("PDF 已加入下载队列")}
-          >
-            <Download size={16} />
+          <button type="button" className="button secondary full-width" onClick={() => void openPdf()}>
+            <Download size={15} />
             下载当前版本
           </button>
-
           <div className="version-list">
-            <div className="version-title">
-              <History size={15} />
-              <strong>版本历史</strong>
-            </div>
-            {versions.map((version) => (
-              <div className="version-item" key={version.id}>
-                <div>
-                  <strong>v{version.version}</strong>
-                  <span>{version.generatedAt}</span>
-                  <small>{version.generatedBy} · {version.size}</small>
-                </div>
-                <StatusPill status={version.status} />
+            <div className="version-title"><FileText size={15} /><strong>当前记录</strong></div>
+            <div className="version-item">
+              <div>
+                <strong>实时版本</strong>
+                <span>{lastUpdated || "—"}</span>
+                <small>{selectedSite.name}</small>
               </div>
-            ))}
+              <StatusPill status="可下载" />
+            </div>
           </div>
         </aside>
       </div>
     </div>
   );
 }
-

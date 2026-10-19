@@ -15,8 +15,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import { getSite, inspections } from "../data";
-import type { Finding, Inspection, InspectionStatus, RiskLevel } from "../types";
+import type { Finding, Inspection, InspectionStatus, RiskLevel, Site } from "../types";
 import { SurveyReportSheet } from "../components/ReportSheet";
 import { SignatureCapture, SignaturePartyCard } from "../components/SignatureCapture";
 import { useInspectionSignatures } from "../signatureStore";
@@ -32,6 +31,16 @@ import {
   SectionTitle,
   StatusPill,
 } from "../components/ui";
+import { useLiveData } from "../liveData";
+import {
+  buildSites,
+  toInspection,
+} from "../backendMappers";
+import {
+  submitRiskSurvey,
+  updateRiskSurvey,
+} from "../api";
+import type { BackendRiskSurvey } from "../api";
 
 interface InspectionsProps {
   search: string;
@@ -44,6 +53,19 @@ const tabs = ["现场信息", "结构隐患", "治理方案", "影像证据", "�
 type Tab = (typeof tabs)[number];
 
 export function Inspections({ search, focusId, onNotify, onOpenReport }: InspectionsProps) {
+  const { refresh, riskSurveys, customers, sites, workorders } = useLiveData();
+  const liveSites = useMemo(
+    () => buildSites(customers, sites, workorders, riskSurveys),
+    [customers, riskSurveys, sites, workorders],
+  );
+  const liveInspections = useMemo(
+    () =>
+      riskSurveys.map((survey) =>
+        toInspection(survey, workorders, customers, sites),
+      ),
+    [customers, riskSurveys, sites, workorders],
+  );
+  const siteById = new Map(liveSites.map((site) => [site.id, site]));
   const [status, setStatus] = useState<"全部" | InspectionStatus>("全部");
   const [risk, setRisk] = useState<"全部" | RiskLevel>("全部");
   const [selectedId, setSelectedId] = useState<string | null>(focusId ?? null);
@@ -55,28 +77,56 @@ export function Inspections({ search, focusId, onNotify, onOpenReport }: Inspect
 
   const filtered = useMemo(() => {
     const query = (search || localSearch).trim().toLowerCase();
-    return inspections.filter((inspection) => {
-      const site = getSite(inspection.siteId);
+    return liveInspections.filter((inspection) => {
+      const site = siteById.get(inspection.siteId);
       const matchQuery =
         !query ||
         inspection.reportNo.toLowerCase().includes(query) ||
-        site.name.toLowerCase().includes(query) ||
-        site.customer.toLowerCase().includes(query);
+        site?.name.toLowerCase().includes(query) ||
+        site?.customer.toLowerCase().includes(query);
       const matchStatus = status === "全部" || inspection.status === status;
       const matchRisk = risk === "全部" || inspection.risk === risk;
       return matchQuery && matchStatus && matchRisk;
     });
-  }, [search, localSearch, status, risk]);
+  }, [liveInspections, search, localSearch, siteById, status, risk]);
 
-  if (selectedId) {
-    return (
-      <InspectionDetail
-        inspectionId={selectedId}
-        onBack={() => setSelectedId(null)}
-        onNotify={onNotify}
-        onOpenReport={onOpenReport}
-      />
-    );
+  if (selectedId && liveInspections.length) {
+    const selected =
+      liveInspections.find((item) => item.id === selectedId) || liveInspections[0];
+    const rawSurvey =
+      riskSurveys.find((item) => String(item.id) === selected.id) ||
+      riskSurveys.find((item) => item.customer_id === customers.find((customer) => `customer-${customer.id}` === selected.siteId)?.id);
+    if (selected && rawSurvey) {
+      const selectedSite =
+        siteById.get(selected.siteId) ?? {
+          id: selected.siteId,
+          code: selected.reportNo,
+          name: selected.reportNo,
+          customer: selected.contact,
+          customerType: "客户",
+          address: "地址待补充",
+          region: "",
+          contact: selected.contact,
+          phoneMasked: selected.contactPhone,
+          risk: selected.risk,
+          lastService: selected.date,
+          nextService: selected.recheckDate,
+          openFindings: selected.findings.length,
+          contractStatus: "待补",
+          frequency: "按合同",
+        };
+      return (
+        <InspectionDetail
+          inspection={selected}
+          rawSurvey={rawSurvey}
+          site={selectedSite}
+          onRefresh={refresh}
+          onBack={() => setSelectedId(null)}
+          onNotify={onNotify}
+          onOpenReport={onOpenReport}
+        />
+      );
+    }
   }
 
   return (
@@ -148,7 +198,7 @@ export function Inspections({ search, focusId, onNotify, onOpenReport }: Inspect
             <span />
           </div>
           {filtered.map((inspection) => {
-            const site = getSite(inspection.siteId);
+            const site = siteById.get(inspection.siteId);
             const overdue = inspection.recheckDate < "2026-10-18" && inspection.status !== "已闭环";
             return (
               <button
@@ -159,10 +209,10 @@ export function Inspections({ search, focusId, onNotify, onOpenReport }: Inspect
               >
                 <span className="mono">{inspection.reportNo}</span>
                 <span className="cell-main">
-                  <strong>{site.name}</strong>
+                    <strong>{site?.name || "—"}</strong>
                   <small>
                     <MapPin size={12} />
-                    {site.region} · {site.code}
+                    {site?.region || site?.address || "—"} · {site?.code || "—"}
                   </small>
                 </span>
                 <span>{inspection.date}</span>
@@ -193,24 +243,28 @@ export function Inspections({ search, focusId, onNotify, onOpenReport }: Inspect
 }
 
 function InspectionDetail({
-  inspectionId,
+  inspection: original,
+  rawSurvey,
+  site,
+  onRefresh,
   onBack,
   onNotify,
   onOpenReport,
 }: {
-  inspectionId: string;
+  inspection: Inspection;
+  rawSurvey: BackendRiskSurvey;
+  site: Site;
+  onRefresh: () => Promise<void>;
   onBack: () => void;
   onNotify: (message: string) => void;
   onOpenReport: (template: "survey", inspectionId: string) => void;
 }) {
-  const original = inspections.find((item) => item.id === inspectionId) ?? inspections[0];
   const [inspection, setInspection] = useState<Inspection>(() => structuredClone(original));
   const [tab, setTab] = useState<Tab>("现场信息");
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [signatures, saveInspectionSignatures] = useInspectionSignatures(original.id);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const objectUrlsRef = useRef<string[]>([]);
-  const site = getSite(inspection.siteId);
   const overdue = inspection.recheckDate < "2026-10-18" && inspection.status !== "已闭环";
   const bothSigned = Boolean(signatures.surveyor && signatures.customer);
   const reportInspection = { ...inspection, signatures };
@@ -280,6 +334,85 @@ function InspectionDetail({
     update({ riskPhotos: inspection.riskPhotos.filter((item) => item.id !== photoId) });
   };
 
+  const backendPayload = (status?: string) => ({
+    code: inspection.reportNo,
+    customer_id: rawSurvey.customer_id || 0,
+    site_id: rawSurvey.site_id ?? null,
+    employee_id: rawSurvey.employee_id ?? null,
+    survey_date: inspection.date,
+    survey_time: inspection.timeRange,
+    contact_person: inspection.contact,
+    survey_range: inspection.scope,
+    structure_conditions: inspection.structure,
+    pest_evidence: inspection.evidence,
+    comprehensive_plan: inspection.integratedPlan,
+    disinfection_plan: inspection.treatmentPlan,
+    environment_suggestions: inspection.environmentAdvice,
+    prevention_measures: inspection.longTermPrevention,
+    review_date: inspection.recheckDate,
+    pest_type: inspection.pests[0] || "鼠",
+    risk_level:
+      inspection.risk === "critical"
+        ? "极高"
+        : inspection.risk === "high"
+          ? "高"
+          : inspection.risk === "low"
+            ? "低"
+            : "中",
+    conclusion: rawSurvey.conclusion || inspection.integratedPlan,
+    status: status || rawSurvey.status || "draft",
+    items: inspection.findings.map((finding, index) => ({
+      location: finding.location,
+      description: finding.type,
+      suggestion: finding.recommendation,
+      sort_order: index,
+    })),
+    photos: inspection.riskPhotos
+      .filter((photo) => photo.previewUrl)
+      .map((photo, index) => ({
+        caption: photo.label,
+        url: photo.previewUrl,
+        sort_order: index,
+      })),
+    signatures: [
+      signatures.surveyor
+        ? {
+            role: "engineer",
+            name: inspection.surveyor,
+            image_url: signatures.surveyor.dataUrl,
+          }
+        : null,
+      signatures.customer
+        ? {
+            role: "customer",
+            name: inspection.contact,
+            image_url: signatures.customer.dataUrl,
+          }
+        : null,
+    ].filter(Boolean),
+  });
+
+  const saveBackend = async () => {
+    try {
+      await updateRiskSurvey(rawSurvey.id, backendPayload());
+      await onRefresh();
+      onNotify("勘测单已保存到生产后端");
+    } catch (saveError) {
+      onNotify(saveError instanceof Error ? saveError.message : "勘测单保存失败");
+    }
+  };
+
+  const submitBackend = async () => {
+    try {
+      await updateRiskSurvey(rawSurvey.id, backendPayload());
+      await submitRiskSurvey(rawSurvey.id);
+      await onRefresh();
+      onNotify("勘测单已提交，等待审批");
+    } catch (submitError) {
+      onNotify(submitError instanceof Error ? submitError.message : "勘测单提交失败");
+    }
+  };
+
   return (
     <div className="page detail-page">
       <BackButton onClick={onBack} />
@@ -297,17 +430,17 @@ function InspectionDetail({
           </p>
         </div>
         <div className="page-actions">
-          <button type="button" className="button secondary" onClick={() => onNotify("草稿已保存")}>
+          <button type="button" className="button secondary" onClick={() => void saveBackend()}>
             <Save size={16} />
             保存草稿
           </button>
           <button
             type="button"
             className="button secondary"
-            onClick={() => onNotify("已生成 3 条封堵任务，并通知项目主管")}
+            onClick={() => void submitBackend()}
           >
-            <Wrench size={16} />
-            生成封堵任务
+            <Check size={16} />
+            提交审批
           </button>
           <button type="button" className="button secondary" onClick={() => setSignatureOpen(true)}>
             <Signature size={16} />

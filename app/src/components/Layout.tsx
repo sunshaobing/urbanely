@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   LogOut,
   Plus,
+  RefreshCw,
   Search,
   Settings2,
   ShieldCheck,
@@ -21,6 +22,7 @@ import type { PageKey } from "../types";
 import type { AuthSession } from "../auth";
 import { CommandPalette } from "./CommandPalette";
 import { CartoonAvatar } from "./CartoonAvatar";
+import { useLiveData } from "../liveData";
 
 const navItems: Array<{
   key: PageKey;
@@ -73,6 +75,7 @@ export function Layout({
   children,
 }: LayoutProps) {
   const [commandOpen, setCommandOpen] = useState(false);
+  const { error, lastUpdated, refresh, refreshing, warnings } = useLiveData();
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -148,8 +151,12 @@ export function Layout({
           <div className="sync-card">
             <span className="sync-dot" />
             <div>
-              <strong>离线同步正常</strong>
-              <span>最后同步 2 分钟前</span>
+              <strong>{error ? "实时同步异常" : "实时同步正常"}</strong>
+              <span>
+                {error ||
+                  warnings[0] ||
+                  (lastUpdated ? `最后同步 ${lastUpdated}` : "正在连接后端")}
+              </span>
             </div>
           </div>
           <button type="button" className="nav-item muted">
@@ -169,7 +176,11 @@ export function Layout({
             </div>
             <span className="system-status">
               <i />
-              系统运行正常
+              {refreshing
+                ? "实时同步中"
+                : error
+                  ? "同步异常"
+                  : `实时同步 · ${lastUpdated || "连接中"}`}
             </span>
           </div>
           <div className="topbar-tools">
@@ -196,7 +207,23 @@ export function Layout({
               <Plus size={15} />
               新建
             </button>
-            <span className="today">2026.10.18 · 周日</span>
+            <span className="today">
+              {new Date().toLocaleDateString("zh-CN", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                weekday: "short",
+              })}
+            </span>
+            <button
+              type="button"
+              className="icon-button"
+              aria-label="立即刷新"
+              title="立即刷新"
+              onClick={() => void refresh()}
+            >
+              <RefreshCw size={17} className={refreshing ? "spin" : undefined} />
+            </button>
             <button type="button" className="icon-button" aria-label="通知" title="通知">
               <Bell size={18} />
               <i className="notification-dot" />

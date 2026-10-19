@@ -11,6 +11,7 @@ import { Permissions } from "./pages/Permissions";
 import { Reports } from "./pages/Reports";
 import { Sealing } from "./pages/Sealing";
 import { ServiceOrders } from "./pages/ServiceOrders";
+import { LiveDataProvider } from "./liveData";
 import type { PageKey, ReportTemplate } from "./types";
 
 export default function App() {
@@ -62,42 +63,44 @@ export default function App() {
   }
 
   return (
-    <Layout
-      activePage={activePage}
-      onNavigate={navigate}
-      search={search}
-      onSearch={setSearch}
-      session={session}
-      onLogout={() => {
-        clearSession();
-        setSession(null);
-      }}
-    >
-      {activePage === "dashboard" ? (
-        <Dashboard onNavigate={navigate} onOpenInspection={openInspection} />
-      ) : null}
-      {activePage === "inspections" ? (
-        <Inspections
-          search={search}
-          focusId={focusInspectionId}
-          onNotify={notify}
-          onOpenReport={openReport}
-        />
-      ) : null}
-      {activePage === "sealing" ? <Sealing onNotify={notify} onOpenReport={openReport} /> : null}
-      {activePage === "services" ? <ServiceOrders onNotify={notify} /> : null}
-      {activePage === "customers" ? <Customers onNotify={notify} /> : null}
-      {activePage === "permissions" ? <Permissions onNotify={notify} /> : null}
-      {activePage === "reports" ? (
-        <Reports
-          initialTemplate={reportTemplate}
-          initialInspectionId={reportInspectionId}
-          initialSealingId={reportSealingId}
-          onNotify={notify}
-        />
-      ) : null}
-      {toast ? <Toast message={toast} onClose={() => setToast(null)} /> : null}
-    </Layout>
+    <LiveDataProvider>
+      <Layout
+        activePage={activePage}
+        onNavigate={navigate}
+        search={search}
+        onSearch={setSearch}
+        session={session}
+        onLogout={() => {
+          clearSession();
+          setSession(null);
+        }}
+      >
+        {activePage === "dashboard" ? (
+          <Dashboard onNavigate={navigate} onOpenInspection={openInspection} />
+        ) : null}
+        {activePage === "inspections" ? (
+          <Inspections
+            search={search}
+            focusId={focusInspectionId}
+            onNotify={notify}
+            onOpenReport={openReport}
+          />
+        ) : null}
+        {activePage === "sealing" ? <Sealing onNotify={notify} onOpenReport={openReport} /> : null}
+        {activePage === "services" ? <ServiceOrders onNotify={notify} /> : null}
+        {activePage === "customers" ? <Customers onNotify={notify} /> : null}
+        {activePage === "permissions" ? <Permissions onNotify={notify} /> : null}
+        {activePage === "reports" ? (
+          <Reports
+            initialTemplate={reportTemplate}
+            initialInspectionId={reportInspectionId}
+            initialSealingId={reportSealingId}
+            onNotify={notify}
+          />
+        ) : null}
+        {toast ? <Toast message={toast} onClose={() => setToast(null)} /> : null}
+      </Layout>
+    </LiveDataProvider>
   );
 }
 

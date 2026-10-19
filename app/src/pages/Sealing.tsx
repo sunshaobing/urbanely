@@ -14,8 +14,14 @@ import {
   Signature,
   Wrench,
 } from "lucide-react";
-import { createMaterialLine, getInspection, getSealingOrder, getSite, sealingOrders } from "../data";
-import type { SealingOrder, SealingStatus, SignatureImage } from "../types";
+import type {
+  Inspection,
+  MaterialLine,
+  SealingOrder,
+  SealingStatus,
+  SignatureImage,
+  Site,
+} from "../types";
 import { SealingReportSheet } from "../components/ReportSheet";
 import { SignatureCapture, SignaturePartyCard } from "../components/SignatureCapture";
 import { getSealingSignatures, useSealingSignatures } from "../signatureStore";
@@ -31,6 +37,17 @@ import {
   SectionTitle,
   StatusPill,
 } from "../components/ui";
+import { useLiveData } from "../liveData";
+import {
+  buildSites,
+  toInspection,
+  toSealingOrder,
+} from "../backendMappers";
+import {
+  openBackendPdf,
+  updateServiceReport,
+} from "../api";
+import type { BackendServiceReport } from "../api";
 
 interface SealingProps {
   onNotify: (message: string) => void;
@@ -40,19 +57,81 @@ interface SealingProps {
 const tabs = ["施工信息", "部位与材料", "验收与签字", "报告预览"] as const;
 type Tab = (typeof tabs)[number];
 
+function createMaterialLine(): MaterialLine {
+  return {
+    id: `mat-${Date.now()}`,
+    name: "防火泥",
+    spec: "20kg/箱",
+    unit: "kg",
+    quantity: 1,
+  };
+}
+
 export function Sealing({ onNotify, onOpenReport }: SealingProps) {
+  const { customers, refresh, riskSurveys, serviceReports, sites, workorders } = useLiveData();
+  const liveSites = useMemo(
+    () => buildSites(customers, sites, workorders, riskSurveys),
+    [customers, riskSurveys, sites, workorders],
+  );
+  const liveOrders = useMemo(
+    () =>
+      serviceReports.map((report) =>
+        toSealingOrder(report, workorders, customers, sites),
+      ),
+    [customers, serviceReports, sites, workorders],
+  );
+  const liveInspections = useMemo(
+    () =>
+      riskSurveys.map((survey) =>
+        toInspection(survey, workorders, customers, sites),
+      ),
+    [customers, riskSurveys, sites, workorders],
+  );
+  const siteById = new Map(liveSites.map((site) => [site.id, site]));
   const [status, setStatus] = useState<"全部" | SealingStatus>("全部");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const filtered = useMemo(
-    () => sealingOrders.filter((order) => status === "全部" || order.status === status),
-    [status],
+    () => liveOrders.filter((order) => status === "全部" || order.status === status),
+    [liveOrders, status],
   );
 
-  if (selectedId) {
+  if (selectedId && liveOrders.length) {
+    const selectedOrder =
+      liveOrders.find((order) => order.id === selectedId) || liveOrders[0];
+    const rawReport =
+      serviceReports.find((report) => String(report.id) === selectedOrder.id) ||
+      serviceReports[0];
+    const inspection =
+      liveInspections.find((item) =>
+        item.siteId === selectedOrder.siteId,
+      ) || liveInspections[0];
+    const selectedSite =
+      siteById.get(selectedOrder.siteId) || {
+        id: selectedOrder.siteId,
+        code: selectedOrder.reportNo,
+        name: selectedOrder.reportNo,
+        customer: rawReport?.customer_name || "—",
+        customerType: "客户",
+        address: rawReport?.address || "地址待补充",
+        region: "",
+        contact: rawReport?.contact || "—",
+        phoneMasked: rawReport?.contact_phone || "—",
+        risk: "medium" as const,
+        lastService: selectedOrder.date,
+        nextService: "—",
+        openFindings: 0,
+        contractStatus: "待补" as const,
+        frequency: "按合同",
+      };
+    if (!rawReport) return null;
     return (
       <SealingDetail
-        sealingId={selectedId}
+        order={selectedOrder}
+        rawReport={rawReport}
+        site={selectedSite}
+        inspection={inspection}
+        onRefresh={refresh}
         onBack={() => setSelectedId(null)}
         onNotify={onNotify}
         onOpenReport={onOpenReport}
@@ -69,7 +148,7 @@ export function Sealing({ onNotify, onOpenReport }: SealingProps) {
         meta={
           <>
             <span className="live-dot" />
-            3 张封堵单 · 2 张待验收 · 1 张施工中
+            {liveOrders.length} 张封堵单 · {liveOrders.filter((order) => order.status === "待验收").length} 张待验收 · {liveOrders.filter((order) => order.status === "施工中").length} 张施工中
           </>
         }
         actions={
@@ -83,23 +162,23 @@ export function Sealing({ onNotify, onOpenReport }: SealingProps) {
       <section className="metrics-strip compact-metrics">
         <div className="mini-metric">
           <span>待验收</span>
-          <strong>2</strong>
-          <small>1 单缺少客户签字</small>
+          <strong>{liveOrders.filter((order) => order.status === "待验收").length}</strong>
+          <small>{liveOrders.filter((order) => !order.signed).length} 单缺少双方签字</small>
         </div>
         <div className="mini-metric">
           <span>施工中</span>
-          <strong>3</strong>
-          <small>今日 1 单计划完成</small>
+          <strong>{liveOrders.filter((order) => order.status === "施工中").length}</strong>
+          <small>来自实时封堵报告</small>
         </div>
         <div className="mini-metric">
-          <span>本月材料</span>
-          <strong>¥ 4,280</strong>
-          <small>防火泥、密封胶、防鼠网</small>
+          <span>材料明细</span>
+          <strong>{liveOrders.reduce((sum, order) => sum + order.materials.length, 0)}</strong>
+          <small>当前封堵报告累计材料行</small>
         </div>
         <div className="mini-metric">
-          <span>一次验收通过</span>
-          <strong>86.7%</strong>
-          <small>较上月 +2.1%</small>
+          <span>已验收</span>
+          <strong>{liveOrders.filter((order) => order.status === "已验收").length}</strong>
+          <small>实时完成数量</small>
         </div>
       </section>
 
@@ -133,18 +212,17 @@ export function Sealing({ onNotify, onOpenReport }: SealingProps) {
             <span />
           </div>
           {filtered.map((order) => {
-            const site = getSite(order.siteId);
-            const inspection = getInspection(order.inspectionId);
+            const site = siteById.get(order.siteId);
             const signatures = getSealingSignatures(order.id);
             const isSigned = Boolean(signatures.responsible && signatures.customer);
             return (
               <button type="button" className="table-row" key={order.id} onClick={() => setSelectedId(order.id)}>
                 <span className="mono">{order.reportNo}</span>
                 <span className="cell-main">
-                  <strong>{site.name}</strong>
+                  <strong>{site?.name || "—"}</strong>
                   <small>
                     <MapPin size={12} />
-                    {site.region} · {site.code}
+                    {site?.region || site?.address || "—"} · {site?.code || "—"}
                   </small>
                 </span>
                 <span>{order.date}</span>
@@ -155,7 +233,7 @@ export function Sealing({ onNotify, onOpenReport }: SealingProps) {
                 <span>
                   <StatusPill status={isSigned ? "已验收" : order.status} />
                 </span>
-                <span className="mono subtle">{inspection.reportNo}</span>
+                <span className="mono subtle">#{order.id}</span>
                 <span className="row-arrow">
                   <ArrowRight size={15} />
                 </span>
@@ -169,23 +247,28 @@ export function Sealing({ onNotify, onOpenReport }: SealingProps) {
 }
 
 function SealingDetail({
-  sealingId,
+  order: original,
+  rawReport,
+  site,
+  inspection,
+  onRefresh,
   onBack,
   onNotify,
   onOpenReport,
 }: {
-  sealingId: string;
+  order: SealingOrder;
+  rawReport: BackendServiceReport;
+  site: Site;
+  inspection?: Inspection;
+  onRefresh: () => Promise<void>;
   onBack: () => void;
   onNotify: (message: string) => void;
   onOpenReport: (template: "sealing", sealingId: string) => void;
 }) {
-  const original = getSealingOrder(sealingId);
   const [order, setOrder] = useState<SealingOrder>(() => structuredClone(original));
   const [tab, setTab] = useState<Tab>("施工信息");
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [signatures, saveSealingSignatures] = useSealingSignatures(original.id);
-  const site = getSite(order.siteId);
-  const inspection = getInspection(order.inspectionId);
   const bothSigned = Boolean(signatures.responsible && signatures.customer);
   const isSigned = bothSigned || order.signed;
   const reportOrder = { ...order, signatures, signed: bothSigned };
@@ -216,11 +299,94 @@ function SealingDetail({
     update({
       signatures: saved,
       signed: Boolean(saved.responsible && saved.customer),
-      acceptanceResult: "已采纳",
-      status: "已验收",
     });
     setSignatureOpen(false);
-    onNotify("封堵责任人与客户代表签字已完成，报告版本已锁定");
+    onNotify("双方签字已记录，保存后写入生产后端");
+  };
+
+  const backendStatus =
+    order.status === "已验收"
+      ? "completed"
+      : order.status === "待验收"
+        ? "submitted"
+        : order.status === "施工中"
+          ? "in_progress"
+          : order.status === "已排期"
+            ? "assigned"
+            : "draft";
+  const backendPayload = {
+    customer_id: rawReport.customer_id || 0,
+    customer_name: rawReport.customer_name || site.customer,
+    address: rawReport.address || site.address,
+    contact: rawReport.contact || site.contact,
+    contact_phone: rawReport.contact_phone || "",
+    service_project: rawReport.service_project || order.purpose,
+    task_tag: rawReport.task_tag || "",
+    service_date: order.date,
+    start_time: rawReport.start_time || "",
+    end_time: rawReport.end_time || "",
+    service_person: order.leader,
+    content: rawReport.content || "",
+    follow_up: order.followUpAdvice,
+    risk_follow: order.hygieneAdvice,
+    customer_comment: order.acceptanceCriteria,
+    status: backendStatus,
+    materials: order.materials.map((material, index) => ({
+      name: material.name,
+      qty: material.quantity,
+      unit: material.unit,
+      usage_method: "",
+      target: "",
+      area_size: material.spec,
+      region: "",
+      sort_order: index,
+    })),
+    photos: rawReport.photos || [],
+    risk_photos: rawReport.risk_photos || [],
+    signatures: [
+      signatures.responsible
+        ? {
+            role: "responsible",
+            name: order.leader,
+            image_url: signatures.responsible.dataUrl,
+          }
+        : null,
+      signatures.customer
+        ? {
+            role: "customer",
+            name: site.contact,
+            image_url: signatures.customer.dataUrl,
+          }
+        : null,
+    ].filter(Boolean),
+  };
+
+  const saveBackend = async () => {
+    try {
+      await updateServiceReport(rawReport.id, backendPayload);
+      await onRefresh();
+      onNotify("封堵单已保存到生产后端");
+    } catch (saveError) {
+      onNotify(saveError instanceof Error ? saveError.message : "封堵单保存失败");
+    }
+  };
+
+  const generateBackendReport = async () => {
+    if (!isSigned) {
+      onNotify("请先完成封堵责任人和客户代表双方签字");
+      return;
+    }
+    try {
+      await updateServiceReport(rawReport.id, {
+        ...backendPayload,
+        status: "completed",
+      });
+      await onRefresh();
+      await openBackendPdf(`/api/service-reports/${rawReport.id}/pdf`);
+      onNotify("封堵报告已从后端生成");
+    } catch (reportError) {
+      onNotify(reportError instanceof Error ? reportError.message : "报告生成失败");
+    }
   };
 
   return (
@@ -239,11 +405,11 @@ function SealingDetail({
           </div>
           <h1>{site.name}</h1>
           <p>
-            来源勘测 {inspection.reportNo} · {order.date} · {order.leader} 施工
+            来源勘测 {inspection?.reportNo || rawReport.task_tag || "—"} · {order.date} · {order.leader} 施工
           </p>
         </div>
         <div className="page-actions">
-          <button type="button" className="button secondary" onClick={() => onNotify("封堵单草稿已保存")}>
+          <button type="button" className="button secondary" onClick={() => void saveBackend()}>
             <Save size={16} />
             保存
           </button>
@@ -254,13 +420,7 @@ function SealingDetail({
           <button
             type="button"
             className="button primary"
-            onClick={() => {
-              if (!bothSigned) {
-                onNotify("请先完成封堵责任人和客户代表双方签字");
-                return;
-              }
-              onOpenReport("sealing", order.id);
-            }}
+            onClick={() => void generateBackendReport()}
           >
             <FileText size={16} />
             生成报告
@@ -338,16 +498,16 @@ function SealingDetail({
             <div className="link-card">
               <div>
                 <span>来源勘测单</span>
-                <strong className="mono">{inspection.reportNo}</strong>
+                <strong className="mono">{inspection?.reportNo || "—"}</strong>
               </div>
-              <StatusPill status={inspection.status} />
+              <StatusPill status={inspection?.status || "—"} />
             </div>
             <div className="link-card">
               <div>
                 <span>隐患点</span>
-                <strong>{inspection.findings.length} 项</strong>
+                <strong>{inspection?.findings.length || 0} 项</strong>
               </div>
-              <RiskPill risk={inspection.risk} compact />
+              <RiskPill risk={inspection?.risk || "medium"} compact />
             </div>
             <div className="summary-note">
               <Wrench size={16} />
@@ -633,7 +793,7 @@ function SealingDetail({
         <div className="report-inline">
           <div className="report-inline-head">
             <span>版本 v1 · 2026-10-18 17:33 · {bothSigned ? "双方已签" : "待签字"}</span>
-            <button type="button" className="button primary" onClick={() => onOpenReport("sealing", order.id)}>
+            <button type="button" className="button primary" onClick={() => void generateBackendReport()}>
               <FileText size={16} />
               打开完整预览
             </button>

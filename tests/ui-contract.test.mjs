@@ -63,3 +63,46 @@ test("the web console no longer exposes the field-mode page", () => {
   );
 });
 
+test("web operations pages consume the live backend snapshot", () => {
+  const api = read("app/src/api.ts");
+  const live = read("app/src/liveData.tsx");
+  const layout = read("app/src/components/Layout.tsx");
+
+  for (const endpoint of [
+    "/api/dashboard/summary",
+    "/api/workorders",
+    "/api/risk-surveys",
+    "/api/service-reports",
+    "/api/customers",
+    "/api/sites",
+    "/api/templates",
+  ]) {
+    assert.match(api, new RegExp(endpoint.replaceAll("/", "\\/")));
+  }
+  assert.match(live, /LIVE_REFRESH_MS/);
+  assert.match(live, /setInterval/);
+  assert.match(live, /visibilitychange/);
+  assert.match(live, /window\.addEventListener\("focus"/);
+  assert.match(live, /Promise\.allSettled/);
+  assert.match(layout, /useLiveData/);
+  assert.match(layout, /RefreshCw/);
+
+  for (const page of [
+    "Dashboard",
+    "Customers",
+    "Inspections",
+    "Sealing",
+    "Reports",
+    "ServiceOrders",
+  ]) {
+    assert.match(read(`app/src/pages/${page}.tsx`), /useLiveData/);
+  }
+  assert.match(read("app/src/pages/Inspections.tsx"), /updateRiskSurvey/);
+  assert.match(read("app/src/pages/Sealing.tsx"), /updateServiceReport/);
+  assert.match(read("app/src/pages/Reports.tsx"), /openBackendPdf/);
+  assert.equal(
+    fs.existsSync(new URL("../app/src/data.ts", import.meta.url)),
+    false,
+  );
+});
+

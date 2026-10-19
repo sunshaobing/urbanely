@@ -3982,6 +3982,16 @@ button.chip {
   box-shadow: 0 0 0 4px rgba(47, 158, 127, 0.1);
 }
 
+.spin {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .workspace-switch {
   display: flex;
   align-items: center;

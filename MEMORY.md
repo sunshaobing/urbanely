@@ -61,7 +61,7 @@
   - `docs/04-ui-spec.md`
   - `docs/05-feishu-field-map.csv`
 - Interactive prototype is in `app/` with Vite + React + TypeScript.
-- Prototype covers dashboard, inspections, sealing, service orders, customers/sites, report center, and mobile field mode.
+- Prototype covers dashboard, inspections, sealing, service orders, customers/sites and report center; field capture lives in the WeChat Mini Program.
 - Inspection basic info includes the store contact phone; inspection photos are now `structure_risk` only, with batch upload and a hard 100-photo cap.
 - Sealing before/after photos remain only in the sealing order, not in the inspection.
 - Desktop photo grids use five columns with automatic row wrapping; the mobile layout keeps two columns for readability.
@@ -105,10 +105,14 @@
 - The production web root was replaced with the new `app/dist` build. The recovered legacy `static_web` was removed from the server, and Caddy now sends `Cache-Control: no-store` for the entry page.
 - Web login now stores the production API token and resolves the real user from `/api/auth/login`.
 - The Web personnel page now uses `/api/personnel` for list/create/update, supports adding personnel, editing accounts, enabling/disabling accounts, and changing user passwords. The signed-in user can also change their own password through `/api/auth/change-password`.
+- The Web operations console now uses a shared `LiveDataProvider` that polls the production APIs every 12 seconds, refreshes on window focus/visibility, and refreshes immediately after writes. Dashboard, customers, inspections, sealing, reports and service orders now consume the shared backend snapshot instead of local fixtures.
+- Inspection and sealing detail pages write updates back through `PUT /api/risk-surveys/{id}` and `PUT /api/service-reports/{id}`; report buttons request backend PDFs with the current bearer token.
+- Web live E2E passed against a stateful mock backend: the workbench showed 2 work orders initially, changed to 3 immediately on window focus after an external write, and changed to 4 through the 12-second poll. Saving an inspection and a sealing order produced real PUT requests and refreshed the UI; all listed management pages loaded live data, the 1440px layout had no horizontal overflow, and the browser console stayed clean.
+- The legacy `app/src/data.ts` fixture module was removed after all management pages moved to the live snapshot; no local sample-data imports remain in the Web app.
 
 ## Remaining Gaps
 
-- Web prototype still uses local sample data; Mini Program login, workbench, report archive and profile now use the production API.
+- Web live integration has been exercised against a stateful mock backend; it still needs a production-account pass because no valid admin credentials were available in the workspace.
 - COS attachment IDs, retry/backoff, idempotent batch sync and optimistic-conflict handling still need to replace the current direct upload URL flow.
 - The new uni-app capture forms have not yet been exercised against the production account or real device camera/signature hardware; only type, build and mocked visual flows are verified.
 - The backend OpenAPI does not expose a dedicated risk-survey review or sealing-dispatch endpoint, so the client maps those transitions to `status=approved`, `status=assigned` and `status=accepted` on the existing documents. Production role/status validation still needs an end-to-end account test.
