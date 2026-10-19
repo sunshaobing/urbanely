@@ -26,8 +26,15 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.globalStyle.navigationStyle, "custom");
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.1"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"301"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.2"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"302"/);
+});
+
+test("survey engineer role is labelled 勘测工程师 in the field client", () => {
+  const present = read("src/utils/present.ts");
+
+  assert.match(present, /service_engineer:\s*"勘测工程师"/);
+  assert.match(present, /survey_engineer:\s*"勘测工程师"/);
 });
 
 test("uni-app uses production APIs for tasks, records, uploads and signatures", () => {

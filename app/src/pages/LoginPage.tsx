@@ -17,7 +17,7 @@ const roleNames: Record<string, string> = {
   admin: "管理员",
   supervisor: "质量监理",
   sealing_engineer: "封堵工程师",
-  service_engineer: "服务工程师",
+  service_engineer: "勘测工程师",
   engineer: "工程师",
   finance: "财务",
 };

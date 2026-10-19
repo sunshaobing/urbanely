@@ -157,3 +157,14 @@ test("admin can dispatch a customer to a survey engineer", () => {
   assert.match(api, /export function createWorkOrder/);
 });
 
+test("the survey engineer role is labelled 勘测工程师 across the web app", () => {
+  const permissions = read("app/src/pages/Permissions.tsx");
+  const login = read("app/src/pages/LoginPage.tsx");
+  const dispatch = read("app/src/components/DispatchSurveyDialog.tsx");
+
+  assert.match(permissions, /label:\s*"勘测工程师"/);
+  assert.doesNotMatch(permissions, /label:\s*"服务工程师"/);
+  assert.match(login, /service_engineer:\s*"勘测工程师"/);
+  assert.match(dispatch, /service_engineer:\s*"勘测工程师"/);
+});
+

@@ -25,7 +25,7 @@ const roleOptions = [
   { value: "admin", label: "管理员" },
   { value: "supervisor", label: "质量监理" },
   { value: "sealing_engineer", label: "封堵工程师" },
-  { value: "service_engineer", label: "服务工程师" },
+  { value: "service_engineer", label: "勘测工程师" },
   { value: "engineer", label: "工程师" },
   { value: "finance", label: "财务" },
 ] as const;

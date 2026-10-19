@@ -25,7 +25,7 @@ const SURVEY_ROLES = new Set([
 ]);
 
 const roleLabels: Record<string, string> = {
-  service_engineer: "服务工程师",
+  service_engineer: "勘测工程师",
   engineer: "工程师",
   surveyor: "勘测员",
   survey_engineer: "勘测工程师",
