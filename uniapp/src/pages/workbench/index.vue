@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { onPullDownRefresh, onShow } from "@dcloudio/uni-app";
+import { onLoad, onPullDownRefresh, onShow } from "@dcloudio/uni-app";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 import AppTabBar from "../../components/AppTabBar.vue";
 import BrandLogo from "../../components/BrandLogo.vue";
@@ -18,6 +18,7 @@ import {
 import type { Session, WorkOrder } from "../../utils/types";
 
 const session = ref<Session | null>(null);
+const fieldKind = ref<"" | "risk" | "sealing">("");
 const activeStatus = ref("draft");
 const tasks = ref<WorkOrder[]>([]);
 const summary = ref({
@@ -30,6 +31,35 @@ const loading = ref(false);
 const loadingTasks = ref(false);
 const error = ref("");
 const updatedAt = ref("");
+
+const pageTitle = computed(() =>
+  fieldKind.value === "risk"
+    ? "勘测任务"
+    : fieldKind.value === "sealing"
+      ? "封堵任务"
+      : "现场任务",
+);
+const pageKicker = computed(() =>
+  fieldKind.value === "risk"
+    ? "SURVEY FIELD"
+    : fieldKind.value === "sealing"
+      ? "SEALING FIELD"
+      : "FIELD WORKBENCH",
+);
+const actionText = computed(() =>
+  fieldKind.value === "risk"
+    ? "处理勘测"
+    : fieldKind.value === "sealing"
+      ? "处理封堵"
+      : "查看任务",
+);
+const tabCurrent = computed<"workbench" | "risk" | "sealing">(() =>
+  fieldKind.value === "risk"
+    ? "risk"
+    : fieldKind.value === "sealing"
+      ? "sealing"
+      : "workbench",
+);
 
 const activeLabel = computed(
   () => statusOptions.find((item) => item.value === activeStatus.value)?.label ?? "任务",
@@ -111,6 +141,12 @@ function openProfile() {
   uni.reLaunch({ url: "/pages/profile/index" });
 }
 
+onLoad((query) => {
+  const kind = query?.kind;
+  fieldKind.value = kind === "risk" || kind === "sealing" ? kind : "";
+  activeStatus.value = fieldKind.value === "sealing" ? "pending" : "draft";
+});
+
 onShow(() => {
   void load();
 });
@@ -139,7 +175,7 @@ onPullDownRefresh(async () => {
 
       <view class="hero-title-row">
         <view>
-          <text class="hero-greeting">现场工作台</text>
+          <text class="hero-greeting">{{ pageTitle }}</text>
           <text class="hero-date">{{ todayLabel() }} · {{ session?.name || "现场人员" }}</text>
         </view>
         <view class="hero-role">
@@ -201,7 +237,7 @@ onPullDownRefresh(async () => {
 
       <view class="task-section-head">
         <view>
-          <text class="section-title">任务清单</text>
+          <text class="section-title">{{ pageKicker }}</text>
           <text class="section-copy">按服务状态查看今天要处理的工作</text>
         </view>
         <view class="reports-link" @tap="openReports">
@@ -257,8 +293,8 @@ onPullDownRefresh(async () => {
             <text class="task-address">{{ task.service_address || "服务地址待补充" }}</text>
             <view class="task-footer">
               <text>{{ task.sites.length }} 个封堵部位</text>
-              <view class="task-open">
-                <text>查看现场</text>
+              <view class="task-open" @tap.stop="openTask(task)">
+                <text>{{ actionText }}</text>
                 <UniIcons type="right" size="14" color="#1d7659" />
               </view>
             </view>
@@ -279,7 +315,7 @@ onPullDownRefresh(async () => {
       </text>
     </view>
 
-    <AppTabBar current="workbench" />
+    <AppTabBar :current="tabCurrent" />
   </view>
 </template>
 

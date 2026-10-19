@@ -163,6 +163,12 @@ test("the redesign keeps a green-led mobile business system", () => {
   assert.match(tabbar, /background:\s*#10352a/);
   assert.match(tabbar, /color:\s*#ffffff/);
   assert.match(workbench, /background:\s*#10352a/);
+  assert.match(tabbar, /label: "任务"/);
+  assert.match(tabbar, /label: "勘测"/);
+  assert.match(tabbar, /label: "封堵"/);
+  assert.match(workbench, /fieldKind/);
+  assert.match(workbench, /勘测任务/);
+  assert.match(workbench, /封堵任务/);
 });
 
 test("survey photos use the 100-image cap and a five-column wrapping grid", () => {

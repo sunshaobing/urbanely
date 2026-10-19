@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 
-type TabKey = "workbench" | "reports" | "profile";
+type TabKey = "workbench" | "risk" | "sealing" | "reports" | "profile";
 
 const props = defineProps<{
   current: TabKey;
@@ -16,10 +16,24 @@ const items: Array<{
 }> = [
   {
     key: "workbench",
-    label: "工作台",
+    label: "任务",
     icon: "home",
     activeIcon: "home-filled",
     url: "/pages/workbench/index",
+  },
+  {
+    key: "risk",
+    label: "勘测",
+    icon: "search",
+    activeIcon: "search",
+    url: "/pages/workbench/index?kind=risk",
+  },
+  {
+    key: "sealing",
+    label: "封堵",
+    icon: "compose",
+    activeIcon: "compose",
+    url: "/pages/workbench/index?kind=sealing",
   },
   {
     key: "reports",
@@ -87,7 +101,8 @@ function navigate(key: TabKey, url: string) {
 
 .app-tab {
   position: relative;
-  min-width: 180rpx;
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
