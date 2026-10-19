@@ -26,6 +26,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.globalStyle.navigationStyle, "custom");
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
+  assert.match(manifest, /"versionName"\s*:\s*"1\.1\.0"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"110"/);
 });
 
 test("uni-app uses production APIs for tasks, records, uploads and signatures", () => {
