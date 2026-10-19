@@ -26,8 +26,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.globalStyle.navigationStyle, "custom");
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.2"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"302"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.3"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"303"/);
 });
 
 test("survey engineer role is labelled 勘测工程师 in the field client", () => {
@@ -145,7 +145,9 @@ test("branding and personnel images reuse backend-facing assets and avatar rules
 test("workbench brand title is enlarged for field readability", () => {
   const workbench = read("src/pages/workbench/index.vue");
 
-  assert.match(workbench, /:name-size="15"/);
+  assert.match(workbench, /:size="34"/);
+  assert.match(workbench, /:name-size="17"/);
+  assert.match(workbench, /\.brand-inline\s*\{[\s\S]*?flex-direction:\s*column/);
   assert.match(workbench, /\.brand-sub\s*\{[\s\S]*?font-size:\s*24rpx/);
 });
 

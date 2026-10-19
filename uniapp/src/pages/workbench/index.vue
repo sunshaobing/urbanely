@@ -186,7 +186,7 @@ onPullDownRefresh(async () => {
     <view class="workbench-hero">
       <view class="hero-topline">
         <view class="brand-inline">
-          <BrandLogo :size="30" show-name :name-size="15" light />
+          <BrandLogo :size="34" show-name :name-size="17" light />
           <view>
             <text class="brand-sub">封堵勘测系统</text>
           </view>
@@ -379,8 +379,9 @@ onPullDownRefresh(async () => {
 
 .brand-inline {
   display: flex;
-  align-items: center;
-  gap: 14rpx;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6rpx;
 }
 
 .brand-sub {
@@ -388,7 +389,7 @@ onPullDownRefresh(async () => {
 }
 
 .brand-sub {
-  margin-top: 2rpx;
+  margin-top: 0;
   color: #9ec5b5;
   font-size: 24rpx;
   line-height: 1.2;
