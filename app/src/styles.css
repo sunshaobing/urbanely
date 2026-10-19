@@ -6354,6 +6354,54 @@ button.chip {
   width: min(720px, 100%);
 }
 
+.dispatch-modal {
+  width: min(560px, 100%);
+}
+
+.dispatch-summary {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.dispatch-summary strong {
+  display: block;
+  font-size: 14px;
+}
+
+.dispatch-summary span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.dispatch-summary p {
+  margin-top: 6px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.dispatch-empty {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 6px;
+  background: #fff7f6;
+  color: var(--red);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.dispatch-hint {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
 .customer-form-section {
   margin-top: 18px;
 }

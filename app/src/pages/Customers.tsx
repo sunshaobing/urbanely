@@ -18,6 +18,7 @@ import type { BackendCustomer, BackendSite } from "../api";
 import { ProgressBar, RiskPill, SectionTitle, StatusPill } from "../components/ui";
 import { PageHeader } from "../components/PageHeader";
 import { CustomerEditor, DeleteCustomerDialog } from "../components/CustomerEditor";
+import { DispatchSurveyDialog } from "../components/DispatchSurveyDialog";
 import { useLiveData } from "../liveData";
 import {
   buildSites,
@@ -55,6 +56,10 @@ export function Customers({ onNotify }: CustomersProps) {
     customer: BackendCustomer;
     site?: BackendSite;
     hasWorkOrders: boolean;
+  } | null>(null);
+  const [dispatchTarget, setDispatchTarget] = useState<{
+    customer: BackendCustomer;
+    site?: BackendSite;
   } | null>(null);
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -179,6 +184,14 @@ export function Customers({ onNotify }: CustomersProps) {
             workorders={workorders}
             canManage={Boolean(selectedCustomer)}
             onNotify={onNotify}
+            onDispatch={() => {
+              if (selectedCustomer) {
+                setDispatchTarget({
+                  customer: selectedCustomer,
+                  site: siteRecord(selectedCustomer.id),
+                });
+              }
+            }}
             onEdit={() => {
               if (selectedCustomer) {
                 setEditor({ mode: "edit", customerId: selectedCustomer.id });
@@ -233,6 +246,16 @@ export function Customers({ onNotify }: CustomersProps) {
           onNotify={onNotify}
         />
       ) : null}
+
+      {dispatchTarget ? (
+        <DispatchSurveyDialog
+          customer={dispatchTarget.customer}
+          site={dispatchTarget.site}
+          onClose={() => setDispatchTarget(null)}
+          onDispatched={refresh}
+          onNotify={onNotify}
+        />
+      ) : null}
     </div>
   );
 }
@@ -244,6 +267,7 @@ function SiteProfile({
   workorders,
   canManage,
   onNotify,
+  onDispatch,
   onEdit,
   onDelete,
 }: {
@@ -253,6 +277,7 @@ function SiteProfile({
   workorders: ReturnType<typeof useLiveData>["workorders"];
   canManage: boolean;
   onNotify: (message: string) => void;
+  onDispatch: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -373,7 +398,7 @@ function SiteProfile({
         <button type="button" className="button secondary" onClick={() => onNotify("服务计划需在业务配置中维护")}>
           查看服务计划
         </button>
-        <button type="button" className="button primary" onClick={() => onNotify("请在微信小程序中创建现场任务")}>
+        <button type="button" className="button primary" onClick={onDispatch}>
           安排勘测
           <ArrowUpRight size={15} />
         </button>

@@ -91,6 +91,36 @@ export interface BackendWorkOrder {
   materials?: BackendWorkOrderMaterial[];
 }
 
+export interface WorkOrderInput {
+  report_date?: string;
+  customer_id?: number;
+  customer_code?: string;
+  customer_name: string;
+  service_address?: string;
+  contact?: string;
+  contact_phone?: string;
+  service_type?: string;
+  service_company?: string;
+  service_date?: string;
+  weather?: string;
+  engineer_id?: number | null;
+  supervisor_id?: number | null;
+  rat_species?: string[];
+  density?: string;
+  activity_areas?: string[];
+  purpose_options?: string[];
+  purpose_custom?: string;
+  hole_types?: string[];
+  acceptance_items?: string[];
+  hygiene_items?: string[];
+  acceptance_result?: string;
+  service_frequency?: string;
+  service_suggestion?: string;
+  materials?: Array<Record<string, unknown>>;
+  sites?: Array<Record<string, unknown>>;
+  signatures?: Array<Record<string, unknown>>;
+}
+
 export interface BackendPhoto {
   url: string;
   caption?: string;
@@ -325,6 +355,13 @@ export function listWorkOrders(
   } = {},
 ) {
   return request<unknown>(`/api/workorders${queryString(filters)}`);
+}
+
+export function createWorkOrder(body: WorkOrderInput) {
+  return request<BackendWorkOrder>("/api/workorders", {
+    method: "POST",
+    body,
+  });
 }
 
 export function listRiskSurveys(

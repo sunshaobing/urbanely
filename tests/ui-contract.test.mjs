@@ -139,3 +139,18 @@ test("customer and site CRUD use production forms instead of placeholders", () =
   assert.match(css, /\.site-profile-tools/);
 });
 
+test("admin can dispatch a customer to a survey engineer", () => {
+  const customers = read("app/src/pages/Customers.tsx");
+  const dispatch = read("app/src/components/DispatchSurveyDialog.tsx");
+  const api = read("app/src/api.ts");
+
+  assert.match(customers, /DispatchSurveyDialog/);
+  assert.match(customers, /onDispatch/);
+  assert.match(dispatch, /listPersonnel/);
+  assert.match(dispatch, /createWorkOrder/);
+  assert.match(dispatch, /engineer_id: engineer\.id/);
+  assert.match(dispatch, /service_engineer/);
+  assert.match(dispatch, /确认派单/);
+  assert.match(api, /export function createWorkOrder/);
+});
+
