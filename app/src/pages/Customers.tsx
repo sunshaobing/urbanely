@@ -6,14 +6,18 @@ import {
   CheckCircle2,
   FileWarning,
   MapPin,
+  Pencil,
   Phone,
   Search,
   ShieldCheck,
   Store,
+  Trash2,
 } from "lucide-react";
 import type { RiskLevel, Site } from "../types";
+import type { BackendCustomer, BackendSite } from "../api";
 import { ProgressBar, RiskPill, SectionTitle, StatusPill } from "../components/ui";
 import { PageHeader } from "../components/PageHeader";
+import { CustomerEditor, DeleteCustomerDialog } from "../components/CustomerEditor";
 import { useLiveData } from "../liveData";
 import {
   buildSites,
@@ -27,8 +31,16 @@ interface CustomersProps {
 }
 
 export function Customers({ onNotify }: CustomersProps) {
-  const { customers, error, lastUpdated, riskSurveys, serviceReports, sites, workorders } =
-    useLiveData();
+  const {
+    customers,
+    error,
+    lastUpdated,
+    refresh,
+    riskSurveys,
+    serviceReports,
+    sites,
+    workorders,
+  } = useLiveData();
   const liveSites = useMemo(
     () => buildSites(customers, sites, workorders, riskSurveys),
     [customers, riskSurveys, sites, workorders],
@@ -36,6 +48,14 @@ export function Customers({ onNotify }: CustomersProps) {
   const [query, setQuery] = useState("");
   const [risk, setRisk] = useState<"全部" | RiskLevel>("全部");
   const [selectedId, setSelectedId] = useState("");
+  const [editor, setEditor] = useState<
+    { mode: "create" } | { mode: "edit"; customerId: number } | null
+  >(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    customer: BackendCustomer;
+    site?: BackendSite;
+    hasWorkOrders: boolean;
+  } | null>(null);
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return liveSites.filter((site) => {
@@ -49,6 +69,16 @@ export function Customers({ onNotify }: CustomersProps) {
   }, [liveSites, query, risk]);
   const selected =
     liveSites.find((site) => site.id === selectedId) ?? liveSites[0] ?? null;
+  const selectedCustomer = selected ? customerRecord(selected) : undefined;
+
+  function customerRecord(site: Site) {
+    const id = Number(site.id.replace("customer-", ""));
+    return customers.find((customer) => customer.id === id);
+  }
+
+  function siteRecord(customerId: number) {
+    return sites.find((site) => site.customer_id === customerId);
+  }
 
   return (
     <div className="page">
@@ -65,7 +95,7 @@ export function Customers({ onNotify }: CustomersProps) {
           </>
         }
         actions={
-          <button type="button" className="button primary" onClick={() => onNotify("客户新增入口待接入生产表单")}>
+          <button type="button" className="button primary" onClick={() => setEditor({ mode: "create" })}>
             <Building2 size={16} />
             新建客户
           </button>
@@ -147,12 +177,62 @@ export function Customers({ onNotify }: CustomersProps) {
             surveys={riskSurveys}
             reports={serviceReports}
             workorders={workorders}
+            canManage={Boolean(selectedCustomer)}
             onNotify={onNotify}
+            onEdit={() => {
+              if (selectedCustomer) {
+                setEditor({ mode: "edit", customerId: selectedCustomer.id });
+              }
+            }}
+            onDelete={() => {
+              if (!selectedCustomer) return;
+              setDeleteTarget({
+                customer: selectedCustomer,
+                site: siteRecord(selectedCustomer.id),
+                hasWorkOrders: workorders.some(
+                  (task) => task.customer_id === selectedCustomer.id,
+                ),
+              });
+            }}
           />
         ) : (
           <aside className="panel site-profile"><div className="personnel-empty">暂无客户数据。</div></aside>
         )}
       </div>
+
+      {editor ? (
+        <CustomerEditor
+          key={editor.mode === "edit" ? editor.customerId : "new"}
+          mode={editor.mode}
+          customer={
+            editor.mode === "edit"
+              ? customers.find((customer) => customer.id === editor.customerId)
+              : undefined
+          }
+          site={
+            editor.mode === "edit"
+              ? siteRecord(editor.customerId)
+              : undefined
+          }
+          onClose={() => setEditor(null)}
+          onSaved={async (customerId) => {
+            setSelectedId(`customer-${customerId}`);
+            await refresh();
+          }}
+          onNotify={onNotify}
+        />
+      ) : null}
+
+      {deleteTarget ? (
+        <DeleteCustomerDialog
+          customer={deleteTarget.customer}
+          site={deleteTarget.site}
+          hasWorkOrders={deleteTarget.hasWorkOrders}
+          onClose={() => setDeleteTarget(null)}
+          onDeleted={refresh}
+          onNotify={onNotify}
+        />
+      ) : null}
     </div>
   );
 }
@@ -162,13 +242,19 @@ function SiteProfile({
   surveys,
   reports,
   workorders,
+  canManage,
   onNotify,
+  onEdit,
+  onDelete,
 }: {
   site: Site;
   surveys: ReturnType<typeof useLiveData>["riskSurveys"];
   reports: ReturnType<typeof useLiveData>["serviceReports"];
   workorders: ReturnType<typeof useLiveData>["workorders"];
+  canManage: boolean;
   onNotify: (message: string) => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   const customerId = Number(site.id.replace("customer-", ""));
   const customerWorkorders = workorders.filter((task) => task.customer_id === customerId);
@@ -193,6 +279,26 @@ function SiteProfile({
           <p>{site.customer} · 编码 {site.code}</p>
         </div>
         <RiskPill risk={site.risk} />
+        {canManage ? (
+          <div className="site-profile-tools">
+            <button
+              type="button"
+              className="icon-button"
+              aria-label="编辑客户与门店"
+              onClick={onEdit}
+            >
+              <Pencil size={15} />
+            </button>
+            <button
+              type="button"
+              className="icon-button danger"
+              aria-label="删除客户与门店"
+              onClick={onDelete}
+            >
+              <Trash2 size={15} />
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div className="site-contact">

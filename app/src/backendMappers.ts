@@ -122,7 +122,7 @@ export function buildSites(
         task?.service_address ||
         "地址待补充",
       region: "",
-      contact: site?.note || customer?.contact || task?.contact || "—",
+      contact: customer?.contact || task?.contact || site?.note || "—",
       phoneMasked: maskPhone(customer?.phone || task?.contact_phone),
       risk,
       lastService: task?.service_date || task?.report_date || "—",
@@ -132,7 +132,12 @@ export function buildSites(
           item.customer_id === id &&
           !["approved", "completed"].includes(item.status),
       ).length,
-      contractStatus: customer?.status === "active" ? "已签" : "待补",
+      contractStatus:
+        customer?.status === "active"
+          ? "已签"
+          : customer?.status === "closed"
+            ? "缺失"
+            : "待补",
       frequency: "按合同",
     };
   });

@@ -6350,6 +6350,93 @@ button.chip {
   border-top: 1px solid var(--line);
 }
 
+.customer-editor-modal {
+  width: min(720px, 100%);
+}
+
+.customer-form-section {
+  margin-top: 18px;
+}
+
+.customer-form-section h3 {
+  margin-top: 3px;
+  font-size: 14px;
+}
+
+.customer-form-section p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.customer-form-grid {
+  margin-top: 10px;
+}
+
+.personnel-form-wide {
+  grid-column: 1 / -1;
+}
+
+.personnel-form-grid textarea {
+  width: 100%;
+  min-height: 72px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  resize: vertical;
+}
+
+.customer-delete-copy {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.customer-delete-copy strong {
+  color: var(--ink);
+}
+
+.customer-delete-warning {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 6px;
+  background: #fff7f6;
+  color: var(--red);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.button.danger {
+  border-color: #b4473a;
+  background: #b4473a;
+  color: #fff;
+}
+
+.button.danger:hover {
+  background: #9c392e;
+}
+
+.site-profile-tools {
+  display: flex;
+  flex: none;
+  gap: 6px;
+}
+
+.icon-button.danger {
+  color: var(--red);
+}
+
+.icon-button.danger:hover {
+  border-color: #e7c4be;
+  background: #fff7f6;
+}
+
 @media (max-width: 1100px) {
   .permissions-layout {
     grid-template-columns: 1fr;

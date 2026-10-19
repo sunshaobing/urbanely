@@ -203,6 +203,25 @@ export interface BackendSite {
   note?: string;
 }
 
+export interface CustomerInput {
+  code?: string;
+  name: string;
+  address?: string;
+  contact?: string;
+  phone?: string;
+  status?: string;
+  remark?: string;
+  owner_user_ids?: number[];
+}
+
+export interface SiteInput {
+  customer_id: number;
+  name: string;
+  address?: string;
+  area?: number;
+  note?: string;
+}
+
 export interface BackendTemplates {
   logo_url?: string;
   company_name?: string;
@@ -338,6 +357,46 @@ export function listCustomers(
 
 export function listSites(filters: { customer_id?: number } = {}) {
   return request<unknown>(`/api/sites${queryString(filters)}`);
+}
+
+export function createCustomer(body: CustomerInput) {
+  return request<BackendCustomer>("/api/customers", {
+    method: "POST",
+    body,
+  });
+}
+
+export function updateCustomer(id: number, body: CustomerInput) {
+  return request<BackendCustomer>(`/api/customers/${id}`, {
+    method: "PUT",
+    body,
+  });
+}
+
+export function deleteCustomer(id: number) {
+  return request<{ ok: boolean }>(`/api/customers/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function createSite(body: SiteInput) {
+  return request<BackendSite>("/api/sites", {
+    method: "POST",
+    body,
+  });
+}
+
+export function updateSite(id: number, body: SiteInput) {
+  return request<BackendSite>(`/api/sites/${id}`, {
+    method: "PUT",
+    body,
+  });
+}
+
+export function deleteSite(id: number) {
+  return request<{ ok: boolean }>(`/api/sites/${id}`, {
+    method: "DELETE",
+  });
 }
 
 export function getTemplates() {

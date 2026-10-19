@@ -106,3 +106,36 @@ test("web operations pages consume the live backend snapshot", () => {
   );
 });
 
+test("customer and site CRUD use production forms instead of placeholders", () => {
+  const customers = read("app/src/pages/Customers.tsx");
+  const editor = read("app/src/components/CustomerEditor.tsx");
+  const api = read("app/src/api.ts");
+  const mapper = read("app/src/backendMappers.ts");
+  const css = read("app/src/styles.css");
+
+  assert.doesNotMatch(customers, /待接入生产表单/);
+  assert.match(customers, /CustomerEditor/);
+  assert.match(customers, /DeleteCustomerDialog/);
+  assert.match(customers, /hasWorkOrders/);
+
+  for (const fn of [
+    "createCustomer",
+    "updateCustomer",
+    "deleteCustomer",
+    "createSite",
+    "updateSite",
+    "deleteSite",
+  ]) {
+    assert.match(api, new RegExp(`export function ${fn}`));
+    assert.match(editor, new RegExp(fn));
+  }
+
+  assert.match(editor, /客户名称/);
+  assert.match(editor, /默认门店/);
+  assert.match(editor, /合作状态/);
+  assert.match(mapper, /contact: customer\?\.contact/);
+  assert.match(css, /\.customer-editor-modal/);
+  assert.match(css, /\.button\.danger/);
+  assert.match(css, /\.site-profile-tools/);
+});
+
