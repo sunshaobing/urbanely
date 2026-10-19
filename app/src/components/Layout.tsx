@@ -13,7 +13,6 @@ import {
   Search,
   Settings2,
   ShieldCheck,
-  Smartphone,
   Store,
   Users,
   Wrench,
@@ -36,7 +35,6 @@ const navItems: Array<{
   { key: "customers", label: "客户与门店", icon: Store, hint: "合同与服务计划" },
   { key: "reports", label: "报告中心", icon: FileText, hint: "A4 报告与版本" },
   { key: "permissions", label: "人员与权限", icon: Users, hint: "角色、范围与敏感权限" },
-  { key: "field", label: "现场模式", icon: Smartphone, hint: "手机端离线采集" },
 ];
 
 const pageTitles: Record<PageKey, string> = {
@@ -47,14 +45,12 @@ const pageTitles: Record<PageKey, string> = {
   customers: "客户与门店",
   reports: "报告中心",
   permissions: "人员与权限",
-  field: "现场模式",
 };
 
 const navGroups: Array<{ label: string; keys: PageKey[] }> = [
   { label: "运营", keys: ["dashboard", "inspections", "sealing", "services"] },
   { label: "主数据", keys: ["customers", "reports"] },
   { label: "管理", keys: ["permissions"] },
-  { label: "现场", keys: ["field"] },
 ];
 
 interface LayoutProps {
@@ -229,7 +225,7 @@ export function Layout({
 
       <nav className="mobile-nav no-print" aria-label="移动端导航">
         {navItems
-          .filter((item) => ["dashboard", "inspections", "sealing", "reports", "field"].includes(item.key))
+          .filter((item) => ["dashboard", "inspections", "sealing", "reports"].includes(item.key))
           .map((item) => {
             const Icon = item.icon;
             const active = item.key === activePage;

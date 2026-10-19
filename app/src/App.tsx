@@ -5,7 +5,6 @@ import { clearSession, loadSession, saveSession } from "./auth";
 import type { AuthSession } from "./auth";
 import { Customers } from "./pages/Customers";
 import { Dashboard } from "./pages/Dashboard";
-import { FieldMode } from "./pages/FieldMode";
 import { Inspections } from "./pages/Inspections";
 import { LoginPage } from "./pages/LoginPage";
 import { Permissions } from "./pages/Permissions";
@@ -97,7 +96,6 @@ export default function App() {
           onNotify={notify}
         />
       ) : null}
-      {activePage === "field" ? <FieldMode onNotify={notify} /> : null}
       {toast ? <Toast message={toast} onClose={() => setToast(null)} /> : null}
     </Layout>
   );

@@ -9,8 +9,7 @@ export type PageKey =
   | "services"
   | "customers"
   | "permissions"
-  | "reports"
-  | "field";
+  | "reports";
 
 export type ReportTemplate = "survey" | "sealing";
 
