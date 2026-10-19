@@ -81,6 +81,7 @@
 - The API client is centralized in `miniprogram/utils/api.ts`; workbench status filters and aggregates come from server responses rather than local mock calculations.
 - On 2026-10-18 the Tencent Cloud instance was reset and the system was redeployed fresh at `101.42.181.122` on Ubuntu 26.04. The old database and attachments were intentionally not restored.
 - Production now runs FastAPI through `pco.service` on `127.0.0.1:8765` behind Caddy with a Let's Encrypt certificate for `https://sunrgw.cn`; both services are enabled at boot and the server timezone is `Asia/Shanghai`.
+- Public DNS for `sunrgw.cn` resolves to `101.42.181.122`. The local development machine uses a fake-IP proxy (`198.18.0.27`); other machines must route `sunrgw.cn` directly or disable fake-IP. Use the apex domain, not `www.sunrgw.cn`, because the certificate covers only the apex.
 - The fresh database contains three accounts (`admin`, `gongcheng`, `fw`), base settings and standard sealing materials, with zero customers, work orders and reports. Random initial passwords are stored only in root-only `/root/pco-initial-credentials.txt`.
 - The deployed auth endpoint accepts either username or phone, so the Mini Program can sign in with the seeded field phone number.
 - Mini Program login now preserves backend 401 errors on the login page instead of treating invalid credentials as an expired session; production domain and API connectivity were verified from WeChat DevTools.
