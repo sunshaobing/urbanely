@@ -200,10 +200,13 @@ export function DispatchSurveyDialog({
           </label>
           <label>
             <span>服务类型</span>
-            <input
+            <select
               value={serviceType}
               onChange={(event) => setServiceType(event.target.value)}
-            />
+            >
+              <option value="现场勘测">现场勘测</option>
+              <option value="上门封堵">上门封堵</option>
+            </select>
           </label>
           <label className="personnel-form-wide">
             <span>派单备注</span>

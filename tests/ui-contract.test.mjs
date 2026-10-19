@@ -151,6 +151,9 @@ test("admin can dispatch a customer to a survey engineer", () => {
   assert.match(dispatch, /engineer_id: engineer\.id/);
   assert.match(dispatch, /service_engineer/);
   assert.match(dispatch, /确认派单/);
+  assert.match(dispatch, /服务类型/);
+  assert.match(dispatch, /现场勘测/);
+  assert.match(dispatch, /上门封堵/);
   assert.match(api, /export function createWorkOrder/);
 });
 
