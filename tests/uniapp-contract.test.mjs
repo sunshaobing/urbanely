@@ -260,4 +260,6 @@ test("root WeChat project points at the uni-app build output", () => {
 
   assert.equal(config.miniprogramRoot, "uniapp/dist/build/mp-weixin/");
   assert.equal(config.appid, "wx9469d5e631279f7b");
+  assert.equal(config.libVersion, "2.21.2");
+  assert.match(read("scripts/finalize-mp-weixin.mjs"), /libVersion\s*=\s*"2\.21\.2"/);
 });

@@ -105,6 +105,7 @@
 - The production web root was replaced with the new `app/dist` build. The recovered legacy `static_web` was removed from the server, and Caddy now sends `Cache-Control: no-store` for the entry page.
 - On 2026-10-19 the live Web root `/home/ubuntu/pco/static_web` was updated to `index-DZzSCM7e.js` / `index-BFdKJ9XM.css`; the previous root was backed up as `static_web.bak-20261019-1000`. `https://sunrgw.cn` now serves the new build.
 - WeChat DevTools was reopened against the repository root so `miniprogramRoot: uniapp/dist/build/mp-weixin/` is used. A real `cli preview` compile succeeded with AppID `wx9469d5e631279f7b` at 510.5 KB.
+- The Mini Program base library was reduced from `3.7.0` to `2.21.2` to avoid rejecting older WeChat clients that do not need the newest runtime. The rebuilt preview compiled successfully at 527.3 KB with the lower base library.
 - Web login now stores the production API token and resolves the real user from `/api/auth/login`.
 - The Web personnel page now uses `/api/personnel` for list/create/update, supports adding personnel, editing accounts, enabling/disabling accounts, and changing user passwords. The signed-in user can also change their own password through `/api/auth/change-password`.
 - The Web operations console now uses a shared `LiveDataProvider` that polls the production APIs every 12 seconds, refreshes on window focus/visibility, and refreshes immediately after writes. Dashboard, customers, inspections, sealing, reports and service orders now consume the shared backend snapshot instead of local fixtures.

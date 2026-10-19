@@ -4,7 +4,7 @@ import path from "node:path";
 const configPath = path.resolve("dist/build/mp-weixin/project.config.json");
 const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 config.appid = "wx9469d5e631279f7b";
-config.libVersion = "3.7.0";
+config.libVersion = "2.21.2";
 config.setting = {
   ...config.setting,
   urlCheck: true,

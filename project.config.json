@@ -2,7 +2,7 @@
   "compileType": "miniprogram",
   "miniprogramRoot": "uniapp/dist/build/mp-weixin/",
   "projectname": "shentai-pco-uniapp",
-  "libVersion": "3.7.0",
+  "libVersion": "2.21.2",
   "simulatorPluginLibVersion": {},
   "appid": "wx9469d5e631279f7b",
   "setting": {
