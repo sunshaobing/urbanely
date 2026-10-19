@@ -26,8 +26,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.globalStyle.navigationStyle, "custom");
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.0"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"300"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.1"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"301"/);
 });
 
 test("uni-app uses production APIs for tasks, records, uploads and signatures", () => {
@@ -133,6 +133,13 @@ test("branding and personnel images reuse backend-facing assets and avatar rules
   assert.match(workbench, /ensureBrand/);
   assert.match(profile, /CartoonAvatar/);
   assert.match(login, /BrandLogo/);
+});
+
+test("workbench brand title is enlarged for field readability", () => {
+  const workbench = read("src/pages/workbench/index.vue");
+
+  assert.match(workbench, /:name-size="15"/);
+  assert.match(workbench, /\.brand-sub\s*\{[\s\S]*?font-size:\s*24rpx/);
 });
 
 test("the field workflow follows survey approval, dispatch, check-in, sealing and report generation", () => {

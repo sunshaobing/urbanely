@@ -186,7 +186,7 @@ onPullDownRefresh(async () => {
     <view class="workbench-hero">
       <view class="hero-topline">
         <view class="brand-inline">
-          <BrandLogo :size="30" show-name :name-size="13" light />
+          <BrandLogo :size="30" show-name :name-size="15" light />
           <view>
             <text class="brand-sub">封堵勘测系统</text>
           </view>
@@ -390,7 +390,8 @@ onPullDownRefresh(async () => {
 .brand-sub {
   margin-top: 2rpx;
   color: #9ec5b5;
-  font-size: 19rpx;
+  font-size: 24rpx;
+  line-height: 1.2;
 }
 
 .profile-shortcut {
