@@ -127,6 +127,7 @@
 - Inspection and sealing detail pages write updates back through `PUT /api/risk-surveys/{id}` and `PUT /api/service-reports/{id}`; report buttons request backend PDFs with the current bearer token.
 - Web live E2E passed against a stateful mock backend: the workbench showed 2 work orders initially, changed to 3 immediately on window focus after an external write, and changed to 4 through the 12-second poll. Saving an inspection and a sealing order produced real PUT requests and refreshed the UI; all listed management pages loaded live data, the 1440px layout had no horizontal overflow, and the browser console stayed clean.
 - The legacy `app/src/data.ts` fixture module was removed after all management pages moved to the live snapshot; no local sample-data imports remain in the Web app.
+- On 2026-10-20 the uni-app WeChat login page was simplified to a light business layout with only the brand row, login heading, account/password fields, one primary action and a password-recovery link. The previous dark hero, capability list and security note were removed; 320x568, 390x844 and 430x932 layout checks passed with no overflow, clipped text or overlap. Uni-app type-check, all contract tests, the Web build, the H5 build and the mp-weixin build pass.
 
 ## Remaining Gaps
 

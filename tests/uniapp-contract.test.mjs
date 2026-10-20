@@ -142,6 +142,26 @@ test("branding and personnel images reuse backend-facing assets and avatar rules
   assert.match(login, /BrandLogo/);
 });
 
+test("login keeps a focused business layout without marketing content", () => {
+  const login = read("src/pages/login/index.vue");
+
+  assert.match(login, /ensureBrand/);
+  assert.match(login, /class="login-brand-row"/);
+  assert.match(login, /登录工作台/);
+  assert.equal((login.match(/class="login-input"/g) || []).length, 2);
+  assert.equal((login.match(/class="login-submit"/g) || []).length, 1);
+  assert.match(login, /class="login-help"/);
+  assert.match(login, /showResetHelp/);
+  assert.match(login, /login\(identifier\.value\.trim\(\), password\.value\)/);
+  assert.match(login, /background:\s*#f4f6f3/);
+  assert.match(login, /\.login-submit\s*\{[\s\S]*?background:\s*#10352a/);
+  assert.doesNotMatch(
+    login,
+    /FIELD OPERATIONS|现场协同|把每一次现场记录|任务与风险统一查看|照片、签字现场留存|报告自动归档/,
+  );
+  assert.doesNotMatch(login, /hero-(?:points|title|kicker)|login-sheet|form-head/);
+});
+
 test("workbench brand title is enlarged for field readability", () => {
   const workbench = read("src/pages/workbench/index.vue");
 
