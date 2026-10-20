@@ -15,6 +15,7 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
 
   assert.deepEqual(paths, [
     "pages/login/index",
+    "pages/signature/index",
     "pages/workbench/index",
     "pages/task-detail/index",
     "pages/reports/index",
@@ -24,6 +25,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
     "pages/password/index",
   ]);
   assert.equal(pages.globalStyle.navigationStyle, "custom");
+  assert.equal(pages.pages[1].style.pageOrientation, "landscape");
+  assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
   assert.match(manifest, /"versionName"\s*:\s*"3\.0\.3"/);
@@ -308,19 +311,53 @@ test("survey photos use the 100-image cap and a five-column wrapping grid", () =
 
 test("survey and sealing flows capture both handwritten signatures", () => {
   const signaturePad = read("src/components/SignaturePad.vue");
+  const signaturePage = read("src/pages/signature/index.vue");
+  const themeConfig = read("src/config/index.js");
   const survey = read("src/pages/risk-survey/index.vue");
   const serviceReport = read("src/pages/service-report/index.vue");
 
-  assert.match(signaturePad, /<canvas/);
-  assert.match(signaturePad, /@touchstart/);
-  assert.match(signaturePad, /canvasToTempFilePath/);
-  assert.match(signaturePad, /nativeCanvas/);
-  assert.match(signaturePad, /querySelector\?\.\("canvas"\)/);
-  assert.match(signaturePad, /toDataURL/);
+  assert.match(signaturePad, /uni\.navigateTo/);
+  assert.match(signaturePad, /props\.role/);
+  assert.match(signaturePad, /SIGNATURE_COMPLETE_EVENT/);
+  assert.match(signaturePad, /<button[\s\S]*?class="signature-trigger"/);
+  assert.match(signaturePad, /class="signature-result"/);
+  assert.doesNotMatch(signaturePad, /signature-card/);
+  assert.match(signaturePage, /<canvas/);
+  assert.match(signaturePage, /@touchstart/);
+  assert.match(signaturePage, /canvasToTempFilePath/);
+  assert.match(signaturePage, /nativeCanvas/);
+  assert.match(signaturePage, /toDataURL/);
+  assert.match(signaturePage, /SIGNATURE_EXPORT_SCALE/);
+  assert.match(signaturePage, /签字时间/);
+  assert.match(signaturePage, /签字部门/);
+  assert.match(signaturePage, /maxlength="10"/);
+  assert.match(signaturePage, /onBackPress/);
+  assert.match(signaturePage, /class="scene-button cancel-button"/);
+  assert.match(signaturePage, /class="scene-button rewrite-button"/);
+  assert.match(signaturePage, /class="scene-button complete-button"/);
+  assert.match(signaturePage, /lockOrientation\("landscape-primary"\)/);
+  assert.match(signaturePage, /setFullscreen\(true\)/);
+  assert.match(signaturePage, /getDecorView/);
+  assert.match(signaturePage, /setSystemUiVisibility/);
+  assert.match(signaturePage, /lockOrientation\("portrait-primary"\)/);
+  assert.match(themeConfig, /employee:\s*\{[\s\S]*?background:\s*"#d3e3fd"/);
+  assert.match(themeConfig, /customer:\s*\{[\s\S]*?background:\s*"#f9e4e3"/);
+  assert.match(themeConfig, /brand:\s*\{/);
   assert.match(survey, /勘测人员签字确认/);
   assert.match(survey, /客户代表签字/);
+  assert.match(survey, /role="employee"/);
+  assert.match(survey, /role="customer"/);
+  assert.match(survey, /v-model:department="form\.customerSignatureDepartment"/);
+  assert.match(survey, /请完成双方手写签字/);
   assert.match(serviceReport, /封堵责任人签字/);
   assert.match(serviceReport, /客户代表签字/);
+  assert.match(serviceReport, /role="employee"/);
+  assert.match(serviceReport, /role="customer"/);
+  assert.match(
+    serviceReport,
+    /v-model:department="form\.customerSignatureDepartment"/,
+  );
+  assert.match(serviceReport, /请完成双方手写签字/);
   assert.match(survey, /saveRiskSurvey/);
   assert.match(survey, /submitRiskSurvey/);
   assert.match(serviceReport, /saveServiceReport/);

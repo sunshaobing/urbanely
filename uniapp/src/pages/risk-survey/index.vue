@@ -55,6 +55,7 @@ interface RiskDraft {
   photos: PhotoDraft[];
   surveyorSignature: string;
   customerSignature: string;
+  customerSignatureDepartment: string;
 }
 
 const steps = ["现场信息", "风险点", "影像证据", "治理方案", "签字提交"];
@@ -87,6 +88,7 @@ const form = reactive<RiskDraft>({
   photos: [],
   surveyorSignature: "",
   customerSignature: "",
+  customerSignatureDepartment: "",
 });
 
 const progress = computed(() => Math.round(((step.value + 1) / steps.length) * 100));
@@ -118,6 +120,8 @@ function hydrate(saved: RiskDraft) {
   form.photos = saved.photos || [];
   form.surveyorSignature = saved.surveyorSignature || "";
   form.customerSignature = saved.customerSignature || "";
+  form.customerSignatureDepartment =
+    saved.customerSignatureDepartment || "";
 }
 
 function hydrateSurvey(survey: RiskSurvey) {
@@ -147,6 +151,7 @@ function hydrateSurvey(survey: RiskSurvey) {
   form.customerSignature =
     survey.signatures?.find((signature) => signature.role === "customer")
       ?.image_url || "";
+  form.customerSignatureDepartment = "";
   surveyStatus.value = survey.status || "draft";
 }
 
@@ -310,7 +315,10 @@ async function submit() {
     return;
   }
   if (!form.surveyorSignature || !form.customerSignature) {
-    uni.showToast({ title: "请完成双方手写签字", icon: "none" });
+    uni.showToast({
+      title: "请完成双方手写签字",
+      icon: "none",
+    });
     return;
   }
   submitting.value = true;
@@ -763,24 +771,27 @@ onLoad(async (query) => {
           </view>
 
           <view class="signature-note">
-            <text class="signature-note-title">双方在同一台手机上签字</text>
+            <text class="signature-note-title">双方分别进入全屏签字页</text>
             <text class="signature-note-copy">
-              勘测人员先签，再把手机交给客户代表签第二笔；两笔签名完成后才能提交。
+              进入后直接手写，完成时生成带姓名、时间和客户部门的报告签字图。
             </text>
           </view>
 
           <SignaturePad
             v-model:value="form.surveyorSignature"
             title="勘测人员签字确认"
+            role="employee"
             :signer="`${surveyorName} · 勘测人员`"
-            hint="由勘测人员在本机手写签名"
+            hint="进入独立横屏签字页，可直接手写"
           />
           <view class="signature-gap" />
           <SignaturePad
             v-model:value="form.customerSignature"
+            v-model:department="form.customerSignatureDepartment"
             title="客户代表签字"
+            role="customer"
             :signer="`${form.contact || task.contact || '客户代表'} · 客户代表`"
-            hint="由客户代表在同一台手机上签名"
+            hint="客户签字需补充签字部门，结果自动进入报告"
           />
         </view>
       </view>

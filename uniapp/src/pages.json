@@ -7,6 +7,18 @@
       }
     },
     {
+      "path": "pages/signature/index",
+      "style": {
+        "navigationStyle": "custom",
+        "pageOrientation": "landscape",
+        "disableScroll": true,
+        "app-plus": {
+          "titleNView": false,
+          "bounce": "none"
+        }
+      }
+    },
+    {
       "path": "pages/workbench/index",
       "style": {
         "navigationBarTitleText": "工作台",
