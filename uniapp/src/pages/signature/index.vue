@@ -239,6 +239,33 @@ function fillFooter() {
   context.stroke();
 }
 
+function drawFooterText() {
+  if (!context) return;
+  context.prepare();
+  context.setFillStyle(theme.value.ink);
+  context.setTextBaseline("alphabetic");
+  context.setTextAlign("left");
+  context.setFont(16, 600);
+  context.fillText(`${roleTitle.value} · ${signer.value}`, 26, cssHeight - 47);
+  context.setFont(13);
+  context.setFillStyle(theme.value.muted);
+  context.setTextAlign("right");
+  context.fillText(
+    `签字时间 ${signedAt.value}`,
+    cssWidth - 26,
+    cssHeight - 47,
+  );
+  if (isCustomer.value) {
+    context.setTextAlign("left");
+    context.fillText(
+      `签字部门：${department.value.trim() || "未填写"}`,
+      26,
+      cssHeight - 21,
+    );
+  }
+  context.draw();
+}
+
 function resetSurface() {
   if (!context) return;
   context.prepare();
@@ -511,9 +538,8 @@ async function complete() {
     path = await requestRenderExport(signedAt.value);
     // #endif
     // #ifndef APP-PLUS
-    context?.prepare();
     fillFooter();
-    context?.draw();
+    drawFooterText();
     await nextTick();
     path = await exportCanvas();
     // #endif
@@ -945,6 +971,34 @@ export default {
         output.width,
         output.height,
       );
+      outputContext.setTransform(2, 0, 0, 2, 0, 0);
+      const fontFamily =
+        '"Noto Sans CJK SC", "Noto Sans SC", "Microsoft YaHei", sans-serif';
+      outputContext.textAlign = "left";
+      outputContext.textBaseline = "alphabetic";
+      outputContext.fillStyle = self.config.ink;
+      outputContext.font = `600 16px ${fontFamily}`;
+      outputContext.fillText(
+        `${self.config.roleTitle} · ${self.config.signer}`,
+        26,
+        self.height - 47,
+      );
+      outputContext.font = `400 13px ${fontFamily}`;
+      outputContext.fillStyle = self.config.muted;
+      const timeText = `签字时间 ${signedAt || self.config.signedAt}`;
+      const timeWidth = outputContext.measureText(timeText).width;
+      outputContext.fillText(
+        timeText,
+        self.width - 26 - timeWidth,
+        self.height - 47,
+      );
+      if (self.config.isCustomer) {
+        outputContext.fillText(
+          `签字部门：${self.config.department || "未填写"}`,
+          26,
+          self.height - 21,
+        );
+      }
       const payload = {
         id: request.id,
         path: output.toDataURL("image/png"),
