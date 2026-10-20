@@ -38,6 +38,8 @@
 - `GET /api/quick-phrases`
 - `GET /api/templates`
 - `POST /api/workorders/{order_id}/review`
+- `GET /api/workorders/{order_id}/checkins`
+- `POST /api/workorders/{order_id}/checkin`
 - `GET|POST /api/service-reports/{report_id}/checkin`
 - `POST /api/service-reports/{report_id}/checkout`
 - `POST /api/auth/change-password`
@@ -258,6 +260,38 @@ Returns site profile, risk level, next service, open findings count.
   "comment": "现场验收通过"
 }
 ```
+
+### 5.1 现场签到与签字持久化
+
+勘测与封堵人员到达现场后都必须签到。定位失败时不得用服务地址代替真实定位。
+
+#### POST `/workorders/{order_id}/checkin`
+
+```json
+{
+  "role": "surveyor",
+  "latitude": 31.230416,
+  "longitude": 121.473701,
+  "accuracy": 12.5,
+  "address": "上海市示例路 8 号",
+  "photo_url": ""
+}
+```
+
+- `role`：`surveyor`（勘测）或 `sealing`（封堵）。
+- `latitude` / `longitude`：GCJ-02 坐标，服务端校验范围并拒绝 `0,0`。
+- `accuracy`：定位精度，单位米；客户端要求不超过 80 米才允许提交。
+- `checkin_time` 由服务端生成，客户端不得自行指定。
+- 同一作业单的同一角色重复签到会覆盖该角色最近一次签到记录。
+- `GET /workorders/{order_id}` 返回 `checkins` 数组，包含角色、时间、坐标、精度和地址。
+
+封堵签到仍同时写入 `service-reports/{report_id}/checkin`，以兼容现有签到统计；该接口新增可选的 `latitude`、`longitude`、`accuracy` 字段。
+
+#### 签字角色与更新语义
+
+- 勘测签字角色固定为 `engineer` 和 `customer`。
+- 封堵人员签字统一写为 `service`（兼容入参 `responsible`，服务端归一为 `service`），客户签字为 `customer`。
+- `PUT /risk-surveys/{id}` 和 `PUT /service-reports/{id}` 省略 `signatures` 时保留现有签字；只有显式传入数组时才替换。由此，派单、接单、审批或其它局部更新不会清空手写签字。
 
 ## 6. Rechecks
 

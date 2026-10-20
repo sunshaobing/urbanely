@@ -47,6 +47,36 @@ test("every primary page uses the shared header and detail flows expose a workfl
   assert.match(read("app/src/pages/Sealing.tsx"), /WorkflowRail/);
 });
 
+test("report center loads full records and resolves backend signature URLs", () => {
+  const reports = read("app/src/pages/Reports.tsx");
+  const mappers = read("app/src/backendMappers.ts");
+
+  assert.match(reports, /getRiskSurvey/);
+  assert.match(reports, /getServiceReport/);
+  assert.match(reports, /detailLoading/);
+  assert.match(reports, /到场签到/);
+  assert.match(mappers, /API_BASE_URL/);
+  assert.match(mappers, /export function mediaUrl/);
+});
+
+test("web signing seeds from backend records and never erases them", () => {
+  const inspections = read("app/src/pages/Inspections.tsx");
+  const sealing = read("app/src/pages/Sealing.tsx");
+  const store = read("app/src/signatureStore.ts");
+
+  assert.match(
+    inspections,
+    /useInspectionSignatures\(\s*original\.id,\s*original\.signatures/,
+  );
+  assert.match(
+    sealing,
+    /useSealingSignatures\(\s*original\.id,\s*original\.signatures/,
+  );
+  assert.match(store, /mergeSignatures/);
+  assert.match(sealing, /role: "service"/);
+  assert.doesNotMatch(sealing, /role: "responsible"/);
+});
+
 test("the web console no longer exposes the field-mode page", () => {
   const types = read("app/src/types.ts");
   const layout = read("app/src/components/Layout.tsx");

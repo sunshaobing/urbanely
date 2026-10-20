@@ -12,8 +12,13 @@ const password = ref("");
 const showPassword = ref(false);
 const loading = ref(false);
 const error = ref("");
+const agreed = ref(false);
 const canSubmit = computed(
-  () => identifier.value.trim().length > 0 && password.value.length >= 6 && !loading.value,
+  () =>
+    identifier.value.trim().length > 0 &&
+    password.value.length >= 6 &&
+    agreed.value &&
+    !loading.value,
 );
 
 onLoad(() => {
@@ -33,6 +38,10 @@ async function submit() {
     error.value = "密码至少需要 6 位";
     return;
   }
+  if (!agreed.value) {
+    error.value = "请先阅读并同意《用户服务协议》和《隐私政策》";
+    return;
+  }
   loading.value = true;
   error.value = "";
   try {
@@ -49,6 +58,10 @@ async function submit() {
   } finally {
     loading.value = false;
   }
+}
+
+function openAgreement(type: "service" | "privacy") {
+  uni.navigateTo({ url: `/pages/agreement/index?type=${type}` });
 }
 
 function showResetHelp() {
@@ -114,6 +127,33 @@ function showResetHelp() {
           </view>
 
           <text v-if="error" class="form-error">{{ error }}</text>
+
+          <view class="agreement-row">
+            <view
+              class="agreement-check"
+              :class="{ checked: agreed }"
+              @tap="agreed = !agreed; error = ''"
+            >
+              <UniIcons
+                v-if="agreed"
+                type="checkmarkempty"
+                size="14"
+                color="#ffffff"
+              />
+            </view>
+            <view class="agreement-copy">
+              <text class="agreement-text" @tap="agreed = !agreed; error = ''">
+                我已阅读并同意
+              </text>
+              <text class="agreement-link" @tap.stop="openAgreement('service')">
+                《用户服务协议》
+              </text>
+              <text class="agreement-text">和</text>
+              <text class="agreement-link" @tap.stop="openAgreement('privacy')">
+                《隐私政策》
+              </text>
+            </view>
+          </view>
 
           <button class="login-submit" :disabled="!canSubmit" @tap="submit">
             {{ loading ? "正在登录" : "登录" }}
@@ -245,6 +285,47 @@ function showResetHelp() {
   color: #ffffff;
   font-size: 28rpx;
   font-weight: 700;
+}
+
+.agreement-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  margin-top: 26rpx;
+}
+
+.agreement-check {
+  width: 34rpx;
+  height: 34rpx;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rpx;
+  border: 2rpx solid #b9c6be;
+  border-radius: 8rpx;
+  background: #ffffff;
+}
+
+.agreement-check.checked {
+  border-color: #176b52;
+  background: #176b52;
+}
+
+.agreement-copy {
+  flex: 1;
+  color: #79867f;
+  font-size: 22rpx;
+  line-height: 1.6;
+}
+
+.agreement-text {
+  color: #79867f;
+}
+
+.agreement-link {
+  color: #176b52;
+  font-weight: 600;
 }
 
 .login-submit[disabled] {

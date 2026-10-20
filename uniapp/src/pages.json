@@ -69,6 +69,13 @@
         "navigationBarTitleText": "修改密码",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/agreement/index",
+      "style": {
+        "navigationBarTitleText": "协议与政策",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {

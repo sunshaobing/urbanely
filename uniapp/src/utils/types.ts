@@ -79,6 +79,17 @@ export interface WorkOrderMaterial {
   unit: string;
 }
 
+export interface WorkOrderCheckin {
+  id: number;
+  role: "surveyor" | "sealing";
+  checkin_time: string;
+  latitude: number | null;
+  longitude: number | null;
+  accuracy: number | null;
+  address: string;
+  photo_url: string;
+}
+
 export interface WorkOrder {
   id: number;
   report_no: string;
@@ -113,6 +124,7 @@ export interface WorkOrder {
   dispatch_status?: string;
   materials: WorkOrderMaterial[];
   sites: WorkOrderSite[];
+  checkins?: WorkOrderCheckin[];
 }
 
 export interface WorkOrderList {
@@ -210,6 +222,17 @@ export interface ServiceReport {
   checked_in_at?: string;
   checkout_at?: string;
   checkin_location?: string;
+  checkin?: {
+    checkin_time: string;
+    checkin_location: string;
+    checkin_photo: string;
+    checkin_latitude?: number | null;
+    checkin_longitude?: number | null;
+    checkin_accuracy?: number | null;
+    checkout_time: string;
+    checkout_location: string;
+    checkout_photo: string;
+  };
   status: string;
   materials?: ServiceReportMaterial[];
   photos?: PhotoRecord[];

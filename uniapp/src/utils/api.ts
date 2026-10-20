@@ -301,10 +301,36 @@ export function checkinServiceReport(
   reportId: number,
   location: string,
   photoUrl = "",
+  coordinates?: { latitude: number; longitude: number; accuracy: number },
 ) {
   return request<unknown>(`/api/service-reports/${reportId}/checkin`, {
     method: "POST",
-    data: { location, photo_url: photoUrl },
+    data: {
+      location,
+      photo_url: photoUrl,
+      latitude: coordinates?.latitude,
+      longitude: coordinates?.longitude,
+      accuracy: coordinates?.accuracy,
+    },
+  });
+}
+
+export interface WorkOrderCheckinPayload {
+  role: "surveyor" | "sealing";
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  address?: string;
+  photo_url?: string;
+}
+
+export function checkinWorkOrder(
+  orderId: number,
+  payload: WorkOrderCheckinPayload,
+) {
+  return request<unknown>(`/api/workorders/${orderId}/checkin`, {
+    method: "POST",
+    data: { ...payload },
   });
 }
 

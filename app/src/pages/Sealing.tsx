@@ -18,6 +18,7 @@ import type {
   Inspection,
   MaterialLine,
   SealingOrder,
+  SealingSignatures,
   SealingStatus,
   SignatureImage,
   Site,
@@ -268,7 +269,10 @@ function SealingDetail({
   const [order, setOrder] = useState<SealingOrder>(() => structuredClone(original));
   const [tab, setTab] = useState<Tab>("施工信息");
   const [signatureOpen, setSignatureOpen] = useState(false);
-  const [signatures, saveSealingSignatures] = useSealingSignatures(original.id);
+  const [signatures, saveSealingSignatures] = useSealingSignatures(
+    original.id,
+    original.signatures,
+  );
   const bothSigned = Boolean(signatures.responsible && signatures.customer);
   const isSigned = bothSigned || order.signed;
   const reportOrder = { ...order, signatures, signed: bothSigned };
@@ -301,7 +305,22 @@ function SealingDetail({
       signed: Boolean(saved.responsible && saved.customer),
     });
     setSignatureOpen(false);
-    onNotify("双方签字已记录，保存后写入生产后端");
+    void (async () => {
+      try {
+        await updateServiceReport(rawReport.id, {
+          ...sealingPayload(saved),
+          status: backendStatus,
+        });
+        await onRefresh();
+        onNotify("双方签字已写入封堵报告");
+      } catch (saveError) {
+        onNotify(
+          saveError instanceof Error
+            ? `签字已保存在本机，同步后端失败：${saveError.message}`
+            : "签字已保存在本机，同步后端失败",
+        );
+      }
+    })();
   };
 
   const backendStatus =
@@ -314,7 +333,10 @@ function SealingDetail({
           : order.status === "已排期"
             ? "assigned"
             : "draft";
-  const backendPayload = {
+  function sealingPayload(
+    effectiveSignatures: SealingSignatures = signatures,
+  ) {
+    return {
     customer_id: rawReport.customer_id || 0,
     customer_name: rawReport.customer_name || site.customer,
     address: rawReport.address || site.address,
@@ -344,22 +366,25 @@ function SealingDetail({
     photos: rawReport.photos || [],
     risk_photos: rawReport.risk_photos || [],
     signatures: [
-      signatures.responsible
+      effectiveSignatures.responsible
         ? {
-            role: "responsible",
+            role: "service",
             name: order.leader,
-            image_url: signatures.responsible.dataUrl,
+            image_url: effectiveSignatures.responsible.dataUrl,
           }
         : null,
-      signatures.customer
+      effectiveSignatures.customer
         ? {
             role: "customer",
             name: site.contact,
-            image_url: signatures.customer.dataUrl,
+            image_url: effectiveSignatures.customer.dataUrl,
           }
         : null,
     ].filter(Boolean),
-  };
+    };
+  }
+
+  const backendPayload = sealingPayload();
 
   const saveBackend = async () => {
     try {

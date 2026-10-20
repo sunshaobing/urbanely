@@ -6,6 +6,7 @@ import type {
 } from "./types";
 
 export type WorkflowStageKey =
+  | "surveyCheckin"
   | "survey"
   | "surveySign"
   | "surveyApproval"
@@ -43,6 +44,7 @@ function signaturesComplete(signatures: Array<unknown> | undefined) {
 function reportCheckedIn(report: ServiceReport | null) {
   if (!report) return false;
   return Boolean(
+    report.checkin?.checkin_time ||
     report.checkin_at ||
       report.checked_in_at ||
       report.checkin_location ||
@@ -97,6 +99,18 @@ export function deriveWorkflow(
   report: ServiceReport | null,
 ): { steps: WorkflowStep[]; currentIndex: number } {
   const surveyDone = Boolean(survey);
+  const surveyCheckedIn =
+    Boolean(
+      task.checkins?.some(
+        (checkin) => checkin.role === "surveyor" && checkin.checkin_time,
+      ),
+    ) ||
+    Boolean(
+      survey &&
+        ["submitted", "reviewed", "approved", "completed"].includes(
+          survey.status,
+        ),
+    );
   const surveySigned = signaturesComplete(survey?.signatures);
   const surveyReportGenerated = Boolean(
     survey &&
@@ -124,7 +138,13 @@ export function deriveWorkflow(
       ].includes(report.status),
   );
   const accepted = Boolean(report && acceptedStatuses.has(report.status));
-  const checkedIn = reportCheckedIn(report);
+  const checkedIn =
+    reportCheckedIn(report) ||
+    Boolean(
+      task.checkins?.some(
+        (checkin) => checkin.role === "sealing" && checkin.checkin_time,
+      ),
+    );
   const beforeDone = Boolean(report?.risk_photos?.length);
   const afterDone = Boolean(report?.photos?.length);
   const sealSigned = signaturesComplete(report?.signatures);
@@ -139,6 +159,14 @@ export function deriveWorkflow(
   );
 
   const steps: WorkflowStep[] = [
+    {
+      key: "surveyCheckin",
+      label: "到达签到",
+      hint: surveyCheckedIn
+        ? "已记录到场时间与精确定位"
+        : "到达门店后先完成定位签到",
+      done: surveyCheckedIn,
+    },
     {
       key: "survey",
       label: "现场勘测",

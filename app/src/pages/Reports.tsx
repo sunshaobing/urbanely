@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Download, FileCheck2, FileText, Printer, RefreshCw, Wrench } from "lucide-react";
-import { openBackendPdf } from "../api";
-import type { ReportTemplate, Site } from "../types";
+import { getRiskSurvey, getServiceReport, openBackendPdf } from "../api";
+import type { BackendRiskSurvey, BackendServiceReport } from "../api";
+import type { CheckinRecord, ReportTemplate, Site } from "../types";
 import { buildSites, toInspection, toSealingOrder } from "../backendMappers";
 import { SealingReportSheet, SurveyReportSheet } from "../components/ReportSheet";
 import { PageHeader } from "../components/PageHeader";
@@ -37,19 +38,40 @@ export function Reports({
     [customers, riskSurveys, sites, workorders],
   );
   const siteById = new Map(liveSites.map((site) => [site.id, site]));
+  const [surveyDetail, setSurveyDetail] = useState<BackendRiskSurvey | null>(null);
+  const [reportDetail, setReportDetail] = useState<BackendServiceReport | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   const inspections = useMemo(
-    () => riskSurveys.map((survey) => toInspection(survey, workorders, customers, sites)),
-    [customers, riskSurveys, sites, workorders],
+    () =>
+      riskSurveys.map((survey) =>
+        toInspection(
+          surveyDetail && surveyDetail.id === survey.id ? surveyDetail : survey,
+          workorders,
+          customers,
+          sites,
+        ),
+      ),
+    [customers, riskSurveys, sites, surveyDetail, workorders],
   );
   const orders = useMemo(
-    () => serviceReports.map((report) => toSealingOrder(report, workorders, customers, sites)),
-    [customers, serviceReports, sites, workorders],
+    () =>
+      serviceReports.map((report) =>
+        toSealingOrder(
+          reportDetail && reportDetail.id === report.id ? reportDetail : report,
+          workorders,
+          customers,
+          sites,
+        ),
+      ),
+    [customers, reportDetail, serviceReports, sites, workorders],
   );
   const [template, setTemplate] = useState<ReportTemplate>(initialTemplate);
   const [inspectionId, setInspectionId] = useState(initialInspectionId || inspections[0]?.id || "");
   const [sealingId, setSealingId] = useState(initialSealingId || orders[0]?.id || "");
   const selectedInspection = inspections.find((item) => item.id === inspectionId) || inspections[0];
   const selectedOrder = orders.find((item) => item.id === sealingId) || orders[0];
+  const activeCheckin: CheckinRecord | undefined =
+    template === "survey" ? selectedInspection?.checkin : selectedOrder?.checkin;
   const selectedSite =
     siteById.get(template === "survey" ? selectedInspection?.siteId || "" : selectedOrder?.siteId || "") ||
     ({
@@ -74,6 +96,44 @@ export function Reports({
     if (!inspectionId && inspections[0]) setInspectionId(inspections[0].id);
     if (!sealingId && orders[0]) setSealingId(orders[0].id);
   }, [inspectionId, inspections, orders, sealingId]);
+
+  useEffect(() => {
+    if (template !== "survey" || !selectedInspection) return;
+    let cancelled = false;
+    setDetailLoading(true);
+    void getRiskSurvey(Number(selectedInspection.id))
+      .then((detail) => {
+        if (!cancelled) setSurveyDetail(detail);
+      })
+      .catch(() => {
+        if (!cancelled) setSurveyDetail(null);
+      })
+      .finally(() => {
+        if (!cancelled) setDetailLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [template, selectedInspection?.id]);
+
+  useEffect(() => {
+    if (template !== "sealing" || !selectedOrder) return;
+    let cancelled = false;
+    setDetailLoading(true);
+    void getServiceReport(Number(selectedOrder.id))
+      .then((detail) => {
+        if (!cancelled) setReportDetail(detail);
+      })
+      .catch(() => {
+        if (!cancelled) setReportDetail(null);
+      })
+      .finally(() => {
+        if (!cancelled) setDetailLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [template, selectedOrder?.id]);
 
   const openPdf = async () => {
     try {
@@ -174,6 +234,35 @@ export function Reports({
           <div className="check-list">
             <div className="check-item done"><FileCheck2 size={15} />数据已同步</div>
             <div className="check-item done"><FileText size={15} />PDF 由服务端生成</div>
+            <div className={`check-item ${detailLoading ? "" : "done"}`}>
+              <FileText size={15} />
+              {detailLoading ? "正在读取完整记录" : "完整记录已读取"}
+            </div>
+          </div>
+          <div className="checkin-panel">
+            <div className="checkin-panel-head">
+              <strong>到场签到</strong>
+              <span className={activeCheckin ? "pill checkin-ok" : "pill"}>
+                {activeCheckin ? "已签到" : "未签到"}
+              </span>
+            </div>
+            {activeCheckin ? (
+              <>
+                <span>{activeCheckin.time}</span>
+                <small>
+                  {activeCheckin.accuracy && activeCheckin.accuracy > 0
+                    ? `定位精度 ±${Math.round(activeCheckin.accuracy)} 米`
+                    : "定位精度未记录"}
+                </small>
+                {activeCheckin.latitude != null && activeCheckin.longitude != null ? (
+                  <small className="mono">
+                    {activeCheckin.latitude.toFixed(6)}, {activeCheckin.longitude.toFixed(6)}
+                  </small>
+                ) : null}
+              </>
+            ) : (
+              <small>该记录暂无现场签到数据</small>
+            )}
           </div>
           <button type="button" className="button secondary full-width" onClick={() => void openPdf()}>
             <Download size={15} />

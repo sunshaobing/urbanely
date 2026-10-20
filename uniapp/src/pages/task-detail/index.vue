@@ -6,6 +6,7 @@ import CartoonAvatar from "../../components/CartoonAvatar.vue";
 import PageHeader from "../../components/PageHeader.vue";
 import StatusPill from "../../components/StatusPill.vue";
 import {
+  checkinWorkOrder,
   checkinServiceReport,
   getRiskSurvey,
   getRiskSurveys,
@@ -20,6 +21,7 @@ import {
   saveServiceReport,
   toId,
 } from "../../utils/api";
+import { formatAccuracy, getPreciseLocation } from "../../utils/location";
 import { getSession } from "../../utils/auth";
 import { ensureBrand } from "../../utils/brand";
 import { openReportPdf, reportPdfPath } from "../../utils/pdf";
@@ -68,7 +70,7 @@ const workflow = computed(() =>
 const roleView = computed(() => roleMode(session.value?.role || ""));
 const visibleStepKeys = computed(() => {
   if (roleView.value === "survey") {
-    return ["survey", "surveySign", "surveyApproval"];
+    return ["surveyCheckin", "survey", "surveySign", "surveyApproval"];
   }
   if (roleView.value === "sealing") {
     return [
@@ -124,6 +126,35 @@ const surveyReportReady = computed(
 const canApprove = computed(() =>
   ["super_admin", "admin", "supervisor"].includes(session.value?.role || ""),
 );
+const checkinDisplay = computed(() => {
+  const role = roleView.value === "survey" ? "surveyor" : "sealing";
+  const record = task.value?.checkins?.find((item) => item.role === role);
+  if (record?.checkin_time) {
+    return {
+      time: record.checkin_time,
+      accuracy: formatAccuracy(record.accuracy),
+      location: record.address || "现场定位",
+      coordinates:
+        record.latitude != null && record.longitude != null
+          ? `${record.latitude.toFixed(6)}, ${record.longitude.toFixed(6)}`
+          : "",
+    };
+  }
+  const reportCheckin = serviceReport.value?.checkin;
+  if (reportCheckin?.checkin_time) {
+    return {
+      time: reportCheckin.checkin_time,
+      accuracy: formatAccuracy(reportCheckin.checkin_accuracy),
+      location: reportCheckin.checkin_location || "现场定位",
+      coordinates:
+        reportCheckin.checkin_latitude != null &&
+        reportCheckin.checkin_longitude != null
+          ? `${reportCheckin.checkin_latitude.toFixed(6)}, ${reportCheckin.checkin_longitude.toFixed(6)}`
+          : "",
+    };
+  }
+  return null;
+});
 const headerStatus = computed(() => {
   if (serviceReport.value?.status === "pending" && !serviceReport.value.service_person) {
     return "unassigned";
@@ -148,6 +179,7 @@ const actionLabel = computed(() => {
     return "流程已完成";
   }
   if (key === "survey") return "开始勘测";
+  if (key === "surveyCheckin") return "到达现场签到";
   if (key === "surveySign") return "完成双签并生成报告";
   if (key === "surveyApproval") return canApprove.value ? "审批勘测报告" : "等待审批";
   if (key === "sealingList") return "刷新封堵清单";
@@ -392,24 +424,52 @@ async function acceptSealing() {
   uni.showToast({ title: "已接单", icon: "success" });
 }
 
-function currentLocation() {
-  return new Promise<string>((resolve) => {
-    uni.getLocation({
-      type: "gcj02",
-      success: (result) =>
-        resolve(`${result.latitude.toFixed(6)},${result.longitude.toFixed(6)}`),
-      fail: () => resolve(task.value?.service_address || "现场签到"),
-    });
-  });
-}
-
 async function checkIn() {
   if (!serviceReport.value) {
     throw new Error("尚未生成封堵单");
   }
-  const location = await currentLocation();
-  await checkinServiceReport(serviceReport.value.id, location);
-  uni.showToast({ title: "现场签到成功", icon: "success" });
+  const location = await getPreciseLocation();
+  if (task.value) {
+    await checkinWorkOrder(task.value.id, {
+      role: "sealing",
+      latitude: location.latitude,
+      longitude: location.longitude,
+      accuracy: location.accuracy,
+      address: task.value.service_address || "",
+    });
+  }
+  await checkinServiceReport(
+    serviceReport.value.id,
+    location.label,
+    "",
+    {
+      latitude: location.latitude,
+      longitude: location.longitude,
+      accuracy: location.accuracy,
+    },
+  );
+  uni.showToast({
+    title: `签到成功 · ${formatAccuracy(location.accuracy)}`,
+    icon: "success",
+  });
+}
+
+async function checkInSurvey() {
+  if (!task.value) {
+    throw new Error("作业单未加载");
+  }
+  const location = await getPreciseLocation();
+  await checkinWorkOrder(task.value.id, {
+    role: "surveyor",
+    latitude: location.latitude,
+    longitude: location.longitude,
+    accuracy: location.accuracy,
+    address: task.value.service_address || "",
+  });
+  uni.showToast({
+    title: `签到成功 · ${formatAccuracy(location.accuracy)}`,
+    icon: "success",
+  });
 }
 
 async function approveSealing() {
@@ -444,7 +504,8 @@ async function runCurrentAction() {
   }
   actionLoading.value = true;
   try {
-    if (key === "surveyApproval") await approveSurvey();
+    if (key === "surveyCheckin") await checkInSurvey();
+    else if (key === "surveyApproval") await approveSurvey();
     else if (key === "sealingList") await ensureSealingList();
     else if (key === "accept") await acceptSealing();
     else if (key === "checkin") await checkIn();
@@ -586,6 +647,26 @@ onLoad((query) => {
             <UniIcons type="paperplane" size="15" color="#176b52" />
             <text>查看完整勘测报告</text>
             <UniIcons type="right" size="13" color="#176b52" />
+          </view>
+        </view>
+
+        <view v-if="checkinDisplay" class="checkin-card card">
+          <view class="checkin-head">
+            <UniIcons type="location-filled" size="18" color="#176b52" />
+            <text class="checkin-title">到场签到</text>
+            <text class="checkin-badge">已签到</text>
+          </view>
+          <view class="checkin-row">
+            <text class="checkin-label">签到时间</text>
+            <text class="checkin-value">{{ checkinDisplay.time }}</text>
+          </view>
+          <view class="checkin-row">
+            <text class="checkin-label">定位精度</text>
+            <text class="checkin-value">{{ checkinDisplay.accuracy }}</text>
+          </view>
+          <view v-if="checkinDisplay.coordinates" class="checkin-row">
+            <text class="checkin-label">现场坐标</text>
+            <text class="checkin-value mono">{{ checkinDisplay.coordinates }}</text>
           </view>
         </view>
 
@@ -1053,6 +1134,56 @@ onLoad((query) => {
 .related-card {
   margin-top: 18rpx;
   padding: 20rpx 22rpx;
+}
+
+.checkin-card {
+  margin-top: 18rpx;
+  padding: 20rpx 22rpx;
+  border-left: 6rpx solid #176b52;
+}
+
+.checkin-head {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.checkin-title {
+  flex: 1;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #1c2b25;
+}
+
+.checkin-badge {
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  background: #e6f2ec;
+  color: #176b52;
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
+.checkin-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  margin-top: 12rpx;
+}
+
+.checkin-label {
+  width: 120rpx;
+  flex: none;
+  color: #77857e;
+  font-size: 22rpx;
+}
+
+.checkin-value {
+  flex: 1;
+  color: #26362f;
+  font-size: 23rpx;
+  line-height: 1.5;
+  word-break: break-all;
 }
 
 .related-title {

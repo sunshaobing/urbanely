@@ -23,14 +23,15 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
     "pages/risk-survey/index",
     "pages/service-report/index",
     "pages/password/index",
+    "pages/agreement/index",
   ]);
   assert.equal(pages.globalStyle.navigationStyle, "custom");
   assert.equal(pages.pages[1].style.pageOrientation, "landscape");
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.6"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"306"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.7"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"307"/);
 });
 
 test("survey engineer role is labelled 勘测工程师 in the field client", () => {
@@ -385,6 +386,55 @@ test("mobile credentials are not embedded in the uni-app source", () => {
 
   assert.doesNotMatch(source, /1[3-9]\d{9}/);
   assert.doesNotMatch(source, /password\s*:\s*["'][^"']+["']/);
+});
+
+test("both field roles check in with high-accuracy GPS before work", () => {
+  const location = read("src/utils/location.ts");
+  const api = read("src/utils/api.ts");
+  const detail = read("src/pages/task-detail/index.vue");
+  const workflow = read("src/utils/workflow.ts");
+
+  assert.match(location, /isHighAccuracy:\s*true/);
+  assert.match(location, /highAccuracyExpireTime/);
+  assert.match(location, /MAX_ACCURACY_METERS/);
+  assert.match(location, /定位精度不足/);
+  assert.doesNotMatch(detail, /service_address \|\| "现场签到"/);
+  assert.match(detail, /role: "surveyor"/);
+  assert.match(detail, /role: "sealing"/);
+  assert.match(detail, /checkinWorkOrder/);
+  assert.match(api, /\/api\/workorders\/\$\{orderId\}\/checkin/);
+  assert.match(api, /latitude: coordinates\?\.latitude/);
+  assert.match(workflow, /surveyCheckin/);
+  assert.match(workflow, /到达签到/);
+});
+
+test("sealing signatures use the backend service role", () => {
+  const service = read("src/pages/service-report/index.vue");
+
+  assert.match(service, /role: "service"/);
+  assert.doesNotMatch(service, /role: "responsible"/);
+  assert.match(service, /signServiceReport/);
+});
+
+test("login requires agreement to the service and privacy policies", () => {
+  const login = read("src/pages/login/index.vue");
+  const agreement = read("src/pages/agreement/index.vue");
+  const pages = JSON.parse(read("src/pages.json"));
+
+  assert.match(login, /const agreed = ref\(false\)/);
+  assert.match(login, /agreed\.value/);
+  assert.match(login, /openAgreement\('service'\)/);
+  assert.match(login, /openAgreement\('privacy'\)/);
+  assert.match(login, /《用户服务协议》/);
+  assert.match(login, /《隐私政策》/);
+  assert.match(login, /agreement-check/);
+  assert.match(agreement, /用户服务协议/);
+  assert.match(agreement, /隐私政策/);
+  assert.match(agreement, /位置权限/);
+  assert.match(agreement, /相机与相册权限/);
+  assert.ok(
+    pages.pages.some((page) => page.path === "pages/agreement/index"),
+  );
 });
 
 test("root WeChat project points at the uni-app build output", () => {

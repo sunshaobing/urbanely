@@ -89,6 +89,18 @@ export interface BackendWorkOrder {
   completed_at?: string;
   sites?: BackendWorkOrderSite[];
   materials?: BackendWorkOrderMaterial[];
+  checkins?: BackendWorkOrderCheckin[];
+}
+
+export interface BackendWorkOrderCheckin {
+  id: number;
+  role: "surveyor" | "sealing";
+  checkin_time: string;
+  latitude: number | null;
+  longitude: number | null;
+  accuracy: number | null;
+  address: string;
+  photo_url: string;
 }
 
 export interface WorkOrderInput {
@@ -131,6 +143,7 @@ export interface BackendSignature {
   role: string;
   name: string;
   image_url: string;
+  signed_at?: string;
 }
 
 export interface BackendRiskSurveyItem {
@@ -206,6 +219,17 @@ export interface BackendServiceReport {
   photos?: BackendPhoto[];
   risk_photos?: BackendPhoto[];
   signatures?: BackendSignature[];
+  checkin?: {
+    checkin_time: string;
+    checkin_location: string;
+    checkin_photo: string;
+    checkin_latitude?: number | null;
+    checkin_longitude?: number | null;
+    checkin_accuracy?: number | null;
+    checkout_time: string;
+    checkout_location: string;
+    checkout_photo: string;
+  };
   pdf_url?: string;
   created_at?: string;
 }
@@ -375,10 +399,18 @@ export function listRiskSurveys(
   return request<unknown>(`/api/risk-surveys${queryString(filters)}`);
 }
 
+export function getRiskSurvey(id: number) {
+  return request<BackendRiskSurvey>(`/api/risk-surveys/${id}`);
+}
+
 export function listServiceReports(
   filters: { keyword?: string; status?: string; customer_id?: number } = {},
 ) {
   return request<unknown>(`/api/service-reports${queryString(filters)}`);
+}
+
+export function getServiceReport(id: number) {
+  return request<BackendServiceReport>(`/api/service-reports/${id}`);
 }
 
 export function listCustomers(

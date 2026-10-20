@@ -15,7 +15,14 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import type { Finding, Inspection, InspectionStatus, RiskLevel, Site } from "../types";
+import type {
+  Finding,
+  Inspection,
+  InspectionSignatures,
+  InspectionStatus,
+  RiskLevel,
+  Site,
+} from "../types";
 import { SurveyReportSheet } from "../components/ReportSheet";
 import { SignatureCapture, SignaturePartyCard } from "../components/SignatureCapture";
 import { useInspectionSignatures } from "../signatureStore";
@@ -262,7 +269,10 @@ function InspectionDetail({
   const [inspection, setInspection] = useState<Inspection>(() => structuredClone(original));
   const [tab, setTab] = useState<Tab>("现场信息");
   const [signatureOpen, setSignatureOpen] = useState(false);
-  const [signatures, saveInspectionSignatures] = useInspectionSignatures(original.id);
+  const [signatures, saveInspectionSignatures] = useInspectionSignatures(
+    original.id,
+    original.signatures,
+  );
   const photoInputRef = useRef<HTMLInputElement>(null);
   const objectUrlsRef = useRef<string[]>([]);
   const overdue = inspection.recheckDate < "2026-10-18" && inspection.status !== "已闭环";
@@ -334,7 +344,12 @@ function InspectionDetail({
     update({ riskPhotos: inspection.riskPhotos.filter((item) => item.id !== photoId) });
   };
 
-  const backendPayload = (status?: string) => ({
+  const backendPayload = (
+    status?: string,
+    signatureOverride?: InspectionSignatures,
+  ) => {
+    const effectiveSignatures = signatureOverride ?? signatures;
+    return {
     code: inspection.reportNo,
     customer_id: rawSurvey.customer_id || 0,
     site_id: rawSurvey.site_id ?? null,
@@ -368,29 +383,33 @@ function InspectionDetail({
       sort_order: index,
     })),
     photos: inspection.riskPhotos
-      .filter((photo) => photo.previewUrl)
+      .filter(
+        (photo) =>
+          photo.previewUrl && !photo.previewUrl.startsWith("blob:"),
+      )
       .map((photo, index) => ({
         caption: photo.label,
         url: photo.previewUrl,
         sort_order: index,
       })),
     signatures: [
-      signatures.surveyor
+      effectiveSignatures.surveyor
         ? {
             role: "engineer",
             name: inspection.surveyor,
-            image_url: signatures.surveyor.dataUrl,
+            image_url: effectiveSignatures.surveyor.dataUrl,
           }
         : null,
-      signatures.customer
+      effectiveSignatures.customer
         ? {
             role: "customer",
             name: inspection.contact,
-            image_url: signatures.customer.dataUrl,
+            image_url: effectiveSignatures.customer.dataUrl,
           }
         : null,
     ].filter(Boolean),
-  });
+    };
+  };
 
   const saveBackend = async () => {
     try {
@@ -960,7 +979,19 @@ function InspectionDetail({
           saveInspectionSignatures(saved);
           update({ signatures: saved });
           setSignatureOpen(false);
-          onNotify("勘测人员与客户代表签字已完成，报告可锁定");
+          void (async () => {
+            try {
+              await updateRiskSurvey(rawSurvey.id, backendPayload(undefined, saved));
+              await onRefresh();
+              onNotify("勘测人员与客户代表签字已写入报告");
+            } catch (saveError) {
+              onNotify(
+                saveError instanceof Error
+                  ? `签字已保存在本机，同步后端失败：${saveError.message}`
+                  : "签字已保存在本机，同步后端失败",
+              );
+            }
+          })();
         }}
       />
     </div>

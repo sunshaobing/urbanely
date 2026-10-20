@@ -18,6 +18,13 @@ import type {
   Site,
   Task,
 } from "./types";
+import { API_BASE_URL } from "./api";
+
+export function mediaUrl(value?: string) {
+  if (!value) return "";
+  if (/^(https?:|data:|blob:)/i.test(value)) return value;
+  return `${API_BASE_URL}${value.startsWith("/") ? "" : "/"}${value}`;
+}
 
 function maskPhone(phone?: string) {
   if (!phone) return "—";
@@ -64,13 +71,18 @@ export function serviceStatusFromBackend(status?: string): ServiceStatus {
 
 function signatureImage(
   role: string,
-  signatures?: Array<{ role: string; name: string; image_url: string }>,
+  signatures?: Array<{
+    role: string;
+    name: string;
+    image_url: string;
+    signed_at?: string;
+  }>,
 ): SignatureImage | undefined {
   const signature = signatures?.find((item) => item.role === role);
   if (!signature) return undefined;
   return {
-    dataUrl: signature.image_url,
-    signedAt: "",
+    dataUrl: mediaUrl(signature.image_url),
+    signedAt: signature.signed_at || "",
     signerName: signature.name,
   };
 }
@@ -166,7 +178,7 @@ export function toInspection(
     riskPhotos: (survey.photos || []).map((photo, index) => ({
       id: `${survey.id}-photo-${index}`,
       label: photo.caption || `结构风险 ${index + 1}`,
-      previewUrl: photo.url,
+      previewUrl: mediaUrl(photo.url),
     })),
     signatures: {
       surveyor: signatureImage("engineer", survey.signatures),
@@ -196,6 +208,19 @@ export function toInspection(
           : "待整改",
       recommendation: item.suggestion || item.description || "",
     })),
+    checkin: (() => {
+      const record = task?.checkins?.find(
+        (checkin) => checkin.role === "surveyor",
+      );
+      if (!record?.checkin_time) return undefined;
+      return {
+        time: record.checkin_time,
+        latitude: record.latitude,
+        longitude: record.longitude,
+        accuracy: record.accuracy,
+        address: record.address,
+      };
+    })(),
   };
 }
 
@@ -268,6 +293,24 @@ export function toSealingOrder(
     acceptanceCriteria: report.customer_comment || "",
     signed: Boolean(signatures.responsible && signatures.customer),
     signatures,
+    checkin: (() => {
+      const record = task?.checkins?.find(
+        (checkin) => checkin.role === "sealing",
+      );
+      const time = record?.checkin_time || report.checkin?.checkin_time || "";
+      if (!time) return undefined;
+      return {
+        time,
+        latitude:
+          record?.latitude ?? report.checkin?.checkin_latitude ?? null,
+        longitude:
+          record?.longitude ?? report.checkin?.checkin_longitude ?? null,
+        accuracy:
+          record?.accuracy ?? report.checkin?.checkin_accuracy ?? null,
+        address:
+          record?.address || report.checkin?.checkin_location || "",
+      };
+    })(),
   };
 }
 

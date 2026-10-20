@@ -27,15 +27,47 @@ function writeMap<T>(key: string, map: SignatureMap<T>) {
   window.dispatchEvent(new Event(EVENT_NAME));
 }
 
-function useSignatureMap<T>(key: string, id: string): [T, (value: T) => void] {
-  const [value, setValue] = useState<T>(() => readMap<T>(key)[id] ?? ({} as T));
+interface SignatureLike {
+  signedAt?: string;
+}
+
+function signedAt(value: unknown) {
+  if (!value || typeof value !== "object") return 0;
+  const text = (value as SignatureLike).signedAt;
+  if (!text) return 0;
+  const time = new Date(text.replace(" ", "T")).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function mergeSignatures<T>(seed: T | undefined, stored: T | undefined): T {
+  if (!seed) return (stored ?? {}) as T;
+  if (!stored) return seed;
+  const merged: Record<string, unknown> = {
+    ...(seed as unknown as Record<string, unknown>),
+  };
+  Object.entries(stored as unknown as Record<string, unknown>).forEach(
+    ([key, value]) => {
+    const current = merged[key];
+    if (!current || signedAt(value) > signedAt(current)) merged[key] = value;
+    },
+  );
+  return merged as T;
+}
+
+function useSignatureMap<T>(
+  key: string,
+  id: string,
+  seed?: T,
+): [T, (value: T) => void] {
+  const read = () => mergeSignatures(seed, readMap<T>(key)[id]);
+  const [value, setValue] = useState<T>(() => read());
 
   useEffect(() => {
-    const sync = () => setValue(readMap<T>(key)[id] ?? ({} as T));
+    const sync = () => setValue(read());
     sync();
     window.addEventListener(EVENT_NAME, sync);
     return () => window.removeEventListener(EVENT_NAME, sync);
-  }, [key, id]);
+  }, [key, id, seed]);
 
   const save = (next: T) => {
     const map = readMap<T>(key);
@@ -47,12 +79,15 @@ function useSignatureMap<T>(key: string, id: string): [T, (value: T) => void] {
   return [value, save];
 }
 
-export function useInspectionSignatures(id: string) {
-  return useSignatureMap<InspectionSignatures>(INSPECTION_KEY, id);
+export function useInspectionSignatures(
+  id: string,
+  seed?: InspectionSignatures,
+) {
+  return useSignatureMap<InspectionSignatures>(INSPECTION_KEY, id, seed);
 }
 
-export function useSealingSignatures(id: string) {
-  return useSignatureMap<SealingSignatures>(SEALING_KEY, id);
+export function useSealingSignatures(id: string, seed?: SealingSignatures) {
+  return useSignatureMap<SealingSignatures>(SEALING_KEY, id, seed);
 }
 
 export function getInspectionSignatures(id: string): InspectionSignatures {

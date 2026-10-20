@@ -316,7 +316,7 @@ async function submit() {
     const photos = await uploadPhotoGroup(form.afterPhotos, "封堵后");
     const signatures: SignatureRecord[] = [
       {
-        role: "responsible",
+        role: "service",
         name: servicePersonName.value,
         image_url: await uploadSignature(form.responsibleSignature),
       },

@@ -67,6 +67,14 @@ export interface SealingSignatures {
   customer?: SignatureImage;
 }
 
+export interface CheckinRecord {
+  time: string;
+  latitude: number | null;
+  longitude: number | null;
+  accuracy: number | null;
+  address: string;
+}
+
 export interface Inspection {
   id: string;
   reportNo: string;
@@ -90,6 +98,7 @@ export interface Inspection {
   environmentAdvice: string;
   longTermPrevention: string;
   findings: Finding[];
+  checkin?: CheckinRecord;
 }
 
 export interface MaterialLine {
@@ -134,6 +143,7 @@ export interface SealingOrder {
   acceptanceCriteria: string;
   signed: boolean;
   signatures: SealingSignatures;
+  checkin?: CheckinRecord;
 }
 
 export interface ServiceOrder {

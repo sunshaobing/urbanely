@@ -1709,6 +1709,46 @@ button.chip {
   border-radius: 50%;
 }
 
+.checkin-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 16px 0;
+  padding: 12px 14px;
+  border: 1px solid #dbe5df;
+  border-radius: 8px;
+  background: #f8faf9;
+}
+
+.checkin-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.checkin-panel-head strong {
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.checkin-panel > span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.checkin-panel small {
+  font-size: 11px;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.pill.checkin-ok {
+  background: #e3f1e9;
+  color: #176b52;
+}
+
 .report-inline {
   margin-top: 4px;
 }
