@@ -131,6 +131,15 @@ function formatDateTime(value: Date) {
   )}`;
 }
 
+function decodeQueryValue(value: unknown) {
+  if (typeof value !== "string") return "";
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 function setAndroidSystemBarsHidden(hidden: boolean) {
   try {
     const android = plus.android;
@@ -228,23 +237,6 @@ function fillFooter() {
   context.moveTo(24, footerTop);
   context.lineTo(cssWidth - 24, footerTop);
   context.stroke();
-  context.setFillStyle(theme.value.ink);
-  context.setTextBaseline("middle");
-  context.setFont(16, 600);
-  context.setTextAlign("left");
-  context.fillText(`${roleTitle.value} · ${signer.value}`, 26, cssHeight - 53);
-  context.setTextAlign("right");
-  context.setFont(13);
-  context.setFillStyle(theme.value.muted);
-  context.fillText(`签字时间 ${signedAt.value}`, cssWidth - 26, cssHeight - 53);
-  if (isCustomer.value) {
-    context.setTextAlign("left");
-    context.fillText(
-      `签字部门：${department.value.trim() || "未填写"}`,
-      26,
-      cssHeight - 27,
-    );
-  }
 }
 
 function resetSurface() {
@@ -252,14 +244,6 @@ function resetSurface() {
   context.prepare();
   context.setFillStyle(theme.value.exportBackground);
   context.fillRect(0, 0, cssWidth, cssHeight);
-  if (!hasInk.value) {
-    context.setFillStyle(theme.value.muted);
-    context.setTextAlign("center");
-    context.setTextBaseline("middle");
-    const fontSize = Math.max(24, Math.min(38, cssWidth * 0.052));
-    context.setFont(fontSize, 500);
-    context.fillText(roleTitle.value, cssWidth / 2, cssHeight / 2);
-  }
   fillFooter();
   context.draw();
 }
@@ -553,9 +537,11 @@ async function complete() {
 onLoad((query) => {
   role.value = query?.role === "customer" ? "customer" : "employee";
   variant.value = query?.variant === "brand" ? "brand" : "reference";
-  signer.value = query?.signer || (isCustomer.value ? "客户代表" : "员工");
-  department.value = query?.department || "";
-  token.value = query?.token || "";
+  signer.value =
+    decodeQueryValue(query?.signer) ||
+    (isCustomer.value ? "客户代表" : "员工");
+  department.value = decodeQueryValue(query?.department);
+  token.value = decodeQueryValue(query?.token);
   // #ifdef APP-PLUS
   plus.navigator.setFullscreen(true);
   setAndroidSystemBarsHidden(true);
@@ -651,6 +637,31 @@ onUnload(() => {
         @touchcancel="end"
       />
       <!-- #endif -->
+
+      <view v-if="!hasInk" class="signature-placeholder">
+        {{ roleTitle }}
+      </view>
+
+      <view
+        class="signature-meta"
+        :style="{ borderTopColor: theme.border }"
+      >
+        <view class="signature-meta-main">
+          <text class="signature-meta-role" :style="{ color: theme.ink }">
+            {{ roleTitle }} · {{ signer }}
+          </text>
+          <text class="signature-meta-time" :style="{ color: theme.muted }">
+            签字时间 {{ signedAt }}
+          </text>
+        </view>
+        <text
+          v-if="isCustomer"
+          class="signature-meta-department"
+          :style="{ color: theme.muted }"
+        >
+          签字部门：{{ department.trim() || "未填写" }}
+        </text>
+      </view>
     </view>
 
     <view class="scene-actions">
@@ -806,20 +817,6 @@ export default {
       ctx.setTransform(self.scale, 0, 0, self.scale, 0, 0);
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, width, height);
-      if (!self.strokes.length) {
-        ctx.fillStyle = self.config.muted;
-        ctx.textAlign = "left";
-        ctx.textBaseline = "alphabetic";
-        const fontSize = Math.max(24, Math.min(38, width * 0.052));
-        ctx.font = `500 ${fontSize}px sans-serif`;
-        const label = self.config.roleTitle;
-        const labelWidth = ctx.measureText(label).width;
-        ctx.fillText(
-          label,
-          (width - labelWidth) / 2,
-          height / 2 + fontSize * 0.35,
-        );
-      }
       self.replayStrokes(ctx);
       self.drawFooter(ctx);
     },
@@ -867,31 +864,6 @@ export default {
       ctx.moveTo(24, footerTop);
       ctx.lineTo(width - 24, footerTop);
       ctx.stroke();
-      ctx.fillStyle = self.config.ink;
-      ctx.textAlign = "left";
-      ctx.textBaseline = "alphabetic";
-      ctx.font = "600 16px sans-serif";
-      ctx.fillText(
-        `${self.config.roleTitle} · ${self.config.signer}`,
-        26,
-        height - 47,
-      );
-      ctx.font = "400 13px sans-serif";
-      ctx.fillStyle = self.config.muted;
-      const timeText = `签字时间 ${signedAt || self.config.signedAt}`;
-      const timeWidth = ctx.measureText(timeText).width;
-      ctx.fillText(
-        timeText,
-        width - 26 - timeWidth,
-        height - 47,
-      );
-      if (self.config.isCustomer) {
-        ctx.fillText(
-          `签字部门：${self.config.department || "未填写"}`,
-          26,
-          height - 21,
-        );
-      }
     },
     /**
      * @param {any} event
@@ -1045,6 +1017,57 @@ export default {
   height: 100%;
   display: block;
   touch-action: none;
+}
+
+.signature-placeholder {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 82px;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999999;
+  font-size: 34px;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.signature-meta {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 82px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 26px;
+  border-top: 1px solid;
+  background: #ffffff;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.signature-meta-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.signature-meta-role {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.signature-meta-time,
+.signature-meta-department {
+  font-size: 13px;
+  line-height: 1.3;
 }
 
 .scene-actions {

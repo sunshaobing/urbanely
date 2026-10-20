@@ -259,7 +259,7 @@ async function uploadPhoto(path: string, caption: string) {
 }
 
 async function uploadSignature(path: string) {
-  if (path.startsWith("data:") || path.startsWith("http")) return path;
+  if (path.startsWith("http")) return path;
   const payload = await uploadMedia("/api/risk-surveys/upload", path, {
     taken_at: new Date().toISOString(),
     location: task.value?.service_address || "",
@@ -779,6 +779,7 @@ onLoad(async (query) => {
 
           <SignaturePad
             v-model:value="form.surveyorSignature"
+            :upload="uploadSignature"
             title="勘测人员签字确认"
             role="employee"
             :signer="`${surveyorName} · 勘测人员`"
@@ -788,6 +789,7 @@ onLoad(async (query) => {
           <SignaturePad
             v-model:value="form.customerSignature"
             v-model:department="form.customerSignatureDepartment"
+            :upload="uploadSignature"
             title="客户代表签字"
             role="customer"
             :signer="`${form.contact || task.contact || '客户代表'} · 客户代表`"

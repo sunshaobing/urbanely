@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 import {
   getSignatureTheme,
@@ -28,6 +28,7 @@ const props = withDefaults(
     department?: string;
     variant?: SignatureVariant;
     disabled?: boolean;
+    upload?: (path: string) => Promise<string>;
   }>(),
   {
     hint: "",
@@ -53,13 +54,51 @@ const buttonStyle = computed(() => ({
   borderColor: theme.value.ink,
   color: theme.value.ink,
 }));
+const uploading = ref(false);
+const uploadError = ref("");
+const uploaded = ref(false);
+const displayValue = ref(props.value);
+const uploadState = computed(() => {
+  if (uploading.value) return "正在上传到后端";
+  if (uploadError.value) return "上传失败，提交时重试";
+  if (uploaded.value) return "已上传到后端";
+  return props.value ? "点击重新签字" : "点击横屏签字";
+});
 
 function onSignature(payload: SignaturePayload) {
   if (payload.token !== token) return;
+  displayValue.value = payload.path;
   emit("update:value", payload.path);
   if (props.role === "customer") {
     emit("update:department", payload.department);
   }
+  void uploadSignature(payload.path);
+}
+
+async function uploadSignature(path: string) {
+  if (!props.upload) {
+    uploaded.value = path.startsWith("http");
+    return;
+  }
+  uploading.value = true;
+  uploadError.value = "";
+  try {
+    const url = await props.upload(path);
+    emit("update:value", url);
+    uploaded.value = true;
+  } catch (error) {
+    uploaded.value = false;
+    uploadError.value =
+      error instanceof Error ? error.message : "签字图片上传失败";
+  } finally {
+    uploading.value = false;
+  }
+}
+
+function retryUpload() {
+  const path = displayValue.value || props.value;
+  if (!path || path.startsWith("http") || uploading.value) return;
+  void uploadSignature(path);
 }
 
 function openSignatureScene() {
@@ -78,13 +117,47 @@ onMounted(() => {
   uni.$on(SIGNATURE_COMPLETE_EVENT, onSignature);
 });
 
+watch(
+  () => props.value,
+  (value) => {
+    if (value.startsWith("http")) {
+      uploaded.value = true;
+      uploadError.value = "";
+      if (!displayValue.value || displayValue.value.startsWith("http")) {
+        displayValue.value = value;
+      }
+    } else if (!value) {
+      displayValue.value = "";
+      uploaded.value = false;
+      uploadError.value = "";
+    }
+  },
+  { immediate: true },
+);
+
 onBeforeUnmount(() => {
   uni.$off(SIGNATURE_COMPLETE_EVENT, onSignature);
 });
 </script>
 
 <template>
-  <view class="signature-entry">
+    <view
+      class="signature-entry"
+      :data-signature-state="
+        uploading
+          ? 'uploading'
+          : uploadError
+            ? 'failed'
+            : uploaded
+              ? 'uploaded'
+              : displayValue
+                ? 'local'
+                : 'empty'
+      "
+      :data-signature-src="
+        !value ? 'empty' : value.startsWith('http') ? 'remote' : 'local'
+      "
+    >
     <button
       class="signature-trigger"
       :style="buttonStyle"
@@ -97,17 +170,22 @@ onBeforeUnmount(() => {
       </view>
       <view class="signature-trigger-copy">
         <text class="signature-trigger-title">
-          {{ roleTitle }}{{ value ? "已签" : "" }}
+          {{ roleTitle }}{{ displayValue ? "已签" : "" }}
         </text>
         <text class="signature-trigger-state">
-          {{ value ? "点击重新签字" : "点击横屏签字" }}
+          {{ uploadState }}
         </text>
       </view>
       <UniIcons type="right" size="15" :color="theme.ink" />
     </button>
 
-    <view v-if="value" class="signature-result">
-      <image class="signature-result-image" :src="value" mode="aspectFit" />
+    <view v-if="displayValue" class="signature-result">
+      <image class="signature-result-image" :src="displayValue" mode="aspectFit" />
+    </view>
+
+    <view v-if="uploadError" class="signature-upload-status">
+      <text class="signature-upload-error">{{ uploadError }}</text>
+      <button class="signature-retry" @tap="retryUpload">重试上传</button>
     </view>
   </view>
 </template>
@@ -179,5 +257,37 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 200rpx;
   display: block;
+}
+
+.signature-upload-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  margin-top: 8rpx;
+  padding: 10rpx 12rpx;
+  border-radius: 8rpx;
+  background: #fff4f2;
+}
+
+.signature-upload-error {
+  flex: 1;
+  min-width: 0;
+  color: #9b3d35;
+  font-size: 18rpx;
+  line-height: 1.35;
+}
+
+.signature-retry {
+  flex: none;
+  min-height: 48rpx;
+  margin: 0;
+  padding: 0 16rpx;
+  border: 1rpx solid #c85b50;
+  border-radius: 24rpx;
+  background: #ffffff;
+  color: #9b3d35;
+  font-size: 18rpx;
+  line-height: 46rpx;
 }
 </style>

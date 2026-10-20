@@ -103,16 +103,63 @@ function parseUploadPayload(data: string | Record<string, unknown>) {
   }
 }
 
-export function uploadMedia(
+async function prepareUploadPath(path: string) {
+  if (!path.startsWith("data:")) return path;
+  // #ifdef APP-PLUS
+  return new Promise<string>((resolve, reject) => {
+    const id = `signature_${Date.now()}_${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
+    const Bitmap = plus.nativeObj.Bitmap;
+    if (!Bitmap) {
+      reject(new Error("当前运行环境不支持签字图片保存"));
+      return;
+    }
+    const bitmap = new Bitmap(id);
+    bitmap.loadBase64Data(
+      path,
+      () => {
+        const targetPath = `_doc/${id}.png`;
+        bitmap.save(
+          targetPath,
+          { overwrite: true },
+          (result) => {
+            const target =
+              result && typeof result === "object" && "target" in result
+                ? String((result as { target?: unknown }).target || "")
+                : "";
+            bitmap.clear();
+            resolve(target || targetPath);
+          },
+          (error) => {
+            bitmap.clear();
+            reject(new Error(`签字图片保存失败：${String(error)}`));
+          },
+        );
+      },
+      (error) => {
+        bitmap.clear();
+        reject(new Error(`签字图片解析失败：${String(error)}`));
+      },
+    );
+  });
+  // #endif
+  // #ifndef APP-PLUS
+  return path;
+  // #endif
+}
+
+export async function uploadMedia(
   path: string,
   filePath: string,
   formData: Record<string, string | number> = {},
 ) {
+  const uploadPath = await prepareUploadPath(filePath);
   const session = getSession();
   return new Promise<Record<string, unknown>>((resolve, reject) => {
     uni.uploadFile({
       url: `${API_BASE_URL}${path}`,
-      filePath,
+      filePath: uploadPath,
       name: "file",
       formData,
       timeout: 60000,
@@ -354,7 +401,8 @@ export function uploadedUrl(payload: unknown): string {
     (record.data && typeof record.data === "object"
       ? (record.data as Record<string, unknown>).url
       : "");
-  return typeof value === "string" ? value : "";
+  if (typeof value !== "string") return "";
+  return value.startsWith("/") ? `${API_BASE_URL}${value}` : value;
 }
 
 export function listQuickPhrases(payload: unknown): QuickPhrase[] {

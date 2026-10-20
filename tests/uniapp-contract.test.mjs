@@ -29,8 +29,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.4"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"304"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.5"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"305"/);
 });
 
 test("survey engineer role is labelled 勘测工程师 in the field client", () => {
@@ -312,6 +312,7 @@ test("survey photos use the 100-image cap and a five-column wrapping grid", () =
 test("survey and sealing flows capture both handwritten signatures", () => {
   const signaturePad = read("src/components/SignaturePad.vue");
   const signaturePage = read("src/pages/signature/index.vue");
+  const api = read("src/utils/api.ts");
   const themeConfig = read("src/config/index.js");
   const survey = read("src/pages/risk-survey/index.vue");
   const serviceReport = read("src/pages/service-report/index.vue");
@@ -321,6 +322,8 @@ test("survey and sealing flows capture both handwritten signatures", () => {
   assert.match(signaturePad, /SIGNATURE_COMPLETE_EVENT/);
   assert.match(signaturePad, /<button[\s\S]*?class="signature-trigger"/);
   assert.match(signaturePad, /class="signature-result"/);
+  assert.match(signaturePad, /data-signature-state/);
+  assert.match(signaturePad, /uploadSignature/);
   assert.doesNotMatch(signaturePad, /signature-card/);
   assert.match(signaturePage, /<canvas/);
   assert.match(signaturePage, /@touchstart/);
@@ -341,6 +344,8 @@ test("survey and sealing flows capture both handwritten signatures", () => {
   assert.match(signaturePage, /setSystemUiVisibility/);
   assert.match(signaturePage, /lockOrientation\("portrait-primary"\)/);
   assert.match(signaturePage, /signature-canvas-host/);
+  assert.match(signaturePage, /signature-placeholder/);
+  assert.match(signaturePage, /signature-meta/);
   assert.match(signaturePage, /onRenderExportBridge/);
   assert.match(signaturePage, /clearRequest/);
   assert.match(signaturePage, /markInk/);
@@ -351,12 +356,14 @@ test("survey and sealing flows capture both handwritten signatures", () => {
   assert.match(survey, /客户代表签字/);
   assert.match(survey, /role="employee"/);
   assert.match(survey, /role="customer"/);
+  assert.match(survey, /:upload="uploadSignature"/);
   assert.match(survey, /v-model:department="form\.customerSignatureDepartment"/);
   assert.match(survey, /请完成双方手写签字/);
   assert.match(serviceReport, /封堵责任人签字/);
   assert.match(serviceReport, /客户代表签字/);
   assert.match(serviceReport, /role="employee"/);
   assert.match(serviceReport, /role="customer"/);
+  assert.match(serviceReport, /:upload="uploadSignature"/);
   assert.match(
     serviceReport,
     /v-model:department="form\.customerSignatureDepartment"/,
@@ -365,6 +372,8 @@ test("survey and sealing flows capture both handwritten signatures", () => {
   assert.match(survey, /saveRiskSurvey/);
   assert.match(survey, /submitRiskSurvey/);
   assert.match(serviceReport, /saveServiceReport/);
+  assert.match(api, /prepareUploadPath/);
+  assert.match(api, /nativeObj\.Bitmap/);
   assert.match(serviceReport, /signServiceReport/);
   assert.match(serviceReport, /submitServiceReport/);
 });
