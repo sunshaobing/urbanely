@@ -32,6 +32,18 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
   assert.match(manifest, /"versionName"\s*:\s*"3\.0\.7"/);
   assert.match(manifest, /"versionCode"\s*:\s*"307"/);
+  assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
+  assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
+  assert.match(manifest, /android\.permission\.ACCESS_FINE_LOCATION/);
+  assert.match(manifest, /android\.permission\.CAMERA/);
+  assert.match(manifest, /"Geolocation"/);
+  for (const icon of [72, 96, 144, 192]) {
+    assert.ok(
+      fs.existsSync(
+        new URL(`src/static/icons/app-${icon}.png`, root),
+      ),
+    );
+  }
 });
 
 test("survey engineer role is labelled 勘测工程师 in the field client", () => {

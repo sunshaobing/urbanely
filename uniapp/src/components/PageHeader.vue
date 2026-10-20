@@ -99,4 +99,10 @@ function goBack() {
 .header-action {
   flex: none;
 }
+
+/* #ifdef APP-PLUS */
+.page-header {
+  padding-top: calc(52rpx + env(safe-area-inset-top));
+}
+/* #endif */
 </style>

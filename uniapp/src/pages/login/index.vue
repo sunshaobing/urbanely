@@ -443,4 +443,10 @@ function showResetHelp() {
   color: #8a968f;
   font-size: 20rpx;
 }
+
+/* #ifdef APP-PLUS */
+.login-page {
+  padding-top: calc(58rpx + env(safe-area-inset-top));
+}
+/* #endif */
 </style>
