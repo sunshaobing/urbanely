@@ -4,30 +4,37 @@ export default {};
 
 <style>
 :root {
-  --field-canvas: #eef4ef;
+  --field-canvas: #f3f6fa;
   --field-surface: #ffffff;
-  --field-ink: #17201d;
-  --field-muted: #65726c;
-  --field-line: #dce6df;
-  --field-accent: #1d7659;
-  --field-accent-soft: #e4f1e9;
-  --field-dark: #10352a;
-  --field-danger: #a8443c;
-  --field-danger-soft: #f9eae8;
-  --field-warning: #a36a24;
-  --field-warning-soft: #fbf0de;
-  --field-success: #3f7452;
+  --field-surface-muted: #f8fafc;
+  --field-ink: #182331;
+  --field-ink-soft: #34475b;
+  --field-muted: #667383;
+  --field-faint: #909a94;
+  --field-line: #dfe5ec;
+  --field-line-strong: #c9d4de;
+  --field-accent: #1f6fb2;
+  --field-accent-strong: #1a568c;
+  --field-accent-soft: #e9f2fa;
+  --field-dark: #173550;
+  --field-danger: #a33e37;
+  --field-danger-soft: #f8ebe9;
+  --field-warning: #9a641f;
+  --field-warning-soft: #fbf1df;
+  --field-success: #2f7656;
   --field-success-soft: #eaf3ec;
+  --field-shadow: 0 12rpx 36rpx rgba(18, 34, 27, 0.06);
 }
 
 page {
   min-height: 100%;
-  background: #eef4ef;
-  color: #14231d;
+  background: #f3f6fa;
+  color: #182331;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
     sans-serif;
   font-size: 28rpx;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 view,
@@ -56,14 +63,14 @@ button::after {
 
 .page {
   min-height: 100vh;
-  padding-bottom: calc(172rpx + env(safe-area-inset-bottom));
-  background: #eef4ef;
+  padding-bottom: calc(164rpx + env(safe-area-inset-bottom));
+  background: #f3f6fa;
 }
 
 .detail-page {
   min-height: 100vh;
   padding-bottom: calc(152rpx + env(safe-area-inset-bottom));
-  background: #eef4ef;
+  background: #f3f6fa;
 }
 
 .page-content {
@@ -71,14 +78,19 @@ button::after {
 }
 
 .card {
-  border: 1rpx solid #dce6df;
+  border: 1rpx solid #dfe5ec;
   border-radius: 16rpx;
   background: #ffffff;
-  box-shadow: 0 8rpx 24rpx rgba(16, 53, 42, 0.06);
+}
+
+.card-muted {
+  border: 1rpx solid #dfe5ec;
+  border-radius: 16rpx;
+  background: #f8fafc;
 }
 
 .dark-band {
-  background: #10352a;
+  background: #173550;
   color: #ffffff;
 }
 
@@ -92,48 +104,47 @@ button::after {
 
 .section-title {
   display: block;
-  font-size: 36rpx;
+  color: #182331;
+  font-size: 32rpx;
   font-weight: 700;
   line-height: 1.3;
 }
 
 .section-copy {
   display: block;
-  margin-top: 8rpx;
-  color: #6f7974;
-  font-size: 24rpx;
+  margin-top: 6rpx;
+  color: #667383;
+  font-size: 22rpx;
   line-height: 1.5;
 }
 
 .section-kicker {
   display: block;
-  color: #1d7659;
-  font-size: 22rpx;
+  color: #1f6fb2;
+  font-size: 20rpx;
   font-weight: 700;
-  letter-spacing: 1rpx;
-  text-transform: uppercase;
 }
 
 .title-lg {
-  font-size: 36rpx;
+  font-size: 40rpx;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .title-md {
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 700;
   line-height: 1.4;
 }
 
 .body {
-  font-size: 28rpx;
-  line-height: 1.55;
+  font-size: 26rpx;
+  line-height: 1.6;
 }
 
 .caption {
-  color: #65726c;
-  font-size: 24rpx;
+  color: #667383;
+  font-size: 22rpx;
   line-height: 1.5;
 }
 
@@ -145,37 +156,37 @@ button::after {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44rpx;
-  padding: 0 14rpx;
-  border-radius: 12rpx;
-  font-size: 22rpx;
+  min-height: 42rpx;
+  padding: 0 13rpx;
+  border-radius: 10rpx;
+  font-size: 20rpx;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .status-pending {
-  background: #f9eae8;
-  color: #a8443c;
+  background: #f8ebe9;
+  color: #a33e37;
 }
 
 .status-active {
-  background: #fbf0de;
-  color: #a36a24;
+  background: #fbf1df;
+  color: #9a641f;
 }
 
 .status-done {
   background: #eaf3ec;
-  color: #3f7452;
+  color: #2f7656;
 }
 
 .status-danger {
-  background: #fae9e6;
-  color: #a8443c;
+  background: #f8ebe9;
+  color: #a33e37;
 }
 
 .status-neutral {
-  background: #eef0ed;
-  color: #59635e;
+  background: #eef1ed;
+  color: #596660;
 }
 
 .btn-primary,
@@ -185,15 +196,15 @@ button::after {
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  min-height: 84rpx;
-  padding: 0 28rpx;
-  border-radius: 16rpx;
-  font-size: 28rpx;
+  min-height: 88rpx;
+  padding: 0 26rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
   font-weight: 600;
 }
 
 .btn-primary {
-  background: #10352a;
+  background: #173550;
   color: #ffffff;
 }
 
@@ -202,13 +213,13 @@ button::after {
 }
 
 .btn-secondary {
-  border: 1rpx solid #d3dfd7;
+  border: 1rpx solid #c9d4de;
   background: #ffffff;
-  color: #26322d;
+  color: #243244;
 }
 
 .btn-ghost {
-  color: #1d7659;
+  color: #1f6fb2;
 }
 
 .icon-button {
@@ -217,8 +228,8 @@ button::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1rpx solid #d9e3dc;
-  border-radius: 16rpx;
+  border: 1rpx solid #d7e0e9;
+  border-radius: 12rpx;
   background: #ffffff;
 }
 
@@ -228,9 +239,9 @@ button::after {
 
 .field-label {
   display: block;
-  margin-bottom: 10rpx;
-  color: #55645d;
-  font-size: 24rpx;
+  margin-bottom: 9rpx;
+  color: #4f5f72;
+  font-size: 22rpx;
   font-weight: 600;
 }
 
@@ -238,27 +249,27 @@ button::after {
 .field-textarea,
 .field-select {
   width: 100%;
-  border: 1rpx solid #d4dfd7;
-  border-radius: 16rpx;
+  border: 1rpx solid #d7e0e9;
+  border-radius: 12rpx;
   background: #ffffff;
-  color: #14231d;
-  font-size: 28rpx;
+  color: #182331;
+  font-size: 26rpx;
 }
 
 .field-input,
 .field-select {
-  height: 84rpx;
-  padding: 0 20rpx;
+  height: 88rpx;
+  padding: 0 18rpx;
 }
 
 .field-textarea {
-  min-height: 180rpx;
-  padding: 18rpx 20rpx;
-  line-height: 1.55;
+  min-height: 168rpx;
+  padding: 16rpx 18rpx;
+  line-height: 1.6;
 }
 
 .field-placeholder {
-  color: #9ba49f;
+  color: #9aa6b3;
 }
 
 .chip-row {
@@ -271,54 +282,54 @@ button::after {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 60rpx;
-  padding: 0 20rpx;
-  border: 1rpx solid #d6e1da;
-  border-radius: 16rpx;
+  min-height: 58rpx;
+  padding: 0 18rpx;
+  border: 1rpx solid #d7e0da;
+  border-radius: 10rpx;
   background: #ffffff;
-  color: #55645d;
-  font-size: 24rpx;
+  color: #506173;
+  font-size: 22rpx;
 }
 
 .chip.active {
-  border-color: #1d7659;
-  background: #e4f1e9;
-  color: #145c46;
+  border-color: #1f6fb2;
+  background: #e9f2fa;
+  color: #1a568c;
   font-weight: 600;
 }
 
 .divider {
   height: 1rpx;
-  background: #eaf0ec;
+  background: #e6ebf1;
 }
 
 .empty-state {
-  padding: 56rpx 32rpx;
-  border: 1rpx dashed #cfdcd3;
+  padding: 52rpx 28rpx;
+  border: 1rpx dashed #c9d4de;
   border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.68);
+  background: #f8fafc;
   text-align: center;
 }
 
 .empty-title {
   display: block;
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: 700;
 }
 
 .empty-copy {
   display: block;
-  margin-top: 10rpx;
-  color: #65726c;
-  font-size: 24rpx;
-  line-height: 1.55;
+  margin-top: 8rpx;
+  color: #667383;
+  font-size: 22rpx;
+  line-height: 1.6;
 }
 
 .error-copy {
   display: block;
-  margin-top: 12rpx;
-  color: #a8443c;
-  font-size: 24rpx;
+  margin-top: 10rpx;
+  color: #a33e37;
+  font-size: 22rpx;
   line-height: 1.55;
 }
 
@@ -327,13 +338,13 @@ button::after {
   height: 8rpx;
   overflow: hidden;
   border-radius: 8rpx;
-  background: rgba(255, 255, 255, 0.18);
+  background: #e0e7ef;
 }
 
 .step-fill {
   height: 100%;
   border-radius: 8rpx;
-  background: #75c49d;
+  background: #1f6fb2;
   transition: width 180ms ease;
 }
 
@@ -342,10 +353,13 @@ button::after {
 }
 
 .pressable {
-  transition: opacity 120ms ease;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
 }
 
 .pressable:active {
-  opacity: 0.72;
+  opacity: 0.76;
+  transform: scale(0.992);
 }
 </style>

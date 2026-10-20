@@ -85,7 +85,7 @@ function preview(index: number) {
         class="photo-item photo-add"
         @tap="choosePhotos"
       >
-        <UniIcons type="plus" size="22" color="#1d7659" />
+        <UniIcons type="plus" size="22" color="#1f6fb2" />
         <text class="photo-add-text">添加</text>
       </view>
     </view>
@@ -113,14 +113,14 @@ function preview(index: number) {
 .photo-hint {
   display: block;
   margin-top: 6rpx;
-  color: #6f7974;
+  color: #667383;
   font-size: 22rpx;
   line-height: 1.45;
 }
 
 .photo-count {
   flex: none;
-  color: #6f7974;
+  color: #667383;
   font-size: 22rpx;
 }
 
@@ -172,7 +172,58 @@ function preview(index: number) {
 }
 
 .photo-add-text {
-  color: #1d7659;
+  color: #1f6fb2;
   font-size: 20rpx;
+}
+
+/* Unified field-console visual system */
+.photo-section {
+  margin-top: 20rpx;
+}
+
+.photo-title {
+  color: #243244;
+  font-size: 24rpx;
+}
+
+.photo-hint {
+  margin-top: 5rpx;
+  color: #7c8897;
+  font-size: 20rpx;
+}
+
+.photo-count {
+  color: #7c8897;
+  font-size: 19rpx;
+}
+
+.photo-grid {
+  gap: 10rpx;
+  margin-top: 14rpx;
+}
+
+.photo-item {
+  width: calc(20% - 8rpx);
+  height: 116rpx;
+  border-color: #dce3de;
+  border-radius: 9rpx;
+  background: #f5f8fb;
+}
+
+.photo-remove {
+  top: 3rpx;
+  right: 3rpx;
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.photo-add {
+  border-color: #b9d1c4;
+  background: #f2f7fb;
+}
+
+.photo-add-text {
+  color: #1f6fb2;
+  font-size: 19rpx;
 }
 </style>

@@ -13,7 +13,7 @@ const props = withDefaults(
 
 const skins = ["#f2c9a5", "#e6b089", "#c78b62", "#9a6648", "#f6d7bc"];
 const hairs = ["#2b211c", "#4a2f24", "#6b432b", "#1f2b33", "#8a5a37"];
-const shirts = ["#0f766e", "#2563eb", "#b45309", "#475569", "#b42318", "#6d5bd0"];
+const shirts = ["#1f6fb2", "#2563eb", "#b45309", "#475569", "#b42318", "#6d5bd0"];
 const backgrounds = ["#e6f4f0", "#eaf0ff", "#fdf1df", "#fdeceb", "#eef2ef", "#f2edff"];
 
 function hashString(value: string) {

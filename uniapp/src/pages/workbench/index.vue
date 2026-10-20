@@ -46,13 +46,6 @@ const pageTitle = computed(() => {
       ? "封堵任务"
       : "现场任务";
 });
-const pageKicker = computed(() =>
-  effectiveKind.value === "risk"
-    ? "SURVEY FIELD"
-    : effectiveKind.value === "sealing"
-      ? "SEALING FIELD"
-      : "FIELD WORKBENCH",
-);
 const actionText = computed(() =>
   effectiveKind.value === "risk"
     ? "处理勘测"
@@ -183,70 +176,57 @@ onPullDownRefresh(async () => {
 
 <template>
   <view class="page workbench-page">
-    <view class="workbench-hero">
-      <view class="hero-topline">
-        <view class="brand-inline">
-          <BrandLogo :size="34" show-name :name-size="17" light />
-          <view>
-            <text class="brand-sub">封堵勘测系统</text>
-          </view>
-        </view>
+    <view class="workbench-header">
+      <view class="brand-row">
+        <BrandLogo :size="34" show-name :name-size="15" />
         <view class="profile-shortcut" @tap="openProfile">
-          <CartoonAvatar :name="session?.name || '现场人员'" :size="32" />
+          <CartoonAvatar :name="session?.name || '现场人员'" :size="30" />
           <view class="profile-online" />
         </view>
       </view>
 
-      <view class="hero-title-row">
-        <view>
-          <text class="hero-greeting">{{ pageTitle }}</text>
-          <text class="hero-date">{{ todayLabel() }} · {{ session?.name || "现场人员" }}</text>
+      <view class="page-heading">
+        <view class="heading-copy">
+          <text class="page-title">{{ pageTitle }}</text>
+          <text class="page-subtitle">
+            {{ todayLabel() }} · {{ session?.name || "现场人员" }}
+          </text>
         </view>
-        <view class="hero-role">
-          <UniIcons type="person-filled" size="14" color="#a5d0be" />
+        <view class="role-chip">
+          <UniIcons type="person-filled" size="13" color="#1f6fb2" />
           <text>{{ roleLabel(session?.role || "") }}</text>
         </view>
       </view>
 
-      <view class="hero-metrics">
-        <view class="hero-metric">
+      <view class="metric-strip">
+        <view class="metric-primary">
           <text class="metric-value">{{ loading ? "--" : allTasks.length }}</text>
           <text class="metric-label">{{ taskMetricLabel }}</text>
         </view>
-        <view class="metric-divider" />
-        <view class="hero-metric">
-          <text class="metric-value">{{ loading ? "--" : openCount }}</text>
-          <text class="metric-label">未完成</text>
+        <view class="metric-item">
+          <text class="metric-value small">{{ loading ? "--" : openCount }}</text>
+          <text class="metric-label">待处理</text>
         </view>
-        <view class="metric-divider" />
-        <view class="hero-metric">
-          <text class="metric-value">{{ loading ? "--" : doneCount }}</text>
+        <view class="metric-item">
+          <text class="metric-value small">{{ loading ? "--" : doneCount }}</text>
           <text class="metric-label">已完成</text>
         </view>
       </view>
     </view>
 
     <view class="page-content workbench-content">
-      <view class="ops-card card">
-        <view class="ops-copy">
-          <view class="ops-icon">
-            <UniIcons type="calendar" size="20" color="#1d7659" />
-          </view>
-          <view>
-            <text class="ops-title">今日现场</text>
-            <text class="ops-sub">
-              {{ totalHoles }} 个封堵部位 · 数据实时同步
-            </text>
-          </view>
-        </view>
-        <view class="ops-actions">
-          <view class="sync-state">
+      <view class="sync-row">
+        <view class="sync-copy">
+          <view class="sync-line">
             <view class="sync-dot" />
-            <text>{{ updatedAt ? `已更新 ${updatedAt}` : "同步中" }}</text>
+            <text>现场数据已同步</text>
           </view>
-          <view class="refresh-button" @tap="load">
-            <UniIcons type="refreshempty" size="17" color="#1d7659" />
-          </view>
+          <text class="sync-meta">
+            {{ totalHoles }} 个封堵部位 · {{ updatedAt ? `更新于 ${updatedAt}` : "正在同步" }}
+          </text>
+        </view>
+        <view class="refresh-button" @tap="load">
+          <UniIcons type="refreshempty" size="17" color="#1f6fb2" />
         </view>
       </view>
 
@@ -261,12 +241,12 @@ onPullDownRefresh(async () => {
 
       <view class="task-section-head">
         <view>
-          <text class="section-title">{{ pageKicker }}</text>
-          <text class="section-copy">按服务状态查看今天要处理的工作</text>
+          <text class="section-title">工作清单</text>
+          <text class="section-copy">{{ activeLabel }}任务与现场安排</text>
         </view>
         <view v-if="roleView === 'both'" class="reports-link" @tap="openReports">
-          <text>报告归档</text>
-          <UniIcons type="right" size="14" color="#1d7659" />
+          <text>全部报告</text>
+          <UniIcons type="right" size="13" color="#1f6fb2" />
         </view>
       </view>
 
@@ -307,11 +287,11 @@ onPullDownRefresh(async () => {
             <text class="task-customer">{{ task.customer_name }}</text>
             <view class="task-meta">
               <view class="task-meta-item">
-                <UniIcons type="calendar" size="14" color="#728079" />
+                <UniIcons type="calendar" size="14" color="#667383" />
                 <text>{{ displayDay(task.service_date || task.report_date) }}</text>
               </view>
               <view class="task-meta-item">
-                <UniIcons type="staff" size="14" color="#728079" />
+                <UniIcons type="staff" size="14" color="#667383" />
                 <text>{{ task.service_type || "结构漏洞封堵" }}</text>
               </view>
             </view>
@@ -320,7 +300,7 @@ onPullDownRefresh(async () => {
               <text>{{ task.sites.length }} 个封堵部位</text>
               <view class="task-open" @tap.stop="openTask(task)">
                 <text>{{ actionText }}</text>
-                <UniIcons type="right" size="14" color="#1d7659" />
+                <UniIcons type="right" size="13" color="#1f6fb2" />
               </view>
             </view>
           </view>
@@ -329,15 +309,11 @@ onPullDownRefresh(async () => {
 
       <view v-else class="empty-state">
         <view class="empty-icon">
-          <UniIcons type="checkbox" size="22" color="#1d7659" />
+          <UniIcons type="checkbox" size="22" color="#1f6fb2" />
         </view>
         <text class="empty-title">暂无{{ activeLabel }}任务</text>
         <text class="empty-copy">下拉刷新，或切换其他状态查看现场作业。</text>
       </view>
-
-      <text class="list-footnote">
-        当前列表由服务端任务状态筛选，前端不合并不同业务状态。
-      </text>
     </view>
 
     <AppTabBar :current="tabCurrent" />
@@ -346,22 +322,21 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .workbench-page {
-  background: #eef4ef;
+  background: #f3f6fa;
 }
 
-.workbench-hero {
-  padding: calc(32rpx + env(safe-area-inset-top)) 32rpx 94rpx;
-  background: #10352a;
-  color: #ffffff;
+.workbench-header {
+  padding: calc(26rpx + env(safe-area-inset-top)) 32rpx 28rpx;
+  border-bottom: 1rpx solid #dfe5ec;
+  background: #f8fafc;
 }
 
-.hero-topline,
-.hero-title-row,
-.hero-metrics,
-.ops-card,
-.ops-copy,
-.ops-actions,
-.sync-state,
+.brand-row,
+.page-heading,
+.metric-strip,
+.sync-row,
+.sync-copy,
+.sync-line,
 .task-topline,
 .task-meta,
 .task-meta-item,
@@ -372,190 +347,174 @@ onPullDownRefresh(async () => {
   align-items: center;
 }
 
-.hero-topline {
+.brand-row {
   justify-content: space-between;
   gap: 24rpx;
 }
 
-.brand-inline {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6rpx;
-}
-
-.brand-sub {
-  display: block;
-}
-
-.brand-sub {
-  margin-top: 0;
-  color: #9ec5b5;
-  font-size: 24rpx;
-  line-height: 1.2;
-}
-
 .profile-shortcut {
   position: relative;
-  width: 66rpx;
-  height: 66rpx;
+  width: 62rpx;
+  height: 62rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1rpx solid rgba(255, 255, 255, 0.18);
+  border: 1rpx solid #d8e1ea;
   border-radius: 50%;
-  background: #285845;
+  background: #ffffff;
 }
 
 .profile-online {
   position: absolute;
   right: 2rpx;
   bottom: 2rpx;
-  width: 14rpx;
-  height: 14rpx;
-  border: 3rpx solid #10352a;
+  width: 13rpx;
+  height: 13rpx;
+  border: 3rpx solid #ffffff;
   border-radius: 50%;
-  background: #75c49d;
+  background: #43a778;
 }
 
-.hero-title-row {
+.page-heading {
   justify-content: space-between;
   gap: 24rpx;
-  margin-top: 48rpx;
+  margin-top: 36rpx;
 }
 
-.hero-greeting,
-.hero-date {
+.page-title,
+.page-subtitle {
   display: block;
 }
 
-.hero-greeting {
-  font-size: 46rpx;
+.page-title {
+  color: #182331;
+  font-size: 42rpx;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
-.hero-date {
-  margin-top: 10rpx;
-  color: #a9c8bb;
-  font-size: 24rpx;
+.page-subtitle {
+  margin-top: 8rpx;
+  color: #667383;
+  font-size: 22rpx;
 }
 
-.hero-role {
+.role-chip {
   display: flex;
   align-items: center;
   gap: 6rpx;
   max-width: 200rpx;
   padding: 8rpx 12rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.16);
-  border-radius: 12rpx;
-  color: #c6dfd4;
+  border: 1rpx solid #d4e4da;
+  border-radius: 10rpx;
+  background: #ffffff;
+  color: #1a568c;
   font-size: 20rpx;
   white-space: nowrap;
 }
 
-.hero-metrics {
-  margin-top: 36rpx;
-  padding: 22rpx 0 0;
-  border-top: 1rpx solid rgba(255, 255, 255, 0.12);
+.metric-strip {
+  margin-top: 28rpx;
+  padding: 20rpx 22rpx;
+  border: 1rpx solid #dfe5ec;
+  border-radius: 16rpx;
+  background: #ffffff;
 }
 
-.hero-metric {
+.metric-primary,
+.metric-item {
   flex: 1;
   min-width: 0;
+}
+
+.metric-primary {
+  display: flex;
+  align-items: baseline;
+  gap: 10rpx;
+  padding-right: 22rpx;
+  border-right: 1rpx solid #e6ebf1;
+}
+
+.metric-item {
+  padding-left: 22rpx;
+  text-align: right;
+}
+
+.metric-item + .metric-item {
+  border-left: 1rpx solid #e6ebf1;
 }
 
 .metric-value,
 .metric-label {
   display: block;
-  text-align: center;
 }
 
 .metric-value {
-  font-size: 38rpx;
+  color: #173550;
+  font-family: "SFMono-Regular", "Cascadia Code", monospace;
+  font-size: 40rpx;
   font-weight: 700;
+  line-height: 1;
+}
+
+.metric-value.small {
+  color: #182331;
+  font-size: 32rpx;
 }
 
 .metric-label {
-  margin-top: 4rpx;
-  color: #a9c8bb;
-  font-size: 21rpx;
-}
-
-.metric-divider {
-  width: 1rpx;
-  height: 48rpx;
-  background: rgba(255, 255, 255, 0.14);
+  color: #667383;
+  font-size: 20rpx;
 }
 
 .workbench-content {
-  margin-top: -60rpx;
+  padding-top: 22rpx;
 }
 
-.ops-card {
+.sync-row {
   justify-content: space-between;
-  gap: 20rpx;
-  padding: 20rpx 22rpx;
+  gap: 18rpx;
+  padding: 14rpx 0 18rpx;
+  border-bottom: 1rpx solid #e6ebf1;
 }
 
-.ops-copy {
-  gap: 14rpx;
+.sync-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   min-width: 0;
 }
 
-.ops-icon {
+.sync-line {
+  gap: 8rpx;
+  color: #34475b;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.sync-dot {
+  width: 9rpx;
+  height: 9rpx;
+  border-radius: 50%;
+  background: #43a778;
+}
+
+.sync-meta {
+  margin-top: 3rpx;
+  color: #7c8897;
+  font-size: 20rpx;
+}
+
+.refresh-button {
   width: 58rpx;
   height: 58rpx;
   display: flex;
   flex: none;
   align-items: center;
   justify-content: center;
-  border-radius: 14rpx;
-  background: #e4f1e9;
-}
-
-.ops-title,
-.ops-sub {
-  display: block;
-}
-
-.ops-title {
-  font-size: 25rpx;
-  font-weight: 700;
-}
-
-.ops-sub {
-  margin-top: 3rpx;
-  color: #65726c;
-  font-size: 20rpx;
-}
-
-.ops-actions {
-  flex: none;
-  gap: 10rpx;
-}
-
-.sync-state {
-  gap: 6rpx;
-  color: #65726c;
-  font-size: 19rpx;
-}
-
-.sync-dot {
-  width: 10rpx;
-  height: 10rpx;
-  border-radius: 50%;
-  background: #4c9a72;
-}
-
-.refresh-button {
-  width: 54rpx;
-  height: 54rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14rpx;
-  background: #f0f6f2;
+  border: 1rpx solid #d8e1ea;
+  border-radius: 12rpx;
+  background: #ffffff;
 }
 
 .error-banner {
@@ -564,9 +523,9 @@ onPullDownRefresh(async () => {
   gap: 10rpx;
   margin-top: 24rpx;
   padding: 18rpx 20rpx;
-  border: 1rpx solid #eccfca;
+  border: 1rpx solid #ebd0cd;
   border-radius: 16rpx;
-  background: #fae9e6;
+  background: #f8ebe9;
 }
 
 .error-banner-copy {
@@ -597,23 +556,24 @@ onPullDownRefresh(async () => {
   align-items: flex-end;
   justify-content: space-between;
   gap: 20rpx;
-  margin-top: 34rpx;
+  margin-top: 28rpx;
 }
 
 .reports-link {
   gap: 4rpx;
-  color: #1d7659;
-  font-size: 22rpx;
+  color: #1f6fb2;
+  font-size: 21rpx;
+  font-weight: 600;
 }
 
 .status-tabs {
   display: flex;
-  gap: 8rpx;
-  margin-top: 20rpx;
-  padding: 8rpx;
-  border: 1rpx solid #dce6df;
-  border-radius: 16rpx;
-  background: #e8f0ea;
+  gap: 4rpx;
+  margin-top: 16rpx;
+  padding: 5rpx;
+  border: 1rpx solid #dfe5ec;
+  border-radius: 12rpx;
+  background: #eef2f7;
 }
 
 .status-tab {
@@ -623,29 +583,29 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  border-radius: 12rpx;
-  color: #65726c;
-  font-size: 23rpx;
+  border-radius: 9rpx;
+  color: #667383;
+  font-size: 22rpx;
 }
 
 .tab-count {
-  min-width: 30rpx;
-  height: 30rpx;
+  min-width: 28rpx;
+  height: 28rpx;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8rpx;
-  background: #dbe9e1;
-  color: #1d7659;
+  border-radius: 7rpx;
+  background: #e9f2fa;
+  color: #1a568c;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 18rpx;
 }
 
 .status-tab.active {
   background: #ffffff;
-  color: #10352a;
+  color: #182331;
   font-weight: 700;
-  box-shadow: 0 4rpx 12rpx rgba(16, 53, 42, 0.08);
+  box-shadow: 0 2rpx 8rpx rgba(18, 34, 27, 0.06);
 }
 
 .task-list,
@@ -660,12 +620,13 @@ onPullDownRefresh(async () => {
   position: relative;
   display: flex;
   overflow: hidden;
+  background: #ffffff;
 }
 
 .task-accent {
-  width: 6rpx;
+  width: 4rpx;
   flex: none;
-  background: #1d7659;
+  background: #1f6fb2;
 }
 
 .task-card-body {
@@ -680,14 +641,15 @@ onPullDownRefresh(async () => {
 }
 
 .task-no {
-  color: #65726c;
-  font-size: 21rpx;
+  color: #7c8897;
+  font-size: 20rpx;
 }
 
 .task-customer {
   display: block;
-  margin-top: 10rpx;
-  font-size: 34rpx;
+  margin-top: 8rpx;
+  color: #182331;
+  font-size: 32rpx;
   font-weight: 700;
   line-height: 1.35;
 }
@@ -700,16 +662,16 @@ onPullDownRefresh(async () => {
 
 .task-meta-item {
   gap: 5rpx;
-  color: #65726c;
-  font-size: 21rpx;
+  color: #667383;
+  font-size: 20rpx;
 }
 
 .task-address {
   display: block;
   margin-top: 10rpx;
-  color: #65726c;
-  font-size: 23rpx;
-  line-height: 1.45;
+  color: #5e6d7d;
+  font-size: 22rpx;
+  line-height: 1.5;
 }
 
 .task-footer {
@@ -717,15 +679,15 @@ onPullDownRefresh(async () => {
   gap: 16rpx;
   margin-top: 18rpx;
   padding-top: 16rpx;
-  border-top: 1rpx solid #eaf0ec;
-  color: #728079;
-  font-size: 21rpx;
+  border-top: 1rpx solid #e6ebf1;
+  color: #7c8897;
+  font-size: 20rpx;
 }
 
 .task-open {
   gap: 2rpx;
-  color: #1d7659;
-  font-weight: 600;
+  color: #1f6fb2;
+  font-weight: 700;
 }
 
 .skeleton-card {
@@ -737,7 +699,7 @@ onPullDownRefresh(async () => {
   height: 18rpx;
   margin-top: 16rpx;
   border-radius: 8rpx;
-  background: #e6eee8;
+  background: #e8edf3;
 }
 
 .skeleton-line:first-child {
@@ -760,15 +722,6 @@ onPullDownRefresh(async () => {
   justify-content: center;
   margin: 0 auto 14rpx;
   border-radius: 16rpx;
-  background: #e4f1e9;
-}
-
-.list-footnote {
-  display: block;
-  margin-top: 28rpx;
-  color: #8a968f;
-  font-size: 20rpx;
-  line-height: 1.5;
-  text-align: center;
+  background: #e9f2fa;
 }
 </style>

@@ -71,11 +71,11 @@ function showResetHelp() {
 
       <view class="login-content">
         <view class="login-copy">
-          <text class="login-title">登录工作台</text>
-          <text class="login-subtitle">使用已分配账号进入现场服务系统</text>
+          <text class="login-title">现场服务工作台</text>
+          <text class="login-subtitle">使用系统分配的账号登录</text>
         </view>
 
-        <view class="login-form">
+        <view class="login-form card">
           <view class="form-field">
             <text class="field-label">账号或手机号</text>
             <view class="login-input">
@@ -139,7 +139,7 @@ function showResetHelp() {
   padding: calc(36rpx + env(safe-area-inset-top)) 40rpx
     calc(30rpx + env(safe-area-inset-bottom));
   background: #f4f6f3;
-  color: #17201d;
+  color: #182331;
 }
 
 .login-main {
@@ -158,7 +158,7 @@ function showResetHelp() {
 
 .system-label {
   flex: none;
-  color: #7a8580;
+  color: #7c8897;
   font-size: 22rpx;
 }
 
@@ -183,7 +183,7 @@ function showResetHelp() {
 
 .login-subtitle {
   margin-top: 14rpx;
-  color: #68746e;
+  color: #667383;
   font-size: 26rpx;
   line-height: 1.55;
 }
@@ -241,7 +241,7 @@ function showResetHelp() {
   justify-content: center;
   margin-top: 40rpx;
   border-radius: 16rpx;
-  background: #10352a;
+  background: #173550;
   color: #ffffff;
   font-size: 28rpx;
   font-weight: 700;
@@ -257,21 +257,109 @@ function showResetHelp() {
   justify-content: flex-end;
   gap: 8rpx;
   margin-top: 24rpx;
-  color: #7a8580;
+  color: #7c8897;
   font-size: 24rpx;
   line-height: 1.5;
 }
 
 .help-link {
-  color: #1d7659;
+  color: #1f6fb2;
   font-weight: 600;
 }
 
 .login-foot {
   display: block;
   padding-top: 40rpx;
-  color: #929b96;
+  color: #8a96a4;
   font-size: 22rpx;
   text-align: center;
+}
+
+/* Unified field-console visual system */
+.login-page {
+  padding: calc(30rpx + env(safe-area-inset-top)) 36rpx
+    calc(28rpx + env(safe-area-inset-bottom));
+  background: #f3f6fa;
+}
+
+.system-label {
+  padding: 7rpx 12rpx;
+  border: 1rpx solid #dbe3eb;
+  border-radius: 8rpx;
+  background: #ffffff;
+  color: #6b7770;
+  font-size: 19rpx;
+}
+
+.login-content {
+  padding-top: 118rpx;
+}
+
+.login-copy {
+  margin-bottom: 34rpx;
+}
+
+.login-title {
+  color: #182331;
+  font-size: 46rpx;
+  line-height: 1.24;
+}
+
+.login-subtitle {
+  margin-top: 12rpx;
+  color: #667383;
+  font-size: 24rpx;
+}
+
+.login-form {
+  padding: 28rpx;
+}
+
+.form-field + .form-field {
+  margin-top: 24rpx;
+}
+
+.field-label {
+  margin-bottom: 9rpx;
+  color: #4f5f72;
+  font-size: 22rpx;
+}
+
+.login-input {
+  height: 94rpx;
+  padding: 0 20rpx;
+  border-color: #d7e0e9;
+  border-radius: 12rpx;
+}
+
+.input {
+  height: 86rpx;
+  font-size: 26rpx;
+}
+
+.login-submit {
+  height: 92rpx;
+  margin-top: 34rpx;
+  border-radius: 12rpx;
+  background: #173550;
+  font-size: 26rpx;
+}
+
+.login-help {
+  margin-top: 22rpx;
+  padding-top: 18rpx;
+  border-top: 1rpx solid #e6ebf1;
+  color: #7c8897;
+  font-size: 21rpx;
+}
+
+.help-link {
+  color: #1f6fb2;
+}
+
+.login-foot {
+  padding-top: 32rpx;
+  color: #8a96a4;
+  font-size: 20rpx;
 }
 </style>

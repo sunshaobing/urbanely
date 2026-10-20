@@ -92,18 +92,18 @@ onPullDownRefresh(async () => {
 
 <template>
   <view class="page profile-page">
-    <view class="profile-hero">
+    <view class="profile-header">
       <view class="profile-topline">
         <view>
-          <text class="profile-kicker">MY ACCOUNT</text>
+          <text class="profile-kicker">账号中心</text>
           <text class="profile-title">我的</text>
         </view>
         <view class="profile-refresh" @tap="load">
-          <UniIcons type="refreshempty" size="18" color="#a5d0be" />
+          <UniIcons type="refreshempty" size="17" color="#1f6fb2" />
         </view>
       </view>
 
-      <view class="identity-card">
+      <view class="identity-card card">
         <CartoonAvatar
           class="profile-avatar"
           :name="session?.name || '现场人员'"
@@ -131,8 +131,8 @@ onPullDownRefresh(async () => {
         <view class="error-retry" @tap="load">重试</view>
       </view>
 
-      <view class="metric-grid">
-        <view v-for="item in metrics" :key="item.label" class="metric-card card">
+      <view class="metric-grid card">
+        <view v-for="item in metrics" :key="item.label" class="metric-card">
           <text class="metric-value">{{ loading ? "--" : item.value }}</text>
           <text class="metric-label">{{ item.label }}</text>
         </view>
@@ -140,7 +140,7 @@ onPullDownRefresh(async () => {
 
       <view class="sync-card card">
         <view class="sync-icon">
-          <UniIcons type="cloud-upload" size="21" color="#1d7659" />
+          <UniIcons type="cloud-upload" size="21" color="#1f6fb2" />
         </view>
         <view class="sync-copy">
           <text class="sync-title">生产数据服务</text>
@@ -159,23 +159,23 @@ onPullDownRefresh(async () => {
         <view class="menu-card card">
           <view class="menu-row pressable" @tap="openPassword">
             <view class="menu-icon">
-              <UniIcons type="locked" size="19" color="#1d7659" />
+              <UniIcons type="locked" size="19" color="#1f6fb2" />
             </view>
             <view class="menu-copy">
               <text class="menu-title">修改密码</text>
               <text class="menu-sub">更新当前账号的登录密码</text>
             </view>
-            <UniIcons type="right" size="16" color="#8a968f" />
+            <UniIcons type="right" size="16" color="#8a96a4" />
           </view>
           <view class="menu-row pressable" @tap="about">
             <view class="menu-icon">
-              <UniIcons type="info" size="19" color="#1d7659" />
+              <UniIcons type="info" size="19" color="#1f6fb2" />
             </view>
             <view class="menu-copy">
               <text class="menu-title">关于系统</text>
               <text class="menu-sub">uni-app 现场作业端 · v1.0</text>
             </view>
-            <UniIcons type="right" size="16" color="#8a968f" />
+            <UniIcons type="right" size="16" color="#8a96a4" />
           </view>
           <view class="menu-row danger pressable" @tap="logout">
             <view class="menu-icon danger-icon">
@@ -185,7 +185,7 @@ onPullDownRefresh(async () => {
               <text class="menu-title">退出登录</text>
               <text class="menu-sub">清除当前设备上的账号会话</text>
             </view>
-            <UniIcons type="right" size="16" color="#8a968f" />
+            <UniIcons type="right" size="16" color="#8a96a4" />
           </view>
         </view>
       </view>
@@ -201,12 +201,12 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .profile-page {
-  background: #eef4ef;
+  background: #f3f6fa;
 }
 
 .profile-hero {
   padding: calc(32rpx + env(safe-area-inset-top)) 32rpx 104rpx;
-  background: #10352a;
+  background: #173550;
   color: #ffffff;
 }
 
@@ -279,7 +279,7 @@ onPullDownRefresh(async () => {
 
 .profile-role {
   margin-top: 4rpx;
-  color: #a5d0be;
+  color: #b6d4eb;
   font-size: 24rpx;
 }
 
@@ -335,7 +335,7 @@ onPullDownRefresh(async () => {
 
 .metric-label {
   margin-top: 4rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 21rpx;
 }
 
@@ -353,7 +353,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 14rpx;
-  background: #e4f1e9;
+  background: #e9f2fa;
 }
 
 .sync-copy {
@@ -373,7 +373,7 @@ onPullDownRefresh(async () => {
 
 .sync-sub {
   margin-top: 3rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 20rpx;
 }
 
@@ -398,7 +398,7 @@ onPullDownRefresh(async () => {
 .menu-section-title {
   display: block;
   margin-bottom: 12rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 22rpx;
   font-weight: 600;
 }
@@ -410,7 +410,7 @@ onPullDownRefresh(async () => {
 .menu-row {
   gap: 14rpx;
   padding: 20rpx 0;
-  border-bottom: 1rpx solid #eaf0ec;
+  border-bottom: 1rpx solid #e6ebf1;
 }
 
 .menu-row:last-child {
@@ -425,11 +425,11 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 14rpx;
-  background: #e4f1e9;
+  background: #e9f2fa;
 }
 
 .danger-icon {
-  background: #fae9e6;
+  background: #f8ebe9;
 }
 
 .menu-copy {
@@ -449,7 +449,7 @@ onPullDownRefresh(async () => {
 
 .menu-sub {
   margin-top: 3rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 20rpx;
 }
 
@@ -465,7 +465,7 @@ onPullDownRefresh(async () => {
   padding: 18rpx 20rpx;
   border: 1rpx solid #eccfca;
   border-radius: 16rpx;
-  background: #fae9e6;
+  background: #f8ebe9;
 }
 
 .error-copy-wrap {
@@ -489,8 +489,193 @@ onPullDownRefresh(async () => {
 .profile-footnote {
   display: block;
   margin-top: 28rpx;
-  color: #8a968f;
+  color: #8a96a4;
   font-size: 20rpx;
   text-align: center;
+}
+
+/* Unified field-console visual system */
+.profile-page {
+  background: #f3f6fa;
+}
+
+.profile-header {
+  padding: calc(26rpx + env(safe-area-inset-top)) 32rpx 26rpx;
+  border-bottom: 1rpx solid #dfe5ec;
+  background: #f8fafc;
+  color: #182331;
+}
+
+.profile-kicker {
+  color: #1f6fb2;
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.profile-title {
+  margin-top: 4rpx;
+  color: #182331;
+  font-size: 40rpx;
+}
+
+.profile-refresh {
+  width: 60rpx;
+  height: 60rpx;
+  border: 1rpx solid #d8e1ea;
+  border-radius: 12rpx;
+  background: #ffffff;
+}
+
+.identity-card {
+  gap: 18rpx;
+  margin-top: 24rpx;
+  padding: 22rpx 24rpx;
+}
+
+.profile-avatar {
+  border-color: #dfe6e1;
+}
+
+.profile-name {
+  color: #182331;
+  font-size: 32rpx;
+}
+
+.profile-role {
+  margin-top: 3rpx;
+  color: #1f6fb2;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.profile-phone {
+  margin-top: 5rpx;
+  color: #7c8897;
+  font-size: 19rpx;
+}
+
+.online-badge {
+  border: 1rpx solid #d8e5f0;
+  border-radius: 9rpx;
+  background: #eff6fb;
+  color: #2f7656;
+  font-size: 19rpx;
+}
+
+.online-dot {
+  width: 9rpx;
+  height: 9rpx;
+  background: #43a778;
+}
+
+.profile-content {
+  margin-top: 0;
+  padding-top: 20rpx;
+}
+
+.metric-grid {
+  overflow: hidden;
+  padding: 0;
+}
+
+.metric-card {
+  width: 50%;
+  padding: 20rpx 22rpx;
+  border-right: 1rpx solid #e6ebf1;
+  border-bottom: 1rpx solid #e6ebf1;
+  background: #ffffff;
+}
+
+.metric-card:nth-child(2n) {
+  border-right: 0;
+}
+
+.metric-card:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.metric-value {
+  color: #173550;
+  font-family: "SFMono-Regular", "Cascadia Code", monospace;
+  font-size: 34rpx;
+}
+
+.metric-label {
+  color: #667383;
+  font-size: 20rpx;
+}
+
+.sync-card {
+  margin-top: 16rpx;
+  padding: 18rpx 20rpx;
+}
+
+.sync-icon {
+  background: #e9f2fa;
+}
+
+.sync-title {
+  color: #243244;
+  font-size: 23rpx;
+}
+
+.sync-sub {
+  color: #7c8897;
+  font-size: 19rpx;
+}
+
+.sync-pulse {
+  background: #43a778;
+}
+
+.menu-section {
+  margin-top: 28rpx;
+}
+
+.menu-section-title {
+  color: #667383;
+  font-size: 21rpx;
+}
+
+.menu-card {
+  padding: 0 22rpx;
+}
+
+.menu-row {
+  gap: 14rpx;
+  padding: 20rpx 0;
+  border-bottom-color: #e6ebf1;
+}
+
+.menu-icon {
+  background: #e9f2fa;
+}
+
+.danger-icon {
+  background: #f8ebe9;
+}
+
+.menu-title {
+  color: #243244;
+  font-size: 24rpx;
+}
+
+.menu-sub {
+  color: #7c8897;
+  font-size: 19rpx;
+}
+
+.menu-row.danger .menu-title {
+  color: #a33e37;
+}
+
+.error-banner {
+  border-color: #ebd0cd;
+  background: #f8ebe9;
+}
+
+.profile-footnote {
+  color: #8a96a4;
 }
 </style>

@@ -414,13 +414,12 @@ onLoad(async (query) => {
     <PageHeader
       title="现场勘测"
       :subtitle="task ? `${task.report_no} · ${task.customer_name}` : '结构风险勘测'"
-      kicker="RISK SURVEY"
-      dark
+      kicker="现场采集"
       back
     >
       <view class="step-summary">
         <view class="step-meta">
-          <text>STEP {{ step + 1 }} / {{ steps.length }}</text>
+          <text>第 {{ step + 1 }} 步 / 共 {{ steps.length }} 步</text>
           <text>{{ steps[step] }}</text>
         </view>
         <view class="step-track">
@@ -448,7 +447,7 @@ onLoad(async (query) => {
         <view v-if="step === 0" class="step-panel">
           <view class="site-card card">
             <view class="site-topline">
-              <text class="site-kicker">SITE / CONTACT</text>
+              <text class="site-kicker">现场与联系人</text>
               <text class="site-code mono">{{ task.report_no }}</text>
             </view>
             <text class="site-name">{{ task.customer_name }}</text>
@@ -472,7 +471,7 @@ onLoad(async (query) => {
                 <picker mode="date" :value="form.date" @change="onDateChange">
                   <view class="picker-value">
                     <text>{{ form.date }}</text>
-                    <UniIcons type="calendar" size="16" color="#65726c" />
+                    <UniIcons type="calendar" size="16" color="#667383" />
                   </view>
                 </picker>
               </view>
@@ -500,7 +499,7 @@ onLoad(async (query) => {
               <picker mode="date" :value="form.reviewDate" @change="onReviewDateChange">
                 <view class="picker-value">
                   <text>{{ form.reviewDate || "请选择复检日期" }}</text>
-                  <UniIcons type="calendar" size="16" color="#65726c" />
+                  <UniIcons type="calendar" size="16" color="#667383" />
                 </view>
               </picker>
             </view>
@@ -592,7 +591,7 @@ onLoad(async (query) => {
               <text class="section-copy">逐项记录位置、问题和建议处理方式</text>
             </view>
             <button class="add-item" @tap="addItem">
-              <UniIcons type="plus" size="16" color="#1d7659" />
+              <UniIcons type="plus" size="16" color="#1f6fb2" />
               <text>添加</text>
             </button>
           </view>
@@ -808,7 +807,7 @@ onLoad(async (query) => {
 .survey-page {
   min-height: 100vh;
   padding-bottom: calc(138rpx + env(safe-area-inset-bottom));
-  background: #eef4ef;
+  background: #f3f6fa;
 }
 
 .step-summary {
@@ -821,7 +820,7 @@ onLoad(async (query) => {
   justify-content: space-between;
   gap: 20rpx;
   margin-bottom: 10rpx;
-  color: #a5d0be;
+  color: #b6d4eb;
   font-size: 21rpx;
 }
 
@@ -851,14 +850,14 @@ onLoad(async (query) => {
 }
 
 .site-kicker {
-  color: #1d7659;
+  color: #1f6fb2;
   font-size: 20rpx;
   font-weight: 700;
   letter-spacing: 1rpx;
 }
 
 .site-code {
-  color: #65726c;
+  color: #667383;
   font-size: 20rpx;
 }
 
@@ -872,7 +871,7 @@ onLoad(async (query) => {
 .site-address {
   display: block;
   margin-top: 8rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 23rpx;
   line-height: 1.5;
 }
@@ -882,7 +881,7 @@ onLoad(async (query) => {
   gap: 48rpx;
   margin-top: 18rpx;
   padding-top: 16rpx;
-  border-top: 1rpx solid #eaf0ec;
+  border-top: 1rpx solid #e6ebf1;
 }
 
 .contact-label,
@@ -891,7 +890,7 @@ onLoad(async (query) => {
 }
 
 .contact-label {
-  color: #7b8881;
+  color: #7c8897;
   font-size: 20rpx;
 }
 
@@ -918,10 +917,10 @@ onLoad(async (query) => {
   justify-content: space-between;
   gap: 8rpx;
   padding: 0 18rpx;
-  border: 1rpx solid #d4dfd7;
+  border: 1rpx solid #d7e0e9;
   border-radius: 16rpx;
   background: #ffffff;
-  color: #14231d;
+  color: #182331;
   font-size: 25rpx;
 }
 
@@ -930,7 +929,7 @@ onLoad(async (query) => {
 }
 
 .choice-count {
-  color: #1d7659;
+  color: #1f6fb2;
   font-size: 22rpx;
   font-weight: 600;
 }
@@ -940,7 +939,7 @@ onLoad(async (query) => {
   gap: 6rpx;
   padding: 6rpx;
   border-radius: 14rpx;
-  background: #e8f0ea;
+  background: #eef2f7;
 }
 
 .risk-segmented {
@@ -954,13 +953,13 @@ onLoad(async (query) => {
   align-items: center;
   justify-content: center;
   border-radius: 10rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 23rpx;
 }
 
 .segment.active {
   background: #ffffff;
-  color: #10352a;
+  color: #173550;
   font-weight: 700;
   box-shadow: 0 4rpx 12rpx rgba(16, 53, 42, 0.08);
 }
@@ -972,10 +971,10 @@ onLoad(async (query) => {
   justify-content: center;
   gap: 4rpx;
   padding: 0 16rpx;
-  border: 1rpx solid #bdd7c9;
+  border: 1rpx solid #cbd9e5;
   border-radius: 12rpx;
-  background: #f0f7f3;
-  color: #1d7659;
+  background: #f0f6fb;
+  color: #1f6fb2;
   font-size: 22rpx;
   font-weight: 600;
 }
@@ -1003,8 +1002,8 @@ onLoad(async (query) => {
   align-items: center;
   justify-content: center;
   border-radius: 10rpx;
-  background: #e4f1e9;
-  color: #1d7659;
+  background: #e9f2fa;
+  color: #1f6fb2;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 18rpx;
   font-weight: 700;
@@ -1030,7 +1029,7 @@ onLoad(async (query) => {
 
 .hint-card {
   padding: 18rpx 20rpx;
-  border: 1rpx solid #cfe0d6;
+  border: 1rpx solid #d8e6f1;
   border-radius: 16rpx;
   background: #e8f3ec;
 }
@@ -1041,14 +1040,14 @@ onLoad(async (query) => {
 }
 
 .hint-title {
-  color: #145c46;
+  color: #1a568c;
   font-size: 23rpx;
   font-weight: 700;
 }
 
 .hint-copy {
   margin-top: 5rpx;
-  color: #486d5c;
+  color: #506173;
   font-size: 21rpx;
   line-height: 1.55;
 }
@@ -1056,13 +1055,13 @@ onLoad(async (query) => {
 .quick-phrases {
   padding: 18rpx 20rpx;
   border-radius: 16rpx;
-  background: #e4f1e9;
+  background: #e9f2fa;
 }
 
 .quick-label {
   display: block;
   margin-bottom: 10rpx;
-  color: #145c46;
+  color: #1a568c;
   font-size: 22rpx;
   font-weight: 700;
 }
@@ -1088,7 +1087,7 @@ onLoad(async (query) => {
   width: calc(50% - 6rpx);
   padding: 14rpx 16rpx;
   border-radius: 12rpx;
-  background: #f1f6f2;
+  background: #f5f8fb;
 }
 
 .summary-label,
@@ -1097,7 +1096,7 @@ onLoad(async (query) => {
 }
 
 .summary-label {
-  color: #65726c;
+  color: #667383;
   font-size: 20rpx;
 }
 
@@ -1144,7 +1143,7 @@ onLoad(async (query) => {
   display: flex;
   gap: 10rpx;
   padding: 16rpx 24rpx;
-  border-top: 1rpx solid #dce6df;
+  border-top: 1rpx solid #dfe5ec;
   background: rgba(245, 248, 244, 0.98);
 }
 
@@ -1157,11 +1156,231 @@ onLoad(async (query) => {
   min-width: 118rpx;
   min-height: 78rpx;
   padding: 0 16rpx;
-  border: 1rpx solid #cbd9d1;
+  border: 1rpx solid #cbd9e5;
   border-radius: 16rpx;
   background: #ffffff;
-  color: #1d7659;
+  color: #1f6fb2;
   font-size: 23rpx;
   font-weight: 600;
+}
+
+/* Unified field-console visual system */
+.survey-page {
+  padding-bottom: calc(148rpx + env(safe-area-inset-bottom));
+  background: #f3f6fa;
+}
+
+.step-summary {
+  margin-top: 20rpx;
+}
+
+.step-meta {
+  margin-bottom: 9rpx;
+  color: #667383;
+  font-size: 19rpx;
+}
+
+.step-meta text:last-child {
+  color: #1f6fb2;
+  font-weight: 700;
+}
+
+.survey-content {
+  padding-top: 20rpx;
+}
+
+.step-panel {
+  gap: 16rpx;
+}
+
+.site-card,
+.form-card,
+.plan-card,
+.photo-card,
+.submit-summary {
+  padding: 24rpx;
+}
+
+.site-kicker {
+  color: #1f6fb2;
+  font-size: 19rpx;
+  letter-spacing: 0;
+}
+
+.site-code {
+  color: #7c8897;
+  font-size: 19rpx;
+}
+
+.site-name {
+  margin-top: 10rpx;
+  color: #182331;
+  font-size: 30rpx;
+}
+
+.site-address {
+  margin-top: 6rpx;
+  color: #667383;
+  font-size: 22rpx;
+}
+
+.site-contact {
+  margin-top: 16rpx;
+  padding-top: 14rpx;
+  border-top-color: #e6ebf1;
+}
+
+.contact-label {
+  color: #7c8897;
+  font-size: 19rpx;
+}
+
+.contact-value {
+  color: #243244;
+  font-size: 22rpx;
+}
+
+.form-grid {
+  gap: 12rpx;
+}
+
+.picker-value {
+  height: 88rpx;
+  padding: 0 18rpx;
+  border-color: #d7e0e9;
+  border-radius: 12rpx;
+  color: #243244;
+  font-size: 23rpx;
+}
+
+.choice-section {
+  padding: 2rpx;
+}
+
+.choice-count {
+  color: #1f6fb2;
+  font-size: 20rpx;
+}
+
+.segmented {
+  gap: 4rpx;
+  padding: 5rpx;
+  border-radius: 10rpx;
+  background: #eef2f7;
+}
+
+.segment {
+  min-height: 56rpx;
+  border-radius: 8rpx;
+  color: #667383;
+  font-size: 21rpx;
+}
+
+.segment.active {
+  color: #182331;
+  box-shadow: 0 2rpx 8rpx rgba(18, 34, 27, 0.06);
+}
+
+.add-item {
+  min-height: 56rpx;
+  padding: 0 14rpx;
+  border-color: #cbd9e5;
+  border-radius: 9rpx;
+  background: #f0f6fb;
+  color: #1f6fb2;
+  font-size: 20rpx;
+}
+
+.risk-item-list {
+  gap: 12rpx;
+}
+
+.risk-item {
+  padding: 22rpx;
+}
+
+.risk-index {
+  background: #e9f2fa;
+  color: #1f6fb2;
+}
+
+.risk-item-title {
+  color: #243244;
+  font-size: 24rpx;
+}
+
+.hint-card {
+  border-color: #d8e6f1;
+  background: #f0f6fb;
+}
+
+.hint-title {
+  color: #1a568c;
+  font-size: 22rpx;
+}
+
+.hint-copy {
+  color: #506173;
+  font-size: 20rpx;
+}
+
+.quick-phrases {
+  background: #f0f6fb;
+}
+
+.quick-label {
+  color: #1a568c;
+  font-size: 21rpx;
+}
+
+.summary-title {
+  color: #182331;
+  font-size: 26rpx;
+}
+
+.summary-item {
+  background: #f7f9f6;
+}
+
+.summary-label {
+  color: #7c8897;
+  font-size: 19rpx;
+}
+
+.summary-value {
+  color: #243244;
+  font-size: 24rpx;
+}
+
+.signature-note {
+  border: 1rpx solid #eddfc6;
+  background: #fbf6eb;
+}
+
+.signature-note-title,
+.signature-note-copy {
+  color: #805827;
+}
+
+.bottom-actions {
+  gap: 8rpx;
+  padding: 14rpx 24rpx;
+  border-top-color: #dfe5ec;
+  background: #ffffff;
+  box-shadow: 0 -10rpx 32rpx rgba(18, 34, 27, 0.07);
+}
+
+.action-button {
+  min-height: 84rpx;
+}
+
+.draft-button {
+  min-width: 108rpx;
+  min-height: 84rpx;
+  padding: 0 14rpx;
+  border-color: #d5dee8;
+  border-radius: 12rpx;
+  color: #1f6fb2;
+  font-size: 21rpx;
 }
 </style>

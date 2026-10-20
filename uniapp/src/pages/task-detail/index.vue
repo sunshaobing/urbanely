@@ -377,21 +377,22 @@ onLoad((query) => {
     <PageHeader
       title="任务详情"
       :subtitle="task ? `${task.report_no} · ${task.customer_name}` : '现场作业单'"
-      kicker="FIELD ORDER"
-      dark
+      kicker="现场作业"
       back
     >
       <template #action>
         <StatusPill v-if="task" :status="task.status" />
       </template>
 
-      <view v-if="task" class="order-hero">
-        <text class="order-service">{{ task.service_type || "结构漏洞封堵" }}</text>
-        <text class="order-customer">{{ task.customer_name }}</text>
+      <view v-if="task" class="order-hero card">
+        <view class="order-main">
+          <text class="order-service">{{ task.service_type || "结构漏洞封堵" }}</text>
+          <text class="order-customer">{{ task.customer_name }}</text>
+        </view>
         <view class="order-address-row">
           <text class="order-address">{{ task.service_address || "服务地址待补充" }}</text>
           <view class="copy-address" @tap="copyAddress">
-            <UniIcons type="map-pin" size="16" color="#a5d0be" />
+            <UniIcons type="map-pin" size="14" color="#1f6fb2" />
             <text>复制</text>
           </view>
         </view>
@@ -405,7 +406,7 @@ onLoad((query) => {
             <text class="quick-value">{{ task.sites.length }} 个</text>
           </view>
           <view class="call-button" @tap="callContact">
-            <UniIcons type="phone-filled" size="18" color="#10352a" />
+            <UniIcons type="phone-filled" size="17" color="#ffffff" />
             <text>联系门店</text>
           </view>
         </view>
@@ -433,53 +434,49 @@ onLoad((query) => {
         <view class="workflow-card card">
           <view class="workflow-head">
             <view>
-              <text class="workflow-kicker">PROCESS / {{ visibleCurrentIndex + 1 }} OF {{ visibleSteps.length }}</text>
+              <text class="workflow-kicker">当前进度 · {{ visibleCurrentIndex + 1 }} / {{ visibleSteps.length }}</text>
               <text class="workflow-title">{{ currentStep?.label || actionLabel }}</text>
-              <text class="workflow-hint">{{ currentStep?.hint || "当前角色无需处理后续节点" }}</text>
             </view>
             <text class="workflow-percent">{{ progress }}%</text>
           </view>
           <view class="workflow-progress">
             <view class="workflow-progress-fill" :style="{ width: `${progress}%` }" />
           </view>
-          <view class="process-list">
-            <view
-              v-for="(step, index) in visibleSteps"
-              :key="step.key"
-              class="process-step"
-              :class="{
-                done: step.done,
-                active: index === visibleCurrentIndex && !step.done,
-              }"
-            >
-              <view class="process-rail">
+          <scroll-view class="process-scroll" scroll-x :show-scrollbar="false">
+            <view class="process-track">
+              <view
+                v-for="(step, index) in visibleSteps"
+                :key="step.key"
+                class="process-step"
+                :class="{
+                  done: step.done,
+                  active: index === visibleCurrentIndex && !step.done,
+                }"
+              >
                 <view class="process-node">
                   <UniIcons
                     v-if="step.done"
                     type="checkmarkempty"
-                    size="13"
+                    size="12"
                     color="#ffffff"
                   />
-                  <text v-else>{{ String(index + 1).padStart(2, "0") }}</text>
+                  <text v-else>{{ index + 1 }}</text>
                 </view>
-                <view v-if="index < visibleSteps.length - 1" class="process-line" />
-              </view>
-              <view class="process-copy">
                 <text class="process-label">{{ step.label }}</text>
-                <text class="process-hint">{{ step.hint }}</text>
+                <text class="process-state">
+                  {{ step.done ? "已完成" : index === visibleCurrentIndex ? "当前" : "待处理" }}
+                </text>
               </view>
-              <text class="process-state">
-                {{ step.done ? "已完成" : index === visibleCurrentIndex ? "当前" : "待处理" }}
-              </text>
             </view>
-          </view>
+          </scroll-view>
+          <text class="workflow-hint">{{ currentStep?.hint || "当前角色无需处理后续节点" }}</text>
         </view>
 
         <view v-if="survey || serviceReport" class="related-card card">
           <text class="related-title">关联单据</text>
           <view v-if="survey" class="related-row">
             <view class="related-icon">
-              <UniIcons type="search" size="17" color="#1d7659" />
+              <UniIcons type="search" size="17" color="#1f6fb2" />
             </view>
             <view class="related-copy">
               <text class="related-name">勘测报告</text>
@@ -489,7 +486,7 @@ onLoad((query) => {
           </view>
           <view v-if="serviceReport" class="related-row">
             <view class="related-icon">
-              <UniIcons type="compose" size="17" color="#1d7659" />
+              <UniIcons type="compose" size="17" color="#1f6fb2" />
             </view>
             <view class="related-copy">
               <text class="related-name">封堵报告</text>
@@ -519,7 +516,7 @@ onLoad((query) => {
                   v-if="task.contact_phone"
                   type="phone"
                   size="15"
-                  color="#1d7659"
+                  color="#1f6fb2"
                 />
               </view>
             </view>
@@ -611,7 +608,7 @@ onLoad((query) => {
 
       <view class="bottom-actions safe-bottom">
         <button class="btn-secondary bottom-button" @tap="load">
-          <UniIcons type="refreshempty" size="18" color="#1d7659" />
+          <UniIcons type="refreshempty" size="18" color="#1f6fb2" />
           <text>同步状态</text>
         </button>
         <button
@@ -634,7 +631,7 @@ onLoad((query) => {
 
 .order-service {
   display: block;
-  color: #a5d0be;
+  color: #b6d4eb;
   font-size: 23rpx;
   font-weight: 600;
 }
@@ -666,7 +663,7 @@ onLoad((query) => {
   flex: none;
   align-items: center;
   gap: 4rpx;
-  color: #a5d0be;
+  color: #b6d4eb;
   font-size: 20rpx;
 }
 
@@ -708,8 +705,8 @@ onLoad((query) => {
   margin-left: auto;
   padding: 0 18rpx;
   border-radius: 14rpx;
-  background: #e4f1e9;
-  color: #10352a;
+  background: #e9f2fa;
+  color: #173550;
   font-size: 22rpx;
   font-weight: 700;
 }
@@ -736,7 +733,7 @@ onLoad((query) => {
 }
 
 .workflow-kicker {
-  color: #1d7659;
+  color: #1f6fb2;
   font-size: 19rpx;
   font-weight: 700;
   letter-spacing: 1rpx;
@@ -750,13 +747,13 @@ onLoad((query) => {
 
 .workflow-hint {
   margin-top: 4rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 21rpx;
 }
 
 .workflow-percent {
   flex: none;
-  color: #1d7659;
+  color: #1f6fb2;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 28rpx;
   font-weight: 700;
@@ -767,13 +764,13 @@ onLoad((query) => {
   overflow: hidden;
   margin-top: 18rpx;
   border-radius: 8rpx;
-  background: #e6eee8;
+  background: #e8edf3;
 }
 
 .workflow-progress-fill {
   height: 100%;
   border-radius: 8rpx;
-  background: #1d7659;
+  background: #1f6fb2;
   transition: width 180ms ease;
 }
 
@@ -806,8 +803,8 @@ onLoad((query) => {
   justify-content: center;
   border: 1rpx solid #d6e1da;
   border-radius: 50%;
-  background: #f7faf7;
-  color: #8a968f;
+  background: #f7f9fc;
+  color: #8a96a4;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 16rpx;
 }
@@ -818,7 +815,7 @@ onLoad((query) => {
   bottom: -2rpx;
   left: 50%;
   width: 1rpx;
-  background: #dce6df;
+  background: #dfe5ec;
 }
 
 .process-copy {
@@ -839,7 +836,7 @@ onLoad((query) => {
 
 .process-hint {
   margin-top: 2rpx;
-  color: #7b8881;
+  color: #7c8897;
   font-size: 19rpx;
   line-height: 1.4;
 }
@@ -852,8 +849,8 @@ onLoad((query) => {
 }
 
 .process-step.done .process-node {
-  border-color: #1d7659;
-  background: #1d7659;
+  border-color: #1f6fb2;
+  background: #1f6fb2;
   color: #ffffff;
 }
 
@@ -862,7 +859,7 @@ onLoad((query) => {
 }
 
 .process-step.done .process-label {
-  color: #1d7659;
+  color: #1f6fb2;
 }
 
 .process-step.done .process-state {
@@ -870,19 +867,19 @@ onLoad((query) => {
 }
 
 .process-step.active .process-node {
-  border-color: #1d7659;
-  background: #e4f1e9;
-  color: #145c46;
+  border-color: #1f6fb2;
+  background: #e9f2fa;
+  color: #1a568c;
   font-weight: 700;
 }
 
 .process-step.active .process-label {
-  color: #10352a;
+  color: #173550;
   font-weight: 700;
 }
 
 .process-step.active .process-state {
-  color: #1d7659;
+  color: #1f6fb2;
   font-weight: 700;
 }
 
@@ -903,7 +900,7 @@ onLoad((query) => {
   align-items: center;
   gap: 12rpx;
   padding: 12rpx 0;
-  border-top: 1rpx solid #eaf0ec;
+  border-top: 1rpx solid #e6ebf1;
 }
 
 .related-icon {
@@ -914,7 +911,7 @@ onLoad((query) => {
   align-items: center;
   justify-content: center;
   border-radius: 12rpx;
-  background: #e4f1e9;
+  background: #e9f2fa;
 }
 
 .related-copy {
@@ -934,13 +931,13 @@ onLoad((query) => {
 
 .related-meta {
   margin-top: 2rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 19rpx;
 }
 
 .related-count {
   flex: none;
-  color: #1d7659;
+  color: #1f6fb2;
   font-size: 19rpx;
 }
 
@@ -949,7 +946,7 @@ onLoad((query) => {
 }
 
 .section-count {
-  color: #65726c;
+  color: #667383;
   font-size: 22rpx;
 }
 
@@ -965,7 +962,7 @@ onLoad((query) => {
   justify-content: space-between;
   gap: 22rpx;
   padding: 18rpx 0;
-  border-bottom: 1rpx solid #eaf0ec;
+  border-bottom: 1rpx solid #e6ebf1;
 }
 
 .info-row:last-child,
@@ -975,12 +972,12 @@ onLoad((query) => {
 
 .info-label {
   flex: none;
-  color: #65726c;
+  color: #667383;
   font-size: 24rpx;
 }
 
 .info-value {
-  color: #14231d;
+  color: #182331;
   font-size: 25rpx;
   text-align: right;
   word-break: break-all;
@@ -990,7 +987,7 @@ onLoad((query) => {
   display: flex;
   align-items: center;
   gap: 6rpx;
-  color: #1d7659;
+  color: #1f6fb2;
   font-size: 25rpx;
   font-weight: 600;
 }
@@ -999,7 +996,7 @@ onLoad((query) => {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  color: #14231d;
+  color: #182331;
   font-size: 25rpx;
   font-weight: 600;
 }
@@ -1025,8 +1022,8 @@ onLoad((query) => {
   align-items: center;
   justify-content: center;
   border-radius: 12rpx;
-  background: #e4f1e9;
-  color: #1d7659;
+  background: #e9f2fa;
+  color: #1f6fb2;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 20rpx;
   font-weight: 700;
@@ -1050,13 +1047,13 @@ onLoad((query) => {
 
 .site-type {
   margin-top: 5rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 22rpx;
 }
 
 .site-remark {
   margin-top: 6rpx;
-  color: #7b8881;
+  color: #7c8897;
   font-size: 21rpx;
 }
 
@@ -1065,7 +1062,7 @@ onLoad((query) => {
   display: flex;
   flex-direction: column;
   gap: 6rpx;
-  color: #1d7659;
+  color: #1f6fb2;
   font-size: 20rpx;
   text-align: right;
 }
@@ -1087,13 +1084,13 @@ onLoad((query) => {
 
 .material-spec {
   margin-top: 4rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 21rpx;
 }
 
 .material-qty {
   flex: none;
-  color: #1d7659;
+  color: #1f6fb2;
   font-size: 25rpx;
   font-weight: 700;
 }
@@ -1110,7 +1107,7 @@ onLoad((query) => {
   padding: 20rpx 22rpx;
   border: 1rpx solid #eccfca;
   border-radius: 16rpx;
-  background: #fae9e6;
+  background: #f8ebe9;
 }
 
 .reject-title,
@@ -1140,7 +1137,7 @@ onLoad((query) => {
   display: flex;
   gap: 12rpx;
   padding: 18rpx 32rpx;
-  border-top: 1rpx solid #dce6df;
+  border-top: 1rpx solid #dfe5ec;
   background: rgba(245, 248, 244, 0.98);
 }
 
@@ -1158,7 +1155,7 @@ onLoad((query) => {
   height: 18rpx;
   margin-top: 16rpx;
   border-radius: 8rpx;
-  background: #e6eee8;
+  background: #e8edf3;
 }
 
 .skeleton-line:first-child {
@@ -1175,5 +1172,340 @@ onLoad((query) => {
 
 .retry-button {
   margin-top: 22rpx;
+}
+
+/* Unified field-console visual system */
+.detail-page {
+  background: #f3f6fa;
+}
+
+.order-hero {
+  margin-top: 24rpx;
+  padding: 24rpx;
+  border-color: #dfe5ec;
+  background: #ffffff;
+  color: #182331;
+}
+
+.order-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.order-service {
+  color: #1f6fb2;
+  font-size: 20rpx;
+  font-weight: 700;
+}
+
+.order-customer {
+  margin-top: 8rpx;
+  color: #182331;
+  font-size: 40rpx;
+  line-height: 1.25;
+}
+
+.order-address-row {
+  align-items: center;
+  margin-top: 12rpx;
+}
+
+.order-address {
+  color: #5e6d7d;
+  font-size: 22rpx;
+  line-height: 1.55;
+}
+
+.copy-address {
+  padding: 7rpx 10rpx;
+  border-radius: 8rpx;
+  background: #f0f6fb;
+  color: #1f6fb2;
+  font-size: 19rpx;
+  font-weight: 600;
+}
+
+.order-quick {
+  margin-top: 22rpx;
+  padding-top: 18rpx;
+  border-top-color: #e6ebf1;
+}
+
+.quick-label {
+  color: #7c8897;
+  font-size: 19rpx;
+}
+
+.quick-value {
+  margin-top: 3rpx;
+  color: #243244;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.call-button {
+  height: 62rpx;
+  padding: 0 18rpx;
+  border-radius: 10rpx;
+  background: #173550;
+  color: #ffffff;
+  font-size: 21rpx;
+}
+
+.detail-content {
+  padding-top: 20rpx;
+}
+
+.workflow-card {
+  padding: 24rpx;
+}
+
+.workflow-kicker {
+  color: #1f6fb2;
+  font-size: 19rpx;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.workflow-title {
+  margin-top: 6rpx;
+  color: #182331;
+  font-size: 32rpx;
+}
+
+.workflow-percent {
+  color: #1f6fb2;
+  font-size: 30rpx;
+}
+
+.workflow-progress {
+  height: 7rpx;
+  margin-top: 16rpx;
+  background: #e6ebf1;
+}
+
+.workflow-progress-fill {
+  background: #1f6fb2;
+}
+
+.process-scroll {
+  width: 100%;
+  margin-top: 20rpx;
+  white-space: nowrap;
+}
+
+.process-track {
+  display: flex;
+  width: max-content;
+  gap: 10rpx;
+  padding-right: 12rpx;
+}
+
+.process-step {
+  width: 148rpx;
+  min-height: 144rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 16rpx 10rpx 14rpx;
+  border: 1rpx solid #dfe5ec;
+  border-radius: 12rpx;
+  background: #f8fafc;
+  white-space: normal;
+}
+
+.process-node {
+  width: 36rpx;
+  height: 36rpx;
+  border-color: #d5dee8;
+  background: #ffffff;
+  color: #8a958f;
+  font-size: 17rpx;
+}
+
+.process-label {
+  display: block;
+  margin-top: 10rpx;
+  color: #506173;
+  font-size: 20rpx;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.process-state {
+  margin-top: 5rpx;
+  padding: 0;
+  color: #8f9ba9;
+  font-size: 18rpx;
+  line-height: 1.3;
+}
+
+.process-step.done {
+  border-color: #d8e5f0;
+  background: #f4f8fc;
+}
+
+.process-step.done .process-node {
+  border-color: #1f6fb2;
+  background: #1f6fb2;
+}
+
+.process-step.done .process-label,
+.process-step.done .process-state {
+  color: #2f7656;
+}
+
+.process-step.active {
+  border-color: #1f6fb2;
+  background: #eff5fb;
+}
+
+.process-step.active .process-node {
+  border-color: #1f6fb2;
+  background: #e9f2fa;
+  color: #1a568c;
+}
+
+.process-step.active .process-label {
+  color: #1a568c;
+  font-weight: 700;
+}
+
+.process-step.active .process-state {
+  color: #1f6fb2;
+  font-weight: 700;
+}
+
+.workflow-hint {
+  display: block;
+  margin-top: 16rpx;
+  padding: 14rpx 16rpx;
+  border-radius: 10rpx;
+  background: #f5f8fb;
+  color: #5e6d7d;
+  font-size: 21rpx;
+  line-height: 1.55;
+}
+
+.related-card {
+  margin-top: 16rpx;
+  padding: 22rpx 24rpx;
+}
+
+.related-title {
+  margin-bottom: 6rpx;
+  color: #182331;
+  font-size: 24rpx;
+}
+
+.related-row {
+  padding: 14rpx 0;
+  border-top-color: #e6ebf1;
+}
+
+.related-icon {
+  background: #e9f2fa;
+}
+
+.related-name {
+  color: #243244;
+}
+
+.related-meta {
+  color: #7c8897;
+}
+
+.related-count {
+  color: #1f6fb2;
+}
+
+.section-block {
+  margin-top: 34rpx;
+}
+
+.info-card,
+.material-card {
+  padding: 0 24rpx;
+}
+
+.info-row,
+.material-row {
+  padding: 19rpx 0;
+  border-bottom-color: #e6ebf1;
+}
+
+.info-label {
+  color: #7c8897;
+  font-size: 22rpx;
+}
+
+.info-value {
+  color: #243244;
+  font-size: 23rpx;
+}
+
+.phone-value,
+.person-value {
+  color: #1f6fb2;
+  font-size: 23rpx;
+}
+
+.site-card {
+  padding: 20rpx 22rpx;
+}
+
+.site-index {
+  background: #e9f2fa;
+  color: #1f6fb2;
+}
+
+.site-name {
+  color: #182331;
+  font-size: 26rpx;
+}
+
+.site-type,
+.site-remark {
+  color: #6d7b8a;
+  font-size: 21rpx;
+}
+
+.site-photo-stats {
+  color: #1f6fb2;
+  font-size: 19rpx;
+}
+
+.material-name {
+  color: #243244;
+}
+
+.material-qty {
+  color: #1f6fb2;
+}
+
+.reject-card {
+  border-color: #ebd0cd;
+  background: #f8ebe9;
+}
+
+.bottom-actions {
+  padding: 16rpx 28rpx;
+  border-top-color: #dfe5ec;
+  background: #ffffff;
+  box-shadow: 0 -10rpx 32rpx rgba(18, 34, 27, 0.07);
+}
+
+.bottom-button {
+  min-height: 84rpx;
+}
+
+.skeleton-line {
+  background: #e8edf3;
 }
 </style>

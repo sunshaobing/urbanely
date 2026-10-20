@@ -141,20 +141,24 @@ onPullDownRefresh(async () => {
   <view class="page reports-page">
     <PageHeader
       title="报告归档"
-      subtitle="勘测记录与封堵记录统一查询"
-      kicker="DOCUMENT ARCHIVE"
-      dark
+      subtitle="勘测与封堵文档统一查询"
+      kicker="文档中心"
     >
       <template #action>
         <view class="header-refresh" @tap="load">
-          <UniIcons type="refreshempty" size="18" color="#a5d0be" />
+          <UniIcons type="refreshempty" size="17" color="#1f6fb2" />
         </view>
       </template>
 
-      <view class="archive-summary">
-        <view>
+      <view class="archive-summary card">
+        <view class="archive-summary-main">
           <text class="archive-total">{{ loading ? "--" : totalCount }}</text>
-          <text class="archive-label">份记录</text>
+          <view>
+            <text class="archive-label">全部记录</text>
+            <text class="archive-updated">
+              {{ updatedAt ? `更新于 ${updatedAt}` : "正在同步" }}
+            </text>
+          </view>
         </view>
         <view class="archive-breakdown">
           <view class="breakdown-item">
@@ -165,10 +169,6 @@ onPullDownRefresh(async () => {
             <text class="breakdown-value">{{ serviceReports.length }}</text>
             <text class="breakdown-label">封堵</text>
           </view>
-          <view class="breakdown-item">
-            <text class="breakdown-value">{{ updatedAt || "--:--" }}</text>
-            <text class="breakdown-label">最近同步</text>
-          </view>
         </view>
       </view>
     </PageHeader>
@@ -176,7 +176,7 @@ onPullDownRefresh(async () => {
     <view class="page-content reports-content">
       <view class="search-row">
         <view class="search-input">
-          <UniIcons type="search" size="17" color="#728079" />
+          <UniIcons type="search" size="17" color="#667383" />
           <input
             v-model="keyword"
             class="search-field"
@@ -187,7 +187,7 @@ onPullDownRefresh(async () => {
           />
         </view>
         <button class="search-button" @tap="runSearch">
-          <UniIcons type="search" size="18" color="#ffffff" />
+          <UniIcons type="search" size="17" color="#ffffff" />
         </button>
       </view>
 
@@ -231,7 +231,7 @@ onPullDownRefresh(async () => {
               <UniIcons
                 :type="activeTab === 'risk' ? 'search' : 'compose'"
                 size="15"
-                color="#1d7659"
+                color="#1f6fb2"
               />
               <text class="mono">{{ recordCode(record) }}</text>
             </view>
@@ -251,7 +251,7 @@ onPullDownRefresh(async () => {
               {{ activeTab === "risk" ? "现场勘测报告" : "结构封堵服务单" }}
             </text>
             <button class="pdf-button" @tap="openPdf(record)">
-              <UniIcons type="download" size="15" color="#ffffff" />
+              <UniIcons type="download" size="14" color="#ffffff" />
               <text>PDF</text>
             </button>
           </view>
@@ -260,7 +260,7 @@ onPullDownRefresh(async () => {
 
       <view v-else class="empty-state">
         <view class="empty-icon">
-          <UniIcons type="paperplane" size="22" color="#1d7659" />
+          <UniIcons type="paperplane" size="22" color="#1f6fb2" />
         </view>
         <text class="empty-title">
           暂无{{ activeTab === "risk" ? "勘测" : "封堵" }}记录
@@ -275,7 +275,7 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .reports-page {
-  background: #eef4ef;
+  background: #f3f6fa;
 }
 
 .header-refresh {
@@ -310,7 +310,7 @@ onPullDownRefresh(async () => {
 
 .archive-label {
   margin-top: 8rpx;
-  color: #a5d0be;
+  color: #b6d4eb;
   font-size: 22rpx;
 }
 
@@ -356,7 +356,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   gap: 10rpx;
   padding: 0 18rpx;
-  border: 1rpx solid #d4dfd7;
+  border: 1rpx solid #d7e0e9;
   border-radius: 16rpx;
   background: #ffffff;
 }
@@ -375,7 +375,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 16rpx;
-  background: #1d7659;
+  background: #1f6fb2;
 }
 
 .archive-tabs {
@@ -383,9 +383,9 @@ onPullDownRefresh(async () => {
   gap: 8rpx;
   margin-top: 18rpx;
   padding: 8rpx;
-  border: 1rpx solid #dce6df;
+  border: 1rpx solid #dfe5ec;
   border-radius: 16rpx;
-  background: #e8f0ea;
+  background: #eef2f7;
 }
 
 .archive-tab {
@@ -396,13 +396,13 @@ onPullDownRefresh(async () => {
   justify-content: center;
   gap: 8rpx;
   border-radius: 12rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 24rpx;
 }
 
 .archive-tab.active {
   background: #ffffff;
-  color: #10352a;
+  color: #173550;
   font-weight: 700;
   box-shadow: 0 4rpx 12rpx rgba(16, 53, 42, 0.08);
 }
@@ -414,8 +414,8 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 8rpx;
-  background: #dbe9e1;
-  color: #1d7659;
+  background: #e9f2fa;
+  color: #1f6fb2;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 18rpx;
 }
@@ -448,7 +448,7 @@ onPullDownRefresh(async () => {
 
 .archive-code {
   gap: 6rpx;
-  color: #1d7659;
+  color: #1f6fb2;
   font-size: 21rpx;
 }
 
@@ -464,7 +464,7 @@ onPullDownRefresh(async () => {
   flex-wrap: wrap;
   gap: 8rpx 16rpx;
   margin-top: 10rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 21rpx;
 }
 
@@ -479,22 +479,22 @@ onPullDownRefresh(async () => {
 }
 
 .risk-label {
-  color: #65726c;
+  color: #667383;
 }
 
 .risk-value {
-  color: #1d7659;
+  color: #1f6fb2;
   font-weight: 600;
 }
 
 .archive-footer {
   margin-top: 16rpx;
   padding-top: 16rpx;
-  border-top: 1rpx solid #eaf0ec;
+  border-top: 1rpx solid #e6ebf1;
 }
 
 .archive-source {
-  color: #7b8881;
+  color: #7c8897;
   font-size: 21rpx;
 }
 
@@ -506,7 +506,7 @@ onPullDownRefresh(async () => {
   gap: 4rpx;
   padding: 0 16rpx;
   border-radius: 12rpx;
-  background: #1d7659;
+  background: #1f6fb2;
   color: #ffffff;
   font-size: 21rpx;
   font-weight: 600;
@@ -517,7 +517,7 @@ onPullDownRefresh(async () => {
   height: 18rpx;
   margin-top: 16rpx;
   border-radius: 8rpx;
-  background: #e6eee8;
+  background: #e8edf3;
 }
 
 .skeleton-line:first-child {
@@ -540,7 +540,7 @@ onPullDownRefresh(async () => {
   justify-content: center;
   margin: 0 auto 14rpx;
   border-radius: 16rpx;
-  background: #e4f1e9;
+  background: #e9f2fa;
 }
 
 .error-state {
@@ -549,5 +549,176 @@ onPullDownRefresh(async () => {
 
 .retry-button {
   margin-top: 22rpx;
+}
+
+/* Unified field-console visual system */
+.reports-page {
+  background: #f3f6fa;
+}
+
+.header-refresh {
+  width: 60rpx;
+  height: 60rpx;
+  border: 1rpx solid #d8e1ea;
+  border-radius: 12rpx;
+  background: #ffffff;
+}
+
+.archive-summary {
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24rpx;
+  padding: 22rpx 24rpx;
+}
+
+.archive-summary-main {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.archive-total {
+  color: #173550;
+  font-family: "SFMono-Regular", "Cascadia Code", monospace;
+  font-size: 46rpx;
+  line-height: 1;
+}
+
+.archive-label {
+  margin-top: 0;
+  color: #243244;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.archive-updated {
+  display: block;
+  margin-top: 2rpx;
+  color: #8793a1;
+  font-size: 18rpx;
+}
+
+.archive-breakdown {
+  gap: 22rpx;
+}
+
+.breakdown-item {
+  min-width: 58rpx;
+  padding-left: 18rpx;
+  border-left: 1rpx solid #e6ebf1;
+}
+
+.breakdown-value {
+  color: #243244;
+  font-size: 24rpx;
+}
+
+.breakdown-label {
+  margin-top: 2rpx;
+  color: #7c8897;
+  font-size: 18rpx;
+}
+
+.reports-content {
+  padding-top: 20rpx;
+}
+
+.search-input {
+  height: 78rpx;
+  border-color: #d8e1ea;
+  border-radius: 12rpx;
+}
+
+.search-field {
+  font-size: 23rpx;
+}
+
+.search-button {
+  width: 78rpx;
+  height: 78rpx;
+  border-radius: 12rpx;
+  background: #173550;
+}
+
+.archive-tabs {
+  gap: 4rpx;
+  margin-top: 16rpx;
+  padding: 5rpx;
+  border-color: #dfe5ec;
+  border-radius: 12rpx;
+  background: #eef2f7;
+}
+
+.archive-tab {
+  min-height: 58rpx;
+  border-radius: 9rpx;
+  color: #667383;
+  font-size: 22rpx;
+}
+
+.archive-tab.active {
+  color: #182331;
+  box-shadow: 0 2rpx 8rpx rgba(18, 34, 27, 0.06);
+}
+
+.archive-list {
+  gap: 14rpx;
+  margin-top: 16rpx;
+}
+
+.archive-card {
+  padding: 22rpx 24rpx;
+}
+
+.archive-code {
+  color: #1f6fb2;
+  font-size: 20rpx;
+}
+
+.archive-customer {
+  margin-top: 10rpx;
+  color: #182331;
+  font-size: 30rpx;
+  line-height: 1.35;
+}
+
+.archive-meta {
+  color: #667383;
+  font-size: 20rpx;
+}
+
+.risk-line {
+  padding: 9rpx 12rpx;
+  border-radius: 8rpx;
+  background: #f5f8fb;
+}
+
+.risk-value {
+  color: #1f6fb2;
+}
+
+.archive-footer {
+  border-top-color: #e6ebf1;
+}
+
+.archive-source {
+  color: #7c8897;
+  font-size: 20rpx;
+}
+
+.pdf-button {
+  min-height: 54rpx;
+  padding: 0 16rpx;
+  border-radius: 9rpx;
+  background: #173550;
+  font-size: 20rpx;
+}
+
+.skeleton-line {
+  background: #e8edf3;
+}
+
+.empty-icon {
+  background: #e9f2fa;
 }
 </style>

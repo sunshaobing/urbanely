@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 import PageHeader from "../../components/PageHeader.vue";
 import { changePassword } from "../../utils/api";
 import { clearSession } from "../../utils/auth";
@@ -54,14 +55,16 @@ async function submit() {
     <PageHeader
       title="修改密码"
       subtitle="修改后需要重新登录"
-      kicker="ACCOUNT SECURITY"
+      kicker="账号安全"
       back
     />
 
     <view class="page-content">
       <view class="security-card card">
         <view class="security-head">
-          <view class="security-icon">01</view>
+          <view class="security-icon">
+            <UniIcons type="locked" size="19" color="#1f6fb2" />
+          </view>
           <view>
             <text class="security-title">账号安全</text>
             <text class="security-sub">密码不会保存在设备中</text>
@@ -123,7 +126,7 @@ async function submit() {
 <style scoped>
 .password-page {
   min-height: 100vh;
-  background: #eef4ef;
+  background: #f3f6fa;
 }
 
 .security-card {
@@ -135,7 +138,7 @@ async function submit() {
   align-items: center;
   gap: 14rpx;
   padding-bottom: 20rpx;
-  border-bottom: 1rpx solid #eaf0ec;
+  border-bottom: 1rpx solid #e6ebf1;
 }
 
 .security-icon {
@@ -145,8 +148,8 @@ async function submit() {
   align-items: center;
   justify-content: center;
   border-radius: 14rpx;
-  background: #e4f1e9;
-  color: #1d7659;
+  background: #e9f2fa;
+  color: #1f6fb2;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 20rpx;
   font-weight: 700;
@@ -164,7 +167,7 @@ async function submit() {
 
 .security-sub {
   margin-top: 3rpx;
-  color: #65726c;
+  color: #667383;
   font-size: 21rpx;
 }
 
@@ -176,7 +179,7 @@ async function submit() {
   margin-top: 24rpx;
   padding: 20rpx 22rpx;
   border-radius: 16rpx;
-  background: #e4f1e9;
+  background: #e9f2fa;
 }
 
 .note-title,
@@ -185,15 +188,67 @@ async function submit() {
 }
 
 .note-title {
-  color: #145c46;
+  color: #1a568c;
   font-size: 23rpx;
   font-weight: 700;
 }
 
 .note-copy {
   margin-top: 5rpx;
-  color: #486d5c;
+  color: #506173;
   font-size: 21rpx;
   line-height: 1.55;
+}
+
+/* Unified field-console visual system */
+.password-page {
+  background: #f3f6fa;
+}
+
+.security-card {
+  padding: 26rpx;
+}
+
+.security-head {
+  padding-bottom: 20rpx;
+  border-bottom-color: #e6ebf1;
+}
+
+.security-icon {
+  width: 56rpx;
+  height: 56rpx;
+  background: #e9f2fa;
+}
+
+.security-icon + view .security-title {
+  color: #182331;
+  font-size: 26rpx;
+}
+
+.security-sub {
+  color: #7c8897;
+  font-size: 20rpx;
+}
+
+.submit-button {
+  min-height: 90rpx;
+  margin-top: 28rpx;
+  border-radius: 12rpx;
+}
+
+.security-note {
+  border: 1rpx solid #dbe6df;
+  border-radius: 12rpx;
+  background: #f7f9fc;
+}
+
+.note-title {
+  color: #243244;
+  font-size: 22rpx;
+}
+
+.note-copy {
+  color: #667383;
+  font-size: 20rpx;
 }
 </style>

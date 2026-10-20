@@ -64,7 +64,7 @@
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "封堵勘测",
     "navigationBarBackgroundColor": "#ffffff",
-    "backgroundColor": "#eef4ef",
+    "backgroundColor": "#f3f6fa",
     "backgroundTextStyle": "dark"
   }
 }

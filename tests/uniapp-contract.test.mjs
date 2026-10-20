@@ -147,14 +147,15 @@ test("login keeps a focused business layout without marketing content", () => {
 
   assert.match(login, /ensureBrand/);
   assert.match(login, /class="login-brand-row"/);
-  assert.match(login, /登录工作台/);
+  assert.match(login, /现场服务工作台/);
+  assert.match(login, /class="login-form card"/);
   assert.equal((login.match(/class="login-input"/g) || []).length, 2);
   assert.equal((login.match(/class="login-submit"/g) || []).length, 1);
   assert.match(login, /class="login-help"/);
   assert.match(login, /showResetHelp/);
   assert.match(login, /login\(identifier\.value\.trim\(\), password\.value\)/);
-  assert.match(login, /background:\s*#f4f6f3/);
-  assert.match(login, /\.login-submit\s*\{[\s\S]*?background:\s*#10352a/);
+  assert.match(login, /background:\s*#f3f6fa/);
+  assert.match(login, /\.login-submit\s*\{[\s\S]*?background:\s*#173550/);
   assert.doesNotMatch(
     login,
     /FIELD OPERATIONS|现场协同|把每一次现场记录|任务与风险统一查看|照片、签字现场留存|报告自动归档/,
@@ -166,9 +167,9 @@ test("workbench brand title is enlarged for field readability", () => {
   const workbench = read("src/pages/workbench/index.vue");
 
   assert.match(workbench, /:size="34"/);
-  assert.match(workbench, /:name-size="17"/);
-  assert.match(workbench, /\.brand-inline\s*\{[\s\S]*?flex-direction:\s*column/);
-  assert.match(workbench, /\.brand-sub\s*\{[\s\S]*?font-size:\s*24rpx/);
+  assert.match(workbench, /:name-size="15"/);
+  assert.match(workbench, /\.page-title\s*\{[\s\S]*?font-size:\s*42rpx/);
+  assert.match(workbench, /class="metric-strip"/);
 });
 
 test("the field workflow follows survey approval, dispatch, check-in, sealing and report generation", () => {
@@ -222,22 +223,37 @@ test("field forms reopen existing survey and sealing records by server id", () =
   assert.match(service, /originalSignatures/);
 });
 
-test("the redesign keeps a green-led mobile business system", () => {
+test("the field client follows an MHP-inspired service-workbench hierarchy", () => {
   const app = read("src/App.vue");
   const tabbar = read("src/components/AppTabBar.vue");
   const workbench = read("src/pages/workbench/index.vue");
+  const detail = read("src/pages/task-detail/index.vue");
+  const reports = read("src/pages/reports/index.vue");
+  const profile = read("src/pages/profile/index.vue");
+  const survey = read("src/pages/risk-survey/index.vue");
+  const service = read("src/pages/service-report/index.vue");
+  const header = read("src/components/PageHeader.vue");
 
-  assert.match(app, /--field-dark:\s*#10352a/);
-  assert.match(app, /--field-accent:\s*#1d7659/);
-  assert.match(app, /background:\s*#eef4ef/);
+  assert.match(app, /--field-dark:\s*#173550/);
+  assert.match(app, /--field-accent:\s*#1f6fb2/);
+  assert.match(app, /--field-accent-soft:\s*#e9f2fa/);
+  assert.match(app, /background:\s*#f3f6fa/);
   assert.match(app, /border-radius:\s*16rpx/);
-  assert.match(app, /box-shadow:\s*0 8rpx 24rpx/);
-  assert.match(app, /font-size:\s*36rpx/);
+  assert.match(app, /font-size:\s*32rpx/);
   assert.match(app, /font-size:\s*28rpx/);
-  assert.match(app, /font-size:\s*24rpx/);
-  assert.match(tabbar, /background:\s*#10352a/);
-  assert.match(tabbar, /color:\s*#ffffff/);
-  assert.match(workbench, /background:\s*#10352a/);
+  assert.match(tabbar, /background:\s*#ffffff/);
+  assert.match(tabbar, /color:\s*#1a568c/);
+  assert.match(header, /background:\s*#f8fafc/);
+  assert.doesNotMatch(header, /dark\?:/);
+  assert.match(workbench, /class="workbench-header"/);
+  assert.match(workbench, /class="sync-row"/);
+  assert.match(workbench, /class="task-accent"/);
+  assert.match(detail, /<scroll-view[\s\S]*?scroll-x/);
+  assert.match(detail, /class="process-track"/);
+  assert.match(reports, /class="archive-summary card"/);
+  assert.match(profile, /class="metric-grid card"/);
+  assert.match(survey, /第 \{\{ step \+ 1 \}\} 步 \/ 共 \{\{ steps\.length \}\} 步/);
+  assert.match(service, /第 \{\{ step \+ 1 \}\} 步 \/ 共 \{\{ steps\.length \}\} 步/);
   assert.match(tabbar, /label: "任务"/);
   assert.match(tabbar, /label: "勘测"/);
   assert.match(tabbar, /label: "封堵"/);
@@ -251,7 +267,8 @@ test("survey photos use the 100-image cap and a five-column wrapping grid", () =
   const survey = read("src/pages/risk-survey/index.vue");
   const serviceReport = read("src/pages/service-report/index.vue");
 
-  assert.match(photoGrid, /width:\s*calc\(20% - 9\.6rpx\)/);
+  assert.match(photoGrid, /width:\s*calc\(20% - 8rpx\)/);
+  assert.match(photoGrid, /gap:\s*10rpx/);
   assert.match(photoGrid, /:max="100"|max:\s*100/);
   assert.match(survey, /<PhotoGrid[\s\S]*:max="100"/);
   assert.match(survey, /结构风险图片/);

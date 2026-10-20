@@ -70,7 +70,7 @@ function canvasContext() {
       context.lineWidth = 5;
       context.lineCap = "round";
       context.lineJoin = "round";
-      context.strokeStyle = "#17201d";
+      context.strokeStyle = "#182331";
     }
     return context;
   }
@@ -85,8 +85,8 @@ function styleStroke(ctx: CanvasLike) {
   else ctx.lineCap = "round";
   if (ctx.setLineJoin) ctx.setLineJoin("round");
   else ctx.lineJoin = "round";
-  if (ctx.setStrokeStyle) ctx.setStrokeStyle("#17201d");
-  else ctx.strokeStyle = "#17201d";
+  if (ctx.setStrokeStyle) ctx.setStrokeStyle("#182331");
+  else ctx.strokeStyle = "#182331";
 }
 
 function flush(ctx: CanvasLike) {
@@ -233,7 +233,7 @@ watch(
       <text class="signature-placeholder">请在此处手写签名</text>
       <view class="signature-actions">
         <button class="signature-clear" @tap="clear">
-          <UniIcons type="trash" size="16" color="#6f7974" />
+          <UniIcons type="trash" size="16" color="#667383" />
           <text>清除</text>
         </button>
         <button class="signature-confirm" :disabled="saving" @tap="confirm">
@@ -247,7 +247,7 @@ watch(
 <style scoped>
 .signature-card {
   padding: 28rpx;
-  border: 1rpx solid #dfe5e1;
+  border: 1rpx solid #dfe5ec;
   border-radius: 16rpx;
   background: #ffffff;
 }
@@ -271,7 +271,7 @@ watch(
 
 .signature-signer {
   margin-top: 6rpx;
-  color: #6f7974;
+  color: #667383;
   font-size: 22rpx;
 }
 
@@ -292,7 +292,7 @@ watch(
 .signature-hint {
   display: block;
   margin-top: 10rpx;
-  color: #6f7974;
+  color: #667383;
   font-size: 22rpx;
   line-height: 1.45;
 }
@@ -307,7 +307,7 @@ watch(
   height: 240rpx;
   border: 1rpx dashed #cfd8d2;
   border-radius: 12rpx;
-  background: #fbfcfa;
+  background: #fbfcfe;
 }
 
 .signature-line {
@@ -350,7 +350,7 @@ watch(
 }
 
 .signature-clear {
-  color: #6f7974;
+  color: #667383;
 }
 
 .signature-confirm {
@@ -371,15 +371,70 @@ watch(
   width: 100%;
   height: 240rpx;
   display: block;
-  border: 1rpx solid #dfe5e1;
+  border: 1rpx solid #dfe5ec;
   border-radius: 12rpx;
-  background: #fbfcfa;
+  background: #fbfcfe;
 }
 
 .signature-reset {
   margin-top: 12rpx;
-  color: #1d7659;
+  color: #1f6fb2;
   font-size: 24rpx;
   text-align: right;
+}
+
+/* Unified field-console visual system */
+.signature-card {
+  padding: 24rpx;
+  border-color: #dfe5ec;
+  border-radius: 16rpx;
+}
+
+.signature-title {
+  color: #182331;
+  font-size: 24rpx;
+}
+
+.signature-signer,
+.signature-hint {
+  color: #7c8897;
+  font-size: 20rpx;
+}
+
+.signature-state {
+  border-radius: 8rpx;
+  background: #fbf1df;
+  font-size: 18rpx;
+}
+
+.signature-state.signed {
+  background: #eaf3ec;
+}
+
+.signature-canvas,
+.signature-image {
+  border-color: #d8e0e9;
+  border-radius: 10rpx;
+  background: #fbfcfe;
+}
+
+.signature-line {
+  background: #e6ebf1;
+}
+
+.signature-placeholder {
+  color: #96a2b0;
+  font-size: 20rpx;
+}
+
+.signature-clear,
+.signature-confirm {
+  min-height: 62rpx;
+  border-radius: 9rpx;
+  font-size: 21rpx;
+}
+
+.signature-confirm {
+  background: #173550;
 }
 </style>

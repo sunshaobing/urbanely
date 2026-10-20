@@ -84,7 +84,7 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0f766e;
+  background: #1f6fb2;
 }
 
 .brand-shield {
@@ -109,7 +109,7 @@ watch(
 .brand-logo-name {
   min-width: 0;
   overflow: hidden;
-  color: #10352a;
+  color: #173550;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
