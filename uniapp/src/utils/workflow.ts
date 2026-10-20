@@ -2,7 +2,6 @@ import { nowTime, today } from "./present";
 import type {
   RiskSurvey,
   ServiceReport,
-  Session,
   WorkOrder,
 } from "./types";
 
@@ -10,6 +9,7 @@ export type WorkflowStageKey =
   | "survey"
   | "surveySign"
   | "surveyApproval"
+  | "sealingList"
   | "dispatch"
   | "accept"
   | "checkin"
@@ -98,10 +98,31 @@ export function deriveWorkflow(
 ): { steps: WorkflowStep[]; currentIndex: number } {
   const surveyDone = Boolean(survey);
   const surveySigned = signaturesComplete(survey?.signatures);
-  const surveyApproved = Boolean(
-    survey && approvedStatuses.has(survey.status),
+  const surveyReportGenerated = Boolean(
+    survey &&
+      surveySigned &&
+      (survey.pdf_url ||
+        ["submitted", "reviewed", "approved", "completed"].includes(
+          survey.status,
+        )),
   );
+  const surveyApproved = Boolean(
+    survey && ["approved", "reviewed"].includes(survey.status),
+  );
+  const sealingListed = Boolean(report);
   const dispatched = Boolean(report);
+  const assigned = Boolean(
+    report?.service_person &&
+      [
+        "assigned",
+        "accepted",
+        "checked_in",
+        "in_progress",
+        "submitted",
+        "approved",
+        "completed",
+      ].includes(report.status),
+  );
   const accepted = Boolean(report && acceptedStatuses.has(report.status));
   const checkedIn = reportCheckedIn(report);
   const beforeDone = Boolean(report?.risk_photos?.length);
@@ -126,21 +147,35 @@ export function deriveWorkflow(
     },
     {
       key: "surveySign",
-      label: "勘测报告双签",
-      hint: surveySigned ? "勘测人员与客户代表已签" : "完成双方手写签字",
-      done: surveySigned,
+      label: "双签并生成报告",
+      hint: surveyReportGenerated
+        ? "双方签字完成，完整报告已生成"
+        : "完成双方手写签字后自动生成报告",
+      done: surveyReportGenerated,
     },
     {
       key: "surveyApproval",
-      label: "勘测审批",
-      hint: surveyApproved ? "勘测报告已审批" : "等待负责人审批",
+      label: "审批勘测报告",
+      hint: surveyApproved ? "勘测报告审批通过" : "等待管理员审批",
       done: surveyApproved,
     },
     {
+      key: "sealingList",
+      label: "进入封堵清单",
+      hint: sealingListed
+        ? "封堵任务已进入待派单清单"
+        : "勘测审批通过后自动进入封堵清单",
+      done: sealingListed,
+    },
+    {
       key: "dispatch",
-      label: "派单给封堵",
-      hint: dispatched ? "封堵任务已派发" : "审批通过后生成封堵单",
-      done: dispatched,
+      label: "派单给封堵工程师",
+      hint: assigned
+        ? `已派给 ${report?.service_person}`
+        : dispatched
+          ? "请管理员选择封堵工程师"
+          : "进入封堵清单后选择工程师",
+      done: assigned,
     },
     {
       key: "accept",
@@ -197,7 +232,7 @@ export function deriveWorkflow(
   };
 }
 
-export function dispatchPayload(task: WorkOrder, session: Session) {
+export function sealingListPayload(task: WorkOrder) {
   return {
     customer_id: task.customer_id || 0,
     customer_name: task.customer_name,
@@ -205,16 +240,16 @@ export function dispatchPayload(task: WorkOrder, session: Session) {
     contact: task.contact,
     contact_phone: task.contact_phone,
     service_project: task.service_type || "结构漏洞封堵",
-    task_tag: `封堵派单 ${task.report_no}`,
+    task_tag: `封堵待派单 ${task.report_no}`,
     service_date: task.service_date || today(),
     start_time: nowTime(),
     end_time: "",
-    service_person: task.engineer_name || session.name || session.username,
+    service_person: "",
     content: `来源作业单 ${task.report_no}`,
     follow_up: "",
     risk_follow: "",
     customer_comment: "",
-    status: "assigned",
+    status: "pending",
     materials: task.materials.map((material) => ({
       name: material.material_name,
       qty: material.qty,
@@ -228,6 +263,26 @@ export function dispatchPayload(task: WorkOrder, session: Session) {
     photos: [],
     risk_photos: [],
   };
+}
+
+export function dispatchPayload(task: WorkOrder, engineerName: string) {
+  return {
+    ...sealingListPayload(task),
+    task_tag: `封堵派单 ${task.report_no}`,
+    service_person: engineerName,
+    status: "assigned",
+  };
+}
+
+export function dispatchUpdatePayload(
+  report: ServiceReport,
+  engineerName: string,
+) {
+  return serviceReportUpdatePayload(report, {
+    task_tag: `封堵派单 ${report.task_tag?.replace(/^封堵待派单\s*/, "") || ""}`.trim(),
+    service_person: engineerName,
+    status: "assigned",
+  });
 }
 
 export function riskSurveyUpdatePayload(

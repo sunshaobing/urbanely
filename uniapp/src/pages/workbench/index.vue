@@ -17,6 +17,7 @@ import { displayDay, roleLabel, todayLabel } from "../../utils/present";
 import {
   isCompletedTask,
   ownTasks,
+  reportMatchesTask,
   roleMode,
   type FieldMode,
 } from "../../utils/roles";
@@ -63,22 +64,35 @@ const tabCurrent = computed<"workbench" | "risk" | "sealing">(() =>
 const activeLabel = computed(() =>
   activeGroup.value === "open" ? "未完成" : "已完成",
 );
+const scopedTasks = computed(() =>
+  roleView.value === "both" && effectiveKind.value === "sealing"
+    ? allTasks.value.filter((task) =>
+        serviceReports.value.some((report) =>
+          reportMatchesTask(report, task),
+        ),
+      )
+    : allTasks.value,
+);
 const visibleTasks = computed(() =>
-  allTasks.value.filter((task) =>
+  scopedTasks.value.filter((task) =>
     activeGroup.value === "done" ? isCompletedTask(task) : !isCompletedTask(task),
   ),
 );
 const openCount = computed(
-  () => allTasks.value.filter((task) => !isCompletedTask(task)).length,
+  () => scopedTasks.value.filter((task) => !isCompletedTask(task)).length,
 );
 const doneCount = computed(
-  () => allTasks.value.filter((task) => isCompletedTask(task)).length,
+  () => scopedTasks.value.filter((task) => isCompletedTask(task)).length,
 );
 const totalHoles = computed(() =>
-  allTasks.value.reduce((sum, task) => sum + (task.sites?.length || 0), 0),
+  scopedTasks.value.reduce((sum, task) => sum + (task.sites?.length || 0), 0),
 );
 const taskMetricLabel = computed(() =>
-  roleView.value === "both" ? "任务总数" : "我的任务",
+  roleView.value === "both" && effectiveKind.value === "sealing"
+    ? "封堵任务"
+    : roleView.value === "both"
+      ? "任务总数"
+      : "我的任务",
 );
 const groupOptions = computed(() => [
   { value: "open" as const, label: "未完成", count: openCount.value },
@@ -113,7 +127,7 @@ async function load() {
       roleView.value === "survey" ? current.id : 0,
     );
     let reports: ServiceReport[] = [];
-    if (roleView.value === "sealing") {
+    if (roleView.value === "sealing" || roleView.value === "both") {
       try {
         reports = normalizeServiceReports(await getServiceReports());
       } catch {
@@ -136,6 +150,20 @@ async function load() {
 
 function selectGroup(group: "open" | "done") {
   activeGroup.value = group;
+}
+
+function taskServiceReport(task: WorkOrder) {
+  return serviceReports.value.find((report) =>
+    reportMatchesTask(report, task),
+  );
+}
+
+function taskDisplayStatus(task: WorkOrder) {
+  if (effectiveKind.value !== "sealing") return task.status;
+  const report = taskServiceReport(task);
+  if (!report) return task.status;
+  if (report.status === "pending" && !report.service_person) return "unassigned";
+  return report.status;
 }
 
 function openTask(task: WorkOrder) {
@@ -193,7 +221,7 @@ onPullDownRefresh(async () => {
           </text>
         </view>
         <view class="role-chip">
-          <UniIcons type="person-filled" size="13" color="#1f6fb2" />
+          <UniIcons type="person-filled" size="13" color="#176b52" />
           <text>{{ roleLabel(session?.role || "") }}</text>
         </view>
       </view>
@@ -226,7 +254,7 @@ onPullDownRefresh(async () => {
           </text>
         </view>
         <view class="refresh-button" @tap="load">
-          <UniIcons type="refreshempty" size="17" color="#1f6fb2" />
+          <UniIcons type="refreshempty" size="17" color="#176b52" />
         </view>
       </view>
 
@@ -246,7 +274,7 @@ onPullDownRefresh(async () => {
         </view>
         <view v-if="roleView === 'both'" class="reports-link" @tap="openReports">
           <text>全部报告</text>
-          <UniIcons type="right" size="13" color="#1f6fb2" />
+          <UniIcons type="right" size="13" color="#176b52" />
         </view>
       </view>
 
@@ -282,16 +310,16 @@ onPullDownRefresh(async () => {
           <view class="task-card-body">
             <view class="task-topline">
               <text class="task-no mono">{{ task.report_no }}</text>
-              <StatusPill :status="task.status" />
+              <StatusPill :status="taskDisplayStatus(task)" />
             </view>
             <text class="task-customer">{{ task.customer_name }}</text>
             <view class="task-meta">
               <view class="task-meta-item">
-                <UniIcons type="calendar" size="14" color="#667383" />
+                <UniIcons type="calendar" size="14" color="#65736c" />
                 <text>{{ displayDay(task.service_date || task.report_date) }}</text>
               </view>
               <view class="task-meta-item">
-                <UniIcons type="staff" size="14" color="#667383" />
+                <UniIcons type="staff" size="14" color="#65736c" />
                 <text>{{ task.service_type || "结构漏洞封堵" }}</text>
               </view>
             </view>
@@ -300,7 +328,7 @@ onPullDownRefresh(async () => {
               <text>{{ task.sites.length }} 个封堵部位</text>
               <view class="task-open" @tap.stop="openTask(task)">
                 <text>{{ actionText }}</text>
-                <UniIcons type="right" size="13" color="#1f6fb2" />
+                <UniIcons type="right" size="13" color="#176b52" />
               </view>
             </view>
           </view>
@@ -309,7 +337,7 @@ onPullDownRefresh(async () => {
 
       <view v-else class="empty-state">
         <view class="empty-icon">
-          <UniIcons type="checkbox" size="22" color="#1f6fb2" />
+          <UniIcons type="checkbox" size="22" color="#176b52" />
         </view>
         <text class="empty-title">暂无{{ activeLabel }}任务</text>
         <text class="empty-copy">下拉刷新，或切换其他状态查看现场作业。</text>
@@ -322,13 +350,13 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .workbench-page {
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .workbench-header {
   padding: calc(26rpx + env(safe-area-inset-top)) 32rpx 28rpx;
-  border-bottom: 1rpx solid #dfe5ec;
-  background: #f8fafc;
+  border-bottom: 1rpx solid #dde7e0;
+  background: #f8fbf9;
 }
 
 .brand-row,
@@ -359,7 +387,7 @@ onPullDownRefresh(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1rpx solid #d8e1ea;
+  border: 1rpx solid #d8e4dc;
   border-radius: 50%;
   background: #ffffff;
 }
@@ -387,7 +415,7 @@ onPullDownRefresh(async () => {
 }
 
 .page-title {
-  color: #182331;
+  color: #17211d;
   font-size: 42rpx;
   font-weight: 700;
   line-height: 1.2;
@@ -395,7 +423,7 @@ onPullDownRefresh(async () => {
 
 .page-subtitle {
   margin-top: 8rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 22rpx;
 }
 
@@ -408,7 +436,7 @@ onPullDownRefresh(async () => {
   border: 1rpx solid #d4e4da;
   border-radius: 10rpx;
   background: #ffffff;
-  color: #1a568c;
+  color: #115640;
   font-size: 20rpx;
   white-space: nowrap;
 }
@@ -416,7 +444,7 @@ onPullDownRefresh(async () => {
 .metric-strip {
   margin-top: 28rpx;
   padding: 20rpx 22rpx;
-  border: 1rpx solid #dfe5ec;
+  border: 1rpx solid #dde7e0;
   border-radius: 16rpx;
   background: #ffffff;
 }
@@ -432,7 +460,7 @@ onPullDownRefresh(async () => {
   align-items: baseline;
   gap: 10rpx;
   padding-right: 22rpx;
-  border-right: 1rpx solid #e6ebf1;
+  border-right: 1rpx solid #e5ece7;
 }
 
 .metric-item {
@@ -441,7 +469,7 @@ onPullDownRefresh(async () => {
 }
 
 .metric-item + .metric-item {
-  border-left: 1rpx solid #e6ebf1;
+  border-left: 1rpx solid #e5ece7;
 }
 
 .metric-value,
@@ -450,7 +478,7 @@ onPullDownRefresh(async () => {
 }
 
 .metric-value {
-  color: #173550;
+  color: #103b2d;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 40rpx;
   font-weight: 700;
@@ -458,12 +486,12 @@ onPullDownRefresh(async () => {
 }
 
 .metric-value.small {
-  color: #182331;
+  color: #17211d;
   font-size: 32rpx;
 }
 
 .metric-label {
-  color: #667383;
+  color: #65736c;
   font-size: 20rpx;
 }
 
@@ -475,7 +503,7 @@ onPullDownRefresh(async () => {
   justify-content: space-between;
   gap: 18rpx;
   padding: 14rpx 0 18rpx;
-  border-bottom: 1rpx solid #e6ebf1;
+  border-bottom: 1rpx solid #e5ece7;
 }
 
 .sync-copy {
@@ -487,7 +515,7 @@ onPullDownRefresh(async () => {
 
 .sync-line {
   gap: 8rpx;
-  color: #34475b;
+  color: #34483f;
   font-size: 22rpx;
   font-weight: 600;
 }
@@ -501,7 +529,7 @@ onPullDownRefresh(async () => {
 
 .sync-meta {
   margin-top: 3rpx;
-  color: #7c8897;
+  color: #79867f;
   font-size: 20rpx;
 }
 
@@ -512,7 +540,7 @@ onPullDownRefresh(async () => {
   flex: none;
   align-items: center;
   justify-content: center;
-  border: 1rpx solid #d8e1ea;
+  border: 1rpx solid #d8e4dc;
   border-radius: 12rpx;
   background: #ffffff;
 }
@@ -561,7 +589,7 @@ onPullDownRefresh(async () => {
 
 .reports-link {
   gap: 4rpx;
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 21rpx;
   font-weight: 600;
 }
@@ -571,9 +599,9 @@ onPullDownRefresh(async () => {
   gap: 4rpx;
   margin-top: 16rpx;
   padding: 5rpx;
-  border: 1rpx solid #dfe5ec;
+  border: 1rpx solid #dde7e0;
   border-radius: 12rpx;
-  background: #eef2f7;
+  background: #eff4f0;
 }
 
 .status-tab {
@@ -584,7 +612,7 @@ onPullDownRefresh(async () => {
   justify-content: center;
   gap: 8rpx;
   border-radius: 9rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 22rpx;
 }
 
@@ -595,15 +623,15 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 7rpx;
-  background: #e9f2fa;
-  color: #1a568c;
+  background: #e6f2ec;
+  color: #115640;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 18rpx;
 }
 
 .status-tab.active {
   background: #ffffff;
-  color: #182331;
+  color: #17211d;
   font-weight: 700;
   box-shadow: 0 2rpx 8rpx rgba(18, 34, 27, 0.06);
 }
@@ -626,7 +654,7 @@ onPullDownRefresh(async () => {
 .task-accent {
   width: 4rpx;
   flex: none;
-  background: #1f6fb2;
+  background: #176b52;
 }
 
 .task-card-body {
@@ -641,14 +669,14 @@ onPullDownRefresh(async () => {
 }
 
 .task-no {
-  color: #7c8897;
+  color: #79867f;
   font-size: 20rpx;
 }
 
 .task-customer {
   display: block;
   margin-top: 8rpx;
-  color: #182331;
+  color: #17211d;
   font-size: 32rpx;
   font-weight: 700;
   line-height: 1.35;
@@ -662,14 +690,14 @@ onPullDownRefresh(async () => {
 
 .task-meta-item {
   gap: 5rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 20rpx;
 }
 
 .task-address {
   display: block;
   margin-top: 10rpx;
-  color: #5e6d7d;
+  color: #5d6e65;
   font-size: 22rpx;
   line-height: 1.5;
 }
@@ -679,14 +707,14 @@ onPullDownRefresh(async () => {
   gap: 16rpx;
   margin-top: 18rpx;
   padding-top: 16rpx;
-  border-top: 1rpx solid #e6ebf1;
-  color: #7c8897;
+  border-top: 1rpx solid #e5ece7;
+  color: #79867f;
   font-size: 20rpx;
 }
 
 .task-open {
   gap: 2rpx;
-  color: #1f6fb2;
+  color: #176b52;
   font-weight: 700;
 }
 
@@ -699,7 +727,7 @@ onPullDownRefresh(async () => {
   height: 18rpx;
   margin-top: 16rpx;
   border-radius: 8rpx;
-  background: #e8edf3;
+  background: #e8efea;
 }
 
 .skeleton-line:first-child {
@@ -722,6 +750,6 @@ onPullDownRefresh(async () => {
   justify-content: center;
   margin: 0 auto 14rpx;
   border-radius: 16rpx;
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 </style>

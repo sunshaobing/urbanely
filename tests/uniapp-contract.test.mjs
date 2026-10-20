@@ -154,8 +154,8 @@ test("login keeps a focused business layout without marketing content", () => {
   assert.match(login, /class="login-help"/);
   assert.match(login, /showResetHelp/);
   assert.match(login, /login\(identifier\.value\.trim\(\), password\.value\)/);
-  assert.match(login, /background:\s*#f3f6fa/);
-  assert.match(login, /\.login-submit\s*\{[\s\S]*?background:\s*#173550/);
+  assert.match(login, /background:\s*#f2f6f3/);
+  assert.match(login, /\.login-submit\s*\{[\s\S]*?background:\s*#103b2d/);
   assert.doesNotMatch(
     login,
     /FIELD OPERATIONS|现场协同|把每一次现场记录|任务与风险统一查看|照片、签字现场留存|报告自动归档/,
@@ -179,9 +179,10 @@ test("the field workflow follows survey approval, dispatch, check-in, sealing an
 
   for (const label of [
     "现场勘测",
-    "勘测报告双签",
-    "勘测审批",
-    "派单给封堵",
+    "双签并生成报告",
+    "审批勘测报告",
+    "进入封堵清单",
+    "派单给封堵工程师",
     "封堵接单",
     "现场签到",
     "施工前影像",
@@ -194,10 +195,16 @@ test("the field workflow follows survey approval, dispatch, check-in, sealing an
   }
   assert.match(workflow, /relatedRiskSurvey/);
   assert.match(workflow, /relatedServiceReport/);
+  assert.match(workflow, /surveyReportGenerated/);
+  assert.match(workflow, /sealingListPayload/);
+  assert.match(workflow, /dispatchUpdatePayload/);
   assert.match(workflow, /status: "assigned"/);
   assert.match(detail, /deriveWorkflow/);
   assert.match(detail, /approveSurvey/);
   assert.match(detail, /dispatchSealing/);
+  assert.match(detail, /getPersonnel/);
+  assert.match(detail, /openDispatchSheet/);
+  assert.match(detail, /sealingListPayload/);
   assert.match(detail, /acceptSealing/);
   assert.match(detail, /checkIn/);
   assert.match(detail, /approveSealing/);
@@ -223,7 +230,7 @@ test("field forms reopen existing survey and sealing records by server id", () =
   assert.match(service, /originalSignatures/);
 });
 
-test("the field client follows an MHP-inspired service-workbench hierarchy", () => {
+test("the field client follows an MHP-inspired deep-green service hierarchy", () => {
   const app = read("src/App.vue");
   const tabbar = read("src/components/AppTabBar.vue");
   const workbench = read("src/pages/workbench/index.vue");
@@ -234,16 +241,16 @@ test("the field client follows an MHP-inspired service-workbench hierarchy", () 
   const service = read("src/pages/service-report/index.vue");
   const header = read("src/components/PageHeader.vue");
 
-  assert.match(app, /--field-dark:\s*#173550/);
-  assert.match(app, /--field-accent:\s*#1f6fb2/);
-  assert.match(app, /--field-accent-soft:\s*#e9f2fa/);
-  assert.match(app, /background:\s*#f3f6fa/);
+  assert.match(app, /--field-dark:\s*#103b2d/);
+  assert.match(app, /--field-accent:\s*#176b52/);
+  assert.match(app, /--field-accent-soft:\s*#e6f2ec/);
+  assert.match(app, /background:\s*#f2f6f3/);
   assert.match(app, /border-radius:\s*16rpx/);
   assert.match(app, /font-size:\s*32rpx/);
   assert.match(app, /font-size:\s*28rpx/);
   assert.match(tabbar, /background:\s*#ffffff/);
-  assert.match(tabbar, /color:\s*#1a568c/);
-  assert.match(header, /background:\s*#f8fafc/);
+  assert.match(tabbar, /color:\s*#115640/);
+  assert.match(header, /background:\s*#f8fbf9/);
   assert.doesNotMatch(header, /dark\?:/);
   assert.match(workbench, /class="workbench-header"/);
   assert.match(workbench, /class="sync-row"/);
@@ -254,12 +261,34 @@ test("the field client follows an MHP-inspired service-workbench hierarchy", () 
   assert.match(profile, /class="metric-grid card"/);
   assert.match(survey, /第 \{\{ step \+ 1 \}\} 步 \/ 共 \{\{ steps\.length \}\} 步/);
   assert.match(service, /第 \{\{ step \+ 1 \}\} 步 \/ 共 \{\{ steps\.length \}\} 步/);
+  assert.match(workbench, /reportMatchesTask/);
+  assert.match(workbench, /taskDisplayStatus/);
   assert.match(tabbar, /label: "任务"/);
   assert.match(tabbar, /label: "勘测"/);
   assert.match(tabbar, /label: "封堵"/);
   assert.match(workbench, /fieldKind/);
   assert.match(workbench, /勘测任务/);
   assert.match(workbench, /封堵任务/);
+});
+
+test("survey dual signing generates the report before approval and sealing dispatch", () => {
+  const survey = read("src/pages/risk-survey/index.vue");
+  const detail = read("src/pages/task-detail/index.vue");
+  const present = read("src/utils/present.ts");
+
+  const submitIndex = survey.indexOf("await submitRiskSurvey(activeSurveyId)");
+  const generateIndex = survey.indexOf(
+    'prepareReportPdf("risk", activeSurveyId)',
+  );
+  assert.ok(submitIndex >= 0);
+  assert.ok(generateIndex > submitIndex);
+  assert.match(survey, /勘测报告已生成/);
+  assert.match(survey, /审批通过后将进入封堵清单/);
+  assert.match(detail, /ensureSealingList/);
+  assert.match(detail, /saveServiceReport\(0, sealingListPayload/);
+  assert.match(detail, /选择封堵工程师/);
+  assert.match(detail, /role: "sealing_engineer"/);
+  assert.match(present, /unassigned:\s*\{\s*label:\s*"待派单"/);
 });
 
 test("survey photos use the 100-image cap and a five-column wrapping grid", () => {

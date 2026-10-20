@@ -99,7 +99,7 @@ onPullDownRefresh(async () => {
           <text class="profile-title">我的</text>
         </view>
         <view class="profile-refresh" @tap="load">
-          <UniIcons type="refreshempty" size="17" color="#1f6fb2" />
+          <UniIcons type="refreshempty" size="17" color="#176b52" />
         </view>
       </view>
 
@@ -140,7 +140,7 @@ onPullDownRefresh(async () => {
 
       <view class="sync-card card">
         <view class="sync-icon">
-          <UniIcons type="cloud-upload" size="21" color="#1f6fb2" />
+          <UniIcons type="cloud-upload" size="21" color="#176b52" />
         </view>
         <view class="sync-copy">
           <text class="sync-title">生产数据服务</text>
@@ -159,23 +159,23 @@ onPullDownRefresh(async () => {
         <view class="menu-card card">
           <view class="menu-row pressable" @tap="openPassword">
             <view class="menu-icon">
-              <UniIcons type="locked" size="19" color="#1f6fb2" />
+              <UniIcons type="locked" size="19" color="#176b52" />
             </view>
             <view class="menu-copy">
               <text class="menu-title">修改密码</text>
               <text class="menu-sub">更新当前账号的登录密码</text>
             </view>
-            <UniIcons type="right" size="16" color="#8a96a4" />
+            <UniIcons type="right" size="16" color="#8a968f" />
           </view>
           <view class="menu-row pressable" @tap="about">
             <view class="menu-icon">
-              <UniIcons type="info" size="19" color="#1f6fb2" />
+              <UniIcons type="info" size="19" color="#176b52" />
             </view>
             <view class="menu-copy">
               <text class="menu-title">关于系统</text>
               <text class="menu-sub">uni-app 现场作业端 · v1.0</text>
             </view>
-            <UniIcons type="right" size="16" color="#8a96a4" />
+            <UniIcons type="right" size="16" color="#8a968f" />
           </view>
           <view class="menu-row danger pressable" @tap="logout">
             <view class="menu-icon danger-icon">
@@ -185,7 +185,7 @@ onPullDownRefresh(async () => {
               <text class="menu-title">退出登录</text>
               <text class="menu-sub">清除当前设备上的账号会话</text>
             </view>
-            <UniIcons type="right" size="16" color="#8a96a4" />
+            <UniIcons type="right" size="16" color="#8a968f" />
           </view>
         </view>
       </view>
@@ -201,12 +201,12 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .profile-page {
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .profile-hero {
   padding: calc(32rpx + env(safe-area-inset-top)) 32rpx 104rpx;
-  background: #173550;
+  background: #103b2d;
   color: #ffffff;
 }
 
@@ -279,7 +279,7 @@ onPullDownRefresh(async () => {
 
 .profile-role {
   margin-top: 4rpx;
-  color: #b6d4eb;
+  color: #b8d8c8;
   font-size: 24rpx;
 }
 
@@ -335,7 +335,7 @@ onPullDownRefresh(async () => {
 
 .metric-label {
   margin-top: 4rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 21rpx;
 }
 
@@ -353,7 +353,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 14rpx;
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 
 .sync-copy {
@@ -373,7 +373,7 @@ onPullDownRefresh(async () => {
 
 .sync-sub {
   margin-top: 3rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 20rpx;
 }
 
@@ -398,7 +398,7 @@ onPullDownRefresh(async () => {
 .menu-section-title {
   display: block;
   margin-bottom: 12rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 22rpx;
   font-weight: 600;
 }
@@ -410,7 +410,7 @@ onPullDownRefresh(async () => {
 .menu-row {
   gap: 14rpx;
   padding: 20rpx 0;
-  border-bottom: 1rpx solid #e6ebf1;
+  border-bottom: 1rpx solid #e5ece7;
 }
 
 .menu-row:last-child {
@@ -425,7 +425,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 14rpx;
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 
 .danger-icon {
@@ -449,7 +449,7 @@ onPullDownRefresh(async () => {
 
 .menu-sub {
   margin-top: 3rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 20rpx;
 }
 
@@ -489,25 +489,25 @@ onPullDownRefresh(async () => {
 .profile-footnote {
   display: block;
   margin-top: 28rpx;
-  color: #8a96a4;
+  color: #8a968f;
   font-size: 20rpx;
   text-align: center;
 }
 
 /* Unified field-console visual system */
 .profile-page {
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .profile-header {
   padding: calc(26rpx + env(safe-area-inset-top)) 32rpx 26rpx;
-  border-bottom: 1rpx solid #dfe5ec;
-  background: #f8fafc;
-  color: #182331;
+  border-bottom: 1rpx solid #dde7e0;
+  background: #f8fbf9;
+  color: #17211d;
 }
 
 .profile-kicker {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 20rpx;
   font-weight: 700;
   letter-spacing: 0;
@@ -515,14 +515,14 @@ onPullDownRefresh(async () => {
 
 .profile-title {
   margin-top: 4rpx;
-  color: #182331;
+  color: #17211d;
   font-size: 40rpx;
 }
 
 .profile-refresh {
   width: 60rpx;
   height: 60rpx;
-  border: 1rpx solid #d8e1ea;
+  border: 1rpx solid #d8e4dc;
   border-radius: 12rpx;
   background: #ffffff;
 }
@@ -538,27 +538,27 @@ onPullDownRefresh(async () => {
 }
 
 .profile-name {
-  color: #182331;
+  color: #17211d;
   font-size: 32rpx;
 }
 
 .profile-role {
   margin-top: 3rpx;
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 22rpx;
   font-weight: 600;
 }
 
 .profile-phone {
   margin-top: 5rpx;
-  color: #7c8897;
+  color: #79867f;
   font-size: 19rpx;
 }
 
 .online-badge {
-  border: 1rpx solid #d8e5f0;
+  border: 1rpx solid #d8e8de;
   border-radius: 9rpx;
-  background: #eff6fb;
+  background: #eff8f3;
   color: #2f7656;
   font-size: 19rpx;
 }
@@ -582,8 +582,8 @@ onPullDownRefresh(async () => {
 .metric-card {
   width: 50%;
   padding: 20rpx 22rpx;
-  border-right: 1rpx solid #e6ebf1;
-  border-bottom: 1rpx solid #e6ebf1;
+  border-right: 1rpx solid #e5ece7;
+  border-bottom: 1rpx solid #e5ece7;
   background: #ffffff;
 }
 
@@ -596,13 +596,13 @@ onPullDownRefresh(async () => {
 }
 
 .metric-value {
-  color: #173550;
+  color: #103b2d;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 34rpx;
 }
 
 .metric-label {
-  color: #667383;
+  color: #65736c;
   font-size: 20rpx;
 }
 
@@ -612,16 +612,16 @@ onPullDownRefresh(async () => {
 }
 
 .sync-icon {
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 
 .sync-title {
-  color: #243244;
+  color: #24352e;
   font-size: 23rpx;
 }
 
 .sync-sub {
-  color: #7c8897;
+  color: #79867f;
   font-size: 19rpx;
 }
 
@@ -634,7 +634,7 @@ onPullDownRefresh(async () => {
 }
 
 .menu-section-title {
-  color: #667383;
+  color: #65736c;
   font-size: 21rpx;
 }
 
@@ -645,11 +645,11 @@ onPullDownRefresh(async () => {
 .menu-row {
   gap: 14rpx;
   padding: 20rpx 0;
-  border-bottom-color: #e6ebf1;
+  border-bottom-color: #e5ece7;
 }
 
 .menu-icon {
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 
 .danger-icon {
@@ -657,12 +657,12 @@ onPullDownRefresh(async () => {
 }
 
 .menu-title {
-  color: #243244;
+  color: #24352e;
   font-size: 24rpx;
 }
 
 .menu-sub {
-  color: #7c8897;
+  color: #79867f;
   font-size: 19rpx;
 }
 
@@ -676,6 +676,6 @@ onPullDownRefresh(async () => {
 }
 
 .profile-footnote {
-  color: #8a96a4;
+  color: #8a968f;
 }
 </style>

@@ -146,7 +146,7 @@ onPullDownRefresh(async () => {
     >
       <template #action>
         <view class="header-refresh" @tap="load">
-          <UniIcons type="refreshempty" size="17" color="#1f6fb2" />
+          <UniIcons type="refreshempty" size="17" color="#176b52" />
         </view>
       </template>
 
@@ -176,7 +176,7 @@ onPullDownRefresh(async () => {
     <view class="page-content reports-content">
       <view class="search-row">
         <view class="search-input">
-          <UniIcons type="search" size="17" color="#667383" />
+          <UniIcons type="search" size="17" color="#65736c" />
           <input
             v-model="keyword"
             class="search-field"
@@ -231,7 +231,7 @@ onPullDownRefresh(async () => {
               <UniIcons
                 :type="activeTab === 'risk' ? 'search' : 'compose'"
                 size="15"
-                color="#1f6fb2"
+                color="#176b52"
               />
               <text class="mono">{{ recordCode(record) }}</text>
             </view>
@@ -260,7 +260,7 @@ onPullDownRefresh(async () => {
 
       <view v-else class="empty-state">
         <view class="empty-icon">
-          <UniIcons type="paperplane" size="22" color="#1f6fb2" />
+          <UniIcons type="paperplane" size="22" color="#176b52" />
         </view>
         <text class="empty-title">
           暂无{{ activeTab === "risk" ? "勘测" : "封堵" }}记录
@@ -275,7 +275,7 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .reports-page {
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .header-refresh {
@@ -310,7 +310,7 @@ onPullDownRefresh(async () => {
 
 .archive-label {
   margin-top: 8rpx;
-  color: #b6d4eb;
+  color: #b8d8c8;
   font-size: 22rpx;
 }
 
@@ -356,7 +356,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   gap: 10rpx;
   padding: 0 18rpx;
-  border: 1rpx solid #d7e0e9;
+  border: 1rpx solid #d7e2da;
   border-radius: 16rpx;
   background: #ffffff;
 }
@@ -375,7 +375,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 16rpx;
-  background: #1f6fb2;
+  background: #176b52;
 }
 
 .archive-tabs {
@@ -383,9 +383,9 @@ onPullDownRefresh(async () => {
   gap: 8rpx;
   margin-top: 18rpx;
   padding: 8rpx;
-  border: 1rpx solid #dfe5ec;
+  border: 1rpx solid #dde7e0;
   border-radius: 16rpx;
-  background: #eef2f7;
+  background: #eff4f0;
 }
 
 .archive-tab {
@@ -396,13 +396,13 @@ onPullDownRefresh(async () => {
   justify-content: center;
   gap: 8rpx;
   border-radius: 12rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 24rpx;
 }
 
 .archive-tab.active {
   background: #ffffff;
-  color: #173550;
+  color: #103b2d;
   font-weight: 700;
   box-shadow: 0 4rpx 12rpx rgba(16, 53, 42, 0.08);
 }
@@ -414,8 +414,8 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 8rpx;
-  background: #e9f2fa;
-  color: #1f6fb2;
+  background: #e6f2ec;
+  color: #176b52;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 18rpx;
 }
@@ -448,7 +448,7 @@ onPullDownRefresh(async () => {
 
 .archive-code {
   gap: 6rpx;
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 21rpx;
 }
 
@@ -464,7 +464,7 @@ onPullDownRefresh(async () => {
   flex-wrap: wrap;
   gap: 8rpx 16rpx;
   margin-top: 10rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 21rpx;
 }
 
@@ -479,22 +479,22 @@ onPullDownRefresh(async () => {
 }
 
 .risk-label {
-  color: #667383;
+  color: #65736c;
 }
 
 .risk-value {
-  color: #1f6fb2;
+  color: #176b52;
   font-weight: 600;
 }
 
 .archive-footer {
   margin-top: 16rpx;
   padding-top: 16rpx;
-  border-top: 1rpx solid #e6ebf1;
+  border-top: 1rpx solid #e5ece7;
 }
 
 .archive-source {
-  color: #7c8897;
+  color: #79867f;
   font-size: 21rpx;
 }
 
@@ -506,7 +506,7 @@ onPullDownRefresh(async () => {
   gap: 4rpx;
   padding: 0 16rpx;
   border-radius: 12rpx;
-  background: #1f6fb2;
+  background: #176b52;
   color: #ffffff;
   font-size: 21rpx;
   font-weight: 600;
@@ -517,7 +517,7 @@ onPullDownRefresh(async () => {
   height: 18rpx;
   margin-top: 16rpx;
   border-radius: 8rpx;
-  background: #e8edf3;
+  background: #e8efea;
 }
 
 .skeleton-line:first-child {
@@ -540,7 +540,7 @@ onPullDownRefresh(async () => {
   justify-content: center;
   margin: 0 auto 14rpx;
   border-radius: 16rpx;
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 
 .error-state {
@@ -553,13 +553,13 @@ onPullDownRefresh(async () => {
 
 /* Unified field-console visual system */
 .reports-page {
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .header-refresh {
   width: 60rpx;
   height: 60rpx;
-  border: 1rpx solid #d8e1ea;
+  border: 1rpx solid #d8e4dc;
   border-radius: 12rpx;
   background: #ffffff;
 }
@@ -578,7 +578,7 @@ onPullDownRefresh(async () => {
 }
 
 .archive-total {
-  color: #173550;
+  color: #103b2d;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 46rpx;
   line-height: 1;
@@ -586,7 +586,7 @@ onPullDownRefresh(async () => {
 
 .archive-label {
   margin-top: 0;
-  color: #243244;
+  color: #24352e;
   font-size: 22rpx;
   font-weight: 600;
 }
@@ -594,7 +594,7 @@ onPullDownRefresh(async () => {
 .archive-updated {
   display: block;
   margin-top: 2rpx;
-  color: #8793a1;
+  color: #85928b;
   font-size: 18rpx;
 }
 
@@ -605,17 +605,17 @@ onPullDownRefresh(async () => {
 .breakdown-item {
   min-width: 58rpx;
   padding-left: 18rpx;
-  border-left: 1rpx solid #e6ebf1;
+  border-left: 1rpx solid #e5ece7;
 }
 
 .breakdown-value {
-  color: #243244;
+  color: #24352e;
   font-size: 24rpx;
 }
 
 .breakdown-label {
   margin-top: 2rpx;
-  color: #7c8897;
+  color: #79867f;
   font-size: 18rpx;
 }
 
@@ -625,7 +625,7 @@ onPullDownRefresh(async () => {
 
 .search-input {
   height: 78rpx;
-  border-color: #d8e1ea;
+  border-color: #d8e4dc;
   border-radius: 12rpx;
 }
 
@@ -637,27 +637,27 @@ onPullDownRefresh(async () => {
   width: 78rpx;
   height: 78rpx;
   border-radius: 12rpx;
-  background: #173550;
+  background: #103b2d;
 }
 
 .archive-tabs {
   gap: 4rpx;
   margin-top: 16rpx;
   padding: 5rpx;
-  border-color: #dfe5ec;
+  border-color: #dde7e0;
   border-radius: 12rpx;
-  background: #eef2f7;
+  background: #eff4f0;
 }
 
 .archive-tab {
   min-height: 58rpx;
   border-radius: 9rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 22rpx;
 }
 
 .archive-tab.active {
-  color: #182331;
+  color: #17211d;
   box-shadow: 0 2rpx 8rpx rgba(18, 34, 27, 0.06);
 }
 
@@ -671,38 +671,38 @@ onPullDownRefresh(async () => {
 }
 
 .archive-code {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 20rpx;
 }
 
 .archive-customer {
   margin-top: 10rpx;
-  color: #182331;
+  color: #17211d;
   font-size: 30rpx;
   line-height: 1.35;
 }
 
 .archive-meta {
-  color: #667383;
+  color: #65736c;
   font-size: 20rpx;
 }
 
 .risk-line {
   padding: 9rpx 12rpx;
   border-radius: 8rpx;
-  background: #f5f8fb;
+  background: #f5f9f6;
 }
 
 .risk-value {
-  color: #1f6fb2;
+  color: #176b52;
 }
 
 .archive-footer {
-  border-top-color: #e6ebf1;
+  border-top-color: #e5ece7;
 }
 
 .archive-source {
-  color: #7c8897;
+  color: #79867f;
   font-size: 20rpx;
 }
 
@@ -710,15 +710,15 @@ onPullDownRefresh(async () => {
   min-height: 54rpx;
   padding: 0 16rpx;
   border-radius: 9rpx;
-  background: #173550;
+  background: #103b2d;
   font-size: 20rpx;
 }
 
 .skeleton-line {
-  background: #e8edf3;
+  background: #e8efea;
 }
 
 .empty-icon {
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 </style>

@@ -20,6 +20,16 @@ export interface AuthPayload {
   };
 }
 
+export interface PersonnelUser {
+  id: number;
+  username: string;
+  name: string;
+  phone: string;
+  role: string;
+  active: boolean;
+  created_at: string;
+}
+
 export interface DashboardCards {
   month_orders: number;
   total_holes: number;

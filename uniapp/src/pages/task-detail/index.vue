@@ -9,6 +9,7 @@ import {
   checkinServiceReport,
   getRiskSurvey,
   getRiskSurveys,
+  getPersonnel,
   getServiceReport,
   getServiceReports,
   getWorkOrder,
@@ -22,7 +23,7 @@ import {
 import { getSession } from "../../utils/auth";
 import { ensureBrand } from "../../utils/brand";
 import { openReportPdf, reportPdfPath } from "../../utils/pdf";
-import { displayDate, displayDay } from "../../utils/present";
+import { displayDate, displayDay, roleLabel } from "../../utils/present";
 import {
   fieldHome,
   ownTasks,
@@ -31,12 +32,15 @@ import {
 import {
   deriveWorkflow,
   dispatchPayload,
+  dispatchUpdatePayload,
   relatedRiskSurvey,
   relatedServiceReport,
   riskSurveyUpdatePayload,
+  sealingListPayload,
   serviceReportUpdatePayload,
 } from "../../utils/workflow";
 import type {
+  PersonnelUser,
   RiskSurvey,
   ServiceReport,
   Session,
@@ -52,6 +56,9 @@ const loading = ref(true);
 const relatedLoading = ref(false);
 const actionLoading = ref(false);
 const error = ref("");
+const dispatchSheetOpen = ref(false);
+const engineerLoading = ref(false);
+const sealingEngineers = ref<PersonnelUser[]>([]);
 
 const workflow = computed(() =>
   task.value
@@ -103,9 +110,29 @@ const progress = computed(() =>
       )
     : 0,
 );
+const surveyReportReady = computed(
+  () =>
+    Boolean(
+      survey.value &&
+        (survey.value.signatures?.length || 0) >= 2 &&
+        (survey.value.pdf_url ||
+          ["submitted", "reviewed", "approved", "completed"].includes(
+            survey.value.status,
+          )),
+    ),
+);
 const canApprove = computed(() =>
   ["super_admin", "admin", "supervisor"].includes(session.value?.role || ""),
 );
+const headerStatus = computed(() => {
+  if (serviceReport.value?.status === "pending" && !serviceReport.value.service_person) {
+    return "unassigned";
+  }
+  if (serviceReport.value && serviceReport.value.status !== "draft") {
+    return serviceReport.value.status;
+  }
+  return task.value?.status || "draft";
+});
 const approvalWaiting = computed(
   () =>
     !canApprove.value &&
@@ -121,9 +148,11 @@ const actionLabel = computed(() => {
     return "流程已完成";
   }
   if (key === "survey") return "开始勘测";
-  if (key === "surveySign") return "完成勘测双签";
+  if (key === "surveySign") return "完成双签并生成报告";
   if (key === "surveyApproval") return canApprove.value ? "审批勘测报告" : "等待审批";
-  if (key === "dispatch") return canApprove.value ? "派单给封堵" : "等待派单";
+  if (key === "sealingList") return "刷新封堵清单";
+  if (key === "dispatch")
+    return canApprove.value ? "选择封堵工程师" : "等待派单";
   if (key === "accept") return "封堵接单";
   if (key === "checkin") return "现场签到";
   if (key === "beforePhotos") return "补拍施工前影像";
@@ -228,6 +257,11 @@ function openRiskSurvey() {
   });
 }
 
+function openSurveyReport() {
+  if (!survey.value) return;
+  openReportPdf(reportPdfPath("risk", survey.value.id));
+}
+
 function openServiceReport() {
   if (!task.value) return;
   if (!serviceReport.value) {
@@ -247,7 +281,7 @@ function openServiceReport() {
 }
 
 async function approveSurvey() {
-  if (!survey.value) {
+  if (!survey.value || !task.value) {
     uni.showToast({ title: "尚未生成勘测记录", icon: "none" });
     return;
   }
@@ -256,22 +290,92 @@ async function approveSurvey() {
     survey.value.id,
     riskSurveyUpdatePayload(fullSurvey, { status: "approved" }),
   );
-  uni.showToast({ title: "勘测报告已审批", icon: "success" });
+  await ensureSealingList();
+  uni.showToast({
+    title: "已进入封堵清单",
+    icon: "success",
+  });
 }
 
-async function dispatchSealing() {
-  if (!task.value || !session.value) return;
+async function ensureSealingList() {
+  if (!task.value || serviceReport.value) return;
+  const created = await saveServiceReport(0, sealingListPayload(task.value));
+  if (!toId(created)) {
+    throw new Error("勘测已审批，但封堵清单创建失败");
+  }
+}
+
+async function openDispatchSheet() {
+  if (!serviceReport.value) {
+    uni.showToast({ title: "封堵任务尚未进入清单", icon: "none" });
+    return;
+  }
+  dispatchSheetOpen.value = true;
+  if (sealingEngineers.value.length || engineerLoading.value) return;
+  engineerLoading.value = true;
+  try {
+    const payload = await getPersonnel({
+      role: "sealing_engineer",
+      active: "true",
+    });
+    sealingEngineers.value = payload.items.filter(
+      (engineer) =>
+        engineer.active &&
+        ["sealing_engineer", "sealer", "sealing_operator"].includes(
+          engineer.role,
+        ),
+    );
+  } catch (loadError) {
+    uni.showToast({
+      title:
+        loadError instanceof Error
+          ? loadError.message
+          : "封堵工程师加载失败",
+      icon: "none",
+    });
+  } finally {
+    engineerLoading.value = false;
+  }
+}
+
+function closeDispatchSheet() {
+  if (!actionLoading.value) dispatchSheetOpen.value = false;
+}
+
+async function dispatchSealing(engineer: PersonnelUser) {
+  if (!task.value || !session.value || actionLoading.value) return;
   if (!task.value.customer_id) {
     throw new Error("作业单缺少客户ID，无法派单");
   }
-  const created = await saveServiceReport(
-    0,
-    dispatchPayload(task.value, session.value),
-  );
-  if (!toId(created)) {
-    throw new Error("派单成功但服务端未返回封堵单编号");
+  actionLoading.value = true;
+  try {
+    if (serviceReport.value) {
+      const fullReport = await getServiceReport(serviceReport.value.id);
+      await saveServiceReport(
+        serviceReport.value.id,
+        dispatchUpdatePayload(fullReport, engineer.name),
+      );
+    } else {
+      const created = await saveServiceReport(
+        0,
+        dispatchPayload(task.value, engineer.name),
+      );
+      if (!toId(created)) {
+        throw new Error("派单成功但服务端未返回封堵单编号");
+      }
+    }
+    dispatchSheetOpen.value = false;
+    uni.showToast({ title: "派单成功", icon: "success" });
+    await load();
+  } catch (dispatchError) {
+    uni.showToast({
+      title:
+        dispatchError instanceof Error ? dispatchError.message : "派单失败",
+      icon: "none",
+    });
+  } finally {
+    actionLoading.value = false;
   }
-  uni.showToast({ title: "已派单给封堵", icon: "success" });
 }
 
 async function acceptSealing() {
@@ -330,6 +434,10 @@ async function runCurrentAction() {
     openRiskSurvey();
     return;
   }
+  if (key === "dispatch") {
+    await openDispatchSheet();
+    return;
+  }
   if (["beforePhotos", "afterPhotos", "sealSign"].includes(key)) {
     openServiceReport();
     return;
@@ -337,7 +445,7 @@ async function runCurrentAction() {
   actionLoading.value = true;
   try {
     if (key === "surveyApproval") await approveSurvey();
-    else if (key === "dispatch") await dispatchSealing();
+    else if (key === "sealingList") await ensureSealingList();
     else if (key === "accept") await acceptSealing();
     else if (key === "checkin") await checkIn();
     else if (key === "sealApproval") await approveSealing();
@@ -381,7 +489,7 @@ onLoad((query) => {
       back
     >
       <template #action>
-        <StatusPill v-if="task" :status="task.status" />
+        <StatusPill v-if="task" :status="headerStatus" />
       </template>
 
       <view v-if="task" class="order-hero card">
@@ -392,7 +500,7 @@ onLoad((query) => {
         <view class="order-address-row">
           <text class="order-address">{{ task.service_address || "服务地址待补充" }}</text>
           <view class="copy-address" @tap="copyAddress">
-            <UniIcons type="map-pin" size="14" color="#1f6fb2" />
+            <UniIcons type="map-pin" size="14" color="#176b52" />
             <text>复制</text>
           </view>
         </view>
@@ -470,13 +578,22 @@ onLoad((query) => {
             </view>
           </scroll-view>
           <text class="workflow-hint">{{ currentStep?.hint || "当前角色无需处理后续节点" }}</text>
+          <view
+            v-if="surveyReportReady"
+            class="workflow-report-link pressable"
+            @tap="openSurveyReport"
+          >
+            <UniIcons type="paperplane" size="15" color="#176b52" />
+            <text>查看完整勘测报告</text>
+            <UniIcons type="right" size="13" color="#176b52" />
+          </view>
         </view>
 
         <view v-if="survey || serviceReport" class="related-card card">
           <text class="related-title">关联单据</text>
           <view v-if="survey" class="related-row">
             <view class="related-icon">
-              <UniIcons type="search" size="17" color="#1f6fb2" />
+              <UniIcons type="search" size="17" color="#176b52" />
             </view>
             <view class="related-copy">
               <text class="related-name">勘测报告</text>
@@ -486,7 +603,7 @@ onLoad((query) => {
           </view>
           <view v-if="serviceReport" class="related-row">
             <view class="related-icon">
-              <UniIcons type="compose" size="17" color="#1f6fb2" />
+              <UniIcons type="compose" size="17" color="#176b52" />
             </view>
             <view class="related-copy">
               <text class="related-name">封堵报告</text>
@@ -516,7 +633,7 @@ onLoad((query) => {
                   v-if="task.contact_phone"
                   type="phone"
                   size="15"
-                  color="#1f6fb2"
+                  color="#176b52"
                 />
               </view>
             </view>
@@ -608,7 +725,7 @@ onLoad((query) => {
 
       <view class="bottom-actions safe-bottom">
         <button class="btn-secondary bottom-button" @tap="load">
-          <UniIcons type="refreshempty" size="18" color="#1f6fb2" />
+          <UniIcons type="refreshempty" size="18" color="#176b52" />
           <text>同步状态</text>
         </button>
         <button
@@ -619,6 +736,56 @@ onLoad((query) => {
           <UniIcons type="right" size="18" color="#ffffff" />
           <text>{{ actionLoading ? "处理中" : actionLabel }}</text>
         </button>
+      </view>
+
+      <view v-if="dispatchSheetOpen" class="sheet-mask" @tap="closeDispatchSheet">
+        <view class="dispatch-sheet safe-bottom" @tap.stop>
+          <view class="dispatch-sheet-head">
+            <view class="dispatch-sheet-copy">
+              <text class="dispatch-sheet-title">选择封堵工程师</text>
+              <text class="dispatch-sheet-sub">
+                {{ task.customer_name }} · {{ task.report_no }}
+              </text>
+            </view>
+            <view class="sheet-close" @tap="closeDispatchSheet">
+              <UniIcons type="closeempty" size="18" color="#65736c" />
+            </view>
+          </view>
+
+          <view v-if="engineerLoading" class="engineer-loading">
+            <text>正在读取封堵工程师...</text>
+          </view>
+
+          <scroll-view
+            v-else-if="sealingEngineers.length"
+            scroll-y
+            class="engineer-list"
+          >
+            <view
+              v-for="engineer in sealingEngineers"
+              :key="engineer.id"
+              class="engineer-row pressable"
+              :class="{ disabled: actionLoading }"
+              @tap="dispatchSealing(engineer)"
+            >
+              <CartoonAvatar :name="engineer.name" :size="38" />
+              <view class="engineer-copy">
+                <text class="engineer-name">{{ engineer.name }}</text>
+                <text class="engineer-meta">
+                  {{ roleLabel(engineer.role) }} · {{ engineer.username }}
+                </text>
+              </view>
+              <UniIcons type="right" size="15" color="#8a968f" />
+            </view>
+          </scroll-view>
+
+          <view v-else class="engineer-empty">
+            <text class="engineer-empty-title">暂无可派单工程师</text>
+            <text class="engineer-empty-copy">
+              请先在人员与权限中启用封堵工程师账号。
+            </text>
+          </view>
+        </view>
       </view>
     </template>
   </view>
@@ -631,7 +798,7 @@ onLoad((query) => {
 
 .order-service {
   display: block;
-  color: #b6d4eb;
+  color: #b8d8c8;
   font-size: 23rpx;
   font-weight: 600;
 }
@@ -663,7 +830,7 @@ onLoad((query) => {
   flex: none;
   align-items: center;
   gap: 4rpx;
-  color: #b6d4eb;
+  color: #b8d8c8;
   font-size: 20rpx;
 }
 
@@ -705,8 +872,8 @@ onLoad((query) => {
   margin-left: auto;
   padding: 0 18rpx;
   border-radius: 14rpx;
-  background: #e9f2fa;
-  color: #173550;
+  background: #e6f2ec;
+  color: #103b2d;
   font-size: 22rpx;
   font-weight: 700;
 }
@@ -733,7 +900,7 @@ onLoad((query) => {
 }
 
 .workflow-kicker {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 19rpx;
   font-weight: 700;
   letter-spacing: 1rpx;
@@ -747,13 +914,13 @@ onLoad((query) => {
 
 .workflow-hint {
   margin-top: 4rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 21rpx;
 }
 
 .workflow-percent {
   flex: none;
-  color: #1f6fb2;
+  color: #176b52;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 28rpx;
   font-weight: 700;
@@ -764,13 +931,13 @@ onLoad((query) => {
   overflow: hidden;
   margin-top: 18rpx;
   border-radius: 8rpx;
-  background: #e8edf3;
+  background: #e8efea;
 }
 
 .workflow-progress-fill {
   height: 100%;
   border-radius: 8rpx;
-  background: #1f6fb2;
+  background: #176b52;
   transition: width 180ms ease;
 }
 
@@ -803,8 +970,8 @@ onLoad((query) => {
   justify-content: center;
   border: 1rpx solid #d6e1da;
   border-radius: 50%;
-  background: #f7f9fc;
-  color: #8a96a4;
+  background: #f7faf8;
+  color: #8a968f;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 16rpx;
 }
@@ -815,7 +982,7 @@ onLoad((query) => {
   bottom: -2rpx;
   left: 50%;
   width: 1rpx;
-  background: #dfe5ec;
+  background: #dde7e0;
 }
 
 .process-copy {
@@ -836,7 +1003,7 @@ onLoad((query) => {
 
 .process-hint {
   margin-top: 2rpx;
-  color: #7c8897;
+  color: #79867f;
   font-size: 19rpx;
   line-height: 1.4;
 }
@@ -849,8 +1016,8 @@ onLoad((query) => {
 }
 
 .process-step.done .process-node {
-  border-color: #1f6fb2;
-  background: #1f6fb2;
+  border-color: #176b52;
+  background: #176b52;
   color: #ffffff;
 }
 
@@ -859,7 +1026,7 @@ onLoad((query) => {
 }
 
 .process-step.done .process-label {
-  color: #1f6fb2;
+  color: #176b52;
 }
 
 .process-step.done .process-state {
@@ -867,19 +1034,19 @@ onLoad((query) => {
 }
 
 .process-step.active .process-node {
-  border-color: #1f6fb2;
-  background: #e9f2fa;
-  color: #1a568c;
+  border-color: #176b52;
+  background: #e6f2ec;
+  color: #115640;
   font-weight: 700;
 }
 
 .process-step.active .process-label {
-  color: #173550;
+  color: #103b2d;
   font-weight: 700;
 }
 
 .process-step.active .process-state {
-  color: #1f6fb2;
+  color: #176b52;
   font-weight: 700;
 }
 
@@ -900,7 +1067,7 @@ onLoad((query) => {
   align-items: center;
   gap: 12rpx;
   padding: 12rpx 0;
-  border-top: 1rpx solid #e6ebf1;
+  border-top: 1rpx solid #e5ece7;
 }
 
 .related-icon {
@@ -911,7 +1078,7 @@ onLoad((query) => {
   align-items: center;
   justify-content: center;
   border-radius: 12rpx;
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 
 .related-copy {
@@ -931,13 +1098,13 @@ onLoad((query) => {
 
 .related-meta {
   margin-top: 2rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 19rpx;
 }
 
 .related-count {
   flex: none;
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 19rpx;
 }
 
@@ -946,7 +1113,7 @@ onLoad((query) => {
 }
 
 .section-count {
-  color: #667383;
+  color: #65736c;
   font-size: 22rpx;
 }
 
@@ -962,7 +1129,7 @@ onLoad((query) => {
   justify-content: space-between;
   gap: 22rpx;
   padding: 18rpx 0;
-  border-bottom: 1rpx solid #e6ebf1;
+  border-bottom: 1rpx solid #e5ece7;
 }
 
 .info-row:last-child,
@@ -972,12 +1139,12 @@ onLoad((query) => {
 
 .info-label {
   flex: none;
-  color: #667383;
+  color: #65736c;
   font-size: 24rpx;
 }
 
 .info-value {
-  color: #182331;
+  color: #17211d;
   font-size: 25rpx;
   text-align: right;
   word-break: break-all;
@@ -987,7 +1154,7 @@ onLoad((query) => {
   display: flex;
   align-items: center;
   gap: 6rpx;
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 25rpx;
   font-weight: 600;
 }
@@ -996,7 +1163,7 @@ onLoad((query) => {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  color: #182331;
+  color: #17211d;
   font-size: 25rpx;
   font-weight: 600;
 }
@@ -1022,8 +1189,8 @@ onLoad((query) => {
   align-items: center;
   justify-content: center;
   border-radius: 12rpx;
-  background: #e9f2fa;
-  color: #1f6fb2;
+  background: #e6f2ec;
+  color: #176b52;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 20rpx;
   font-weight: 700;
@@ -1047,13 +1214,13 @@ onLoad((query) => {
 
 .site-type {
   margin-top: 5rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 22rpx;
 }
 
 .site-remark {
   margin-top: 6rpx;
-  color: #7c8897;
+  color: #79867f;
   font-size: 21rpx;
 }
 
@@ -1062,7 +1229,7 @@ onLoad((query) => {
   display: flex;
   flex-direction: column;
   gap: 6rpx;
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 20rpx;
   text-align: right;
 }
@@ -1084,13 +1251,13 @@ onLoad((query) => {
 
 .material-spec {
   margin-top: 4rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 21rpx;
 }
 
 .material-qty {
   flex: none;
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 25rpx;
   font-weight: 700;
 }
@@ -1137,7 +1304,7 @@ onLoad((query) => {
   display: flex;
   gap: 12rpx;
   padding: 18rpx 32rpx;
-  border-top: 1rpx solid #dfe5ec;
+  border-top: 1rpx solid #dde7e0;
   background: rgba(245, 248, 244, 0.98);
 }
 
@@ -1155,7 +1322,7 @@ onLoad((query) => {
   height: 18rpx;
   margin-top: 16rpx;
   border-radius: 8rpx;
-  background: #e8edf3;
+  background: #e8efea;
 }
 
 .skeleton-line:first-child {
@@ -1176,15 +1343,15 @@ onLoad((query) => {
 
 /* Unified field-console visual system */
 .detail-page {
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .order-hero {
   margin-top: 24rpx;
   padding: 24rpx;
-  border-color: #dfe5ec;
+  border-color: #dde7e0;
   background: #ffffff;
-  color: #182331;
+  color: #17211d;
 }
 
 .order-main {
@@ -1195,14 +1362,14 @@ onLoad((query) => {
 }
 
 .order-service {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 20rpx;
   font-weight: 700;
 }
 
 .order-customer {
   margin-top: 8rpx;
-  color: #182331;
+  color: #17211d;
   font-size: 40rpx;
   line-height: 1.25;
 }
@@ -1213,7 +1380,7 @@ onLoad((query) => {
 }
 
 .order-address {
-  color: #5e6d7d;
+  color: #5d6e65;
   font-size: 22rpx;
   line-height: 1.55;
 }
@@ -1221,8 +1388,8 @@ onLoad((query) => {
 .copy-address {
   padding: 7rpx 10rpx;
   border-radius: 8rpx;
-  background: #f0f6fb;
-  color: #1f6fb2;
+  background: #f0f7f3;
+  color: #176b52;
   font-size: 19rpx;
   font-weight: 600;
 }
@@ -1230,17 +1397,17 @@ onLoad((query) => {
 .order-quick {
   margin-top: 22rpx;
   padding-top: 18rpx;
-  border-top-color: #e6ebf1;
+  border-top-color: #e5ece7;
 }
 
 .quick-label {
-  color: #7c8897;
+  color: #79867f;
   font-size: 19rpx;
 }
 
 .quick-value {
   margin-top: 3rpx;
-  color: #243244;
+  color: #24352e;
   font-size: 23rpx;
   font-weight: 700;
 }
@@ -1249,7 +1416,7 @@ onLoad((query) => {
   height: 62rpx;
   padding: 0 18rpx;
   border-radius: 10rpx;
-  background: #173550;
+  background: #103b2d;
   color: #ffffff;
   font-size: 21rpx;
 }
@@ -1263,7 +1430,7 @@ onLoad((query) => {
 }
 
 .workflow-kicker {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 19rpx;
   font-weight: 700;
   letter-spacing: 0;
@@ -1272,23 +1439,23 @@ onLoad((query) => {
 
 .workflow-title {
   margin-top: 6rpx;
-  color: #182331;
+  color: #17211d;
   font-size: 32rpx;
 }
 
 .workflow-percent {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 30rpx;
 }
 
 .workflow-progress {
   height: 7rpx;
   margin-top: 16rpx;
-  background: #e6ebf1;
+  background: #e5ece7;
 }
 
 .workflow-progress-fill {
-  background: #1f6fb2;
+  background: #176b52;
 }
 
 .process-scroll {
@@ -1313,16 +1480,16 @@ onLoad((query) => {
   justify-content: flex-start;
   gap: 0;
   padding: 16rpx 10rpx 14rpx;
-  border: 1rpx solid #dfe5ec;
+  border: 1rpx solid #dde7e0;
   border-radius: 12rpx;
-  background: #f8fafc;
+  background: #f8fbf9;
   white-space: normal;
 }
 
 .process-node {
   width: 36rpx;
   height: 36rpx;
-  border-color: #d5dee8;
+  border-color: #d5e0d7;
   background: #ffffff;
   color: #8a958f;
   font-size: 17rpx;
@@ -1331,7 +1498,7 @@ onLoad((query) => {
 .process-label {
   display: block;
   margin-top: 10rpx;
-  color: #506173;
+  color: #50635a;
   font-size: 20rpx;
   font-weight: 600;
   line-height: 1.35;
@@ -1341,19 +1508,19 @@ onLoad((query) => {
 .process-state {
   margin-top: 5rpx;
   padding: 0;
-  color: #8f9ba9;
+  color: #8d9992;
   font-size: 18rpx;
   line-height: 1.3;
 }
 
 .process-step.done {
-  border-color: #d8e5f0;
-  background: #f4f8fc;
+  border-color: #d8e8de;
+  background: #f4f9f5;
 }
 
 .process-step.done .process-node {
-  border-color: #1f6fb2;
-  background: #1f6fb2;
+  border-color: #176b52;
+  background: #176b52;
 }
 
 .process-step.done .process-label,
@@ -1362,23 +1529,23 @@ onLoad((query) => {
 }
 
 .process-step.active {
-  border-color: #1f6fb2;
-  background: #eff5fb;
+  border-color: #176b52;
+  background: #eff6f2;
 }
 
 .process-step.active .process-node {
-  border-color: #1f6fb2;
-  background: #e9f2fa;
-  color: #1a568c;
+  border-color: #176b52;
+  background: #e6f2ec;
+  color: #115640;
 }
 
 .process-step.active .process-label {
-  color: #1a568c;
+  color: #115640;
   font-weight: 700;
 }
 
 .process-step.active .process-state {
-  color: #1f6fb2;
+  color: #176b52;
   font-weight: 700;
 }
 
@@ -1387,10 +1554,28 @@ onLoad((query) => {
   margin-top: 16rpx;
   padding: 14rpx 16rpx;
   border-radius: 10rpx;
-  background: #f5f8fb;
-  color: #5e6d7d;
+  background: #f5f9f6;
+  color: #5d6e65;
   font-size: 21rpx;
   line-height: 1.55;
+}
+
+.workflow-report-link {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  margin-top: 12rpx;
+  padding: 13rpx 16rpx;
+  border: 1rpx solid #d8e8de;
+  border-radius: 10rpx;
+  background: #f5f9fc;
+  color: #176b52;
+  font-size: 21rpx;
+  font-weight: 600;
+}
+
+.workflow-report-link text {
+  flex: 1;
 }
 
 .related-card {
@@ -1400,29 +1585,29 @@ onLoad((query) => {
 
 .related-title {
   margin-bottom: 6rpx;
-  color: #182331;
+  color: #17211d;
   font-size: 24rpx;
 }
 
 .related-row {
   padding: 14rpx 0;
-  border-top-color: #e6ebf1;
+  border-top-color: #e5ece7;
 }
 
 .related-icon {
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 
 .related-name {
-  color: #243244;
+  color: #24352e;
 }
 
 .related-meta {
-  color: #7c8897;
+  color: #79867f;
 }
 
 .related-count {
-  color: #1f6fb2;
+  color: #176b52;
 }
 
 .section-block {
@@ -1437,22 +1622,22 @@ onLoad((query) => {
 .info-row,
 .material-row {
   padding: 19rpx 0;
-  border-bottom-color: #e6ebf1;
+  border-bottom-color: #e5ece7;
 }
 
 .info-label {
-  color: #7c8897;
+  color: #79867f;
   font-size: 22rpx;
 }
 
 .info-value {
-  color: #243244;
+  color: #24352e;
   font-size: 23rpx;
 }
 
 .phone-value,
 .person-value {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 23rpx;
 }
 
@@ -1461,32 +1646,32 @@ onLoad((query) => {
 }
 
 .site-index {
-  background: #e9f2fa;
-  color: #1f6fb2;
+  background: #e6f2ec;
+  color: #176b52;
 }
 
 .site-name {
-  color: #182331;
+  color: #17211d;
   font-size: 26rpx;
 }
 
 .site-type,
 .site-remark {
-  color: #6d7b8a;
+  color: #6b7a72;
   font-size: 21rpx;
 }
 
 .site-photo-stats {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 19rpx;
 }
 
 .material-name {
-  color: #243244;
+  color: #24352e;
 }
 
 .material-qty {
-  color: #1f6fb2;
+  color: #176b52;
 }
 
 .reject-card {
@@ -1496,7 +1681,7 @@ onLoad((query) => {
 
 .bottom-actions {
   padding: 16rpx 28rpx;
-  border-top-color: #dfe5ec;
+  border-top-color: #dde7e0;
   background: #ffffff;
   box-shadow: 0 -10rpx 32rpx rgba(18, 34, 27, 0.07);
 }
@@ -1506,6 +1691,133 @@ onLoad((query) => {
 }
 
 .skeleton-line {
-  background: #e8edf3;
+  background: #e8efea;
+}
+
+.sheet-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(15, 29, 23, 0.42);
+}
+
+.dispatch-sheet {
+  width: 100%;
+  max-height: 72vh;
+  padding: 26rpx 28rpx calc(28rpx + env(safe-area-inset-bottom));
+  border-radius: 24rpx 24rpx 0 0;
+  background: #ffffff;
+  box-shadow: 0 -18rpx 48rpx rgba(18, 34, 27, 0.14);
+}
+
+.dispatch-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #e5ece7;
+}
+
+.dispatch-sheet-copy {
+  min-width: 0;
+}
+
+.dispatch-sheet-title,
+.dispatch-sheet-sub {
+  display: block;
+}
+
+.dispatch-sheet-title {
+  color: #17211d;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.dispatch-sheet-sub {
+  margin-top: 5rpx;
+  color: #79867f;
+  font-size: 20rpx;
+}
+
+.sheet-close {
+  width: 54rpx;
+  height: 54rpx;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10rpx;
+  background: #f4f7fa;
+}
+
+.engineer-list {
+  max-height: 54vh;
+  margin-top: 8rpx;
+}
+
+.engineer-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 18rpx 4rpx;
+  border-bottom: 1rpx solid #eef2f5;
+}
+
+.engineer-row:last-child {
+  border-bottom: 0;
+}
+
+.engineer-row.disabled {
+  opacity: 0.55;
+}
+
+.engineer-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.engineer-name,
+.engineer-meta {
+  display: block;
+}
+
+.engineer-name {
+  color: #24352e;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.engineer-meta {
+  margin-top: 4rpx;
+  color: #79867f;
+  font-size: 20rpx;
+}
+
+.engineer-loading,
+.engineer-empty {
+  padding: 42rpx 20rpx;
+  color: #79867f;
+  font-size: 22rpx;
+  text-align: center;
+}
+
+.engineer-empty-title,
+.engineer-empty-copy {
+  display: block;
+}
+
+.engineer-empty-title {
+  color: #24352e;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.engineer-empty-copy {
+  margin-top: 6rpx;
+  color: #79867f;
+  font-size: 20rpx;
 }
 </style>

@@ -4,19 +4,19 @@ export default {};
 
 <style>
 :root {
-  --field-canvas: #f3f6fa;
+  --field-canvas: #f2f6f3;
   --field-surface: #ffffff;
-  --field-surface-muted: #f8fafc;
-  --field-ink: #182331;
-  --field-ink-soft: #34475b;
-  --field-muted: #667383;
+  --field-surface-muted: #f8fbf9;
+  --field-ink: #17211d;
+  --field-ink-soft: #34483f;
+  --field-muted: #65736c;
   --field-faint: #909a94;
-  --field-line: #dfe5ec;
-  --field-line-strong: #c9d4de;
-  --field-accent: #1f6fb2;
-  --field-accent-strong: #1a568c;
-  --field-accent-soft: #e9f2fa;
-  --field-dark: #173550;
+  --field-line: #dde7e0;
+  --field-line-strong: #c9d8ce;
+  --field-accent: #176b52;
+  --field-accent-strong: #115640;
+  --field-accent-soft: #e6f2ec;
+  --field-dark: #103b2d;
   --field-danger: #a33e37;
   --field-danger-soft: #f8ebe9;
   --field-warning: #9a641f;
@@ -28,8 +28,8 @@ export default {};
 
 page {
   min-height: 100%;
-  background: #f3f6fa;
-  color: #182331;
+  background: #f2f6f3;
+  color: #17211d;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
     sans-serif;
   font-size: 28rpx;
@@ -64,13 +64,13 @@ button::after {
 .page {
   min-height: 100vh;
   padding-bottom: calc(164rpx + env(safe-area-inset-bottom));
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .detail-page {
   min-height: 100vh;
   padding-bottom: calc(152rpx + env(safe-area-inset-bottom));
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .page-content {
@@ -78,19 +78,19 @@ button::after {
 }
 
 .card {
-  border: 1rpx solid #dfe5ec;
+  border: 1rpx solid #dde7e0;
   border-radius: 16rpx;
   background: #ffffff;
 }
 
 .card-muted {
-  border: 1rpx solid #dfe5ec;
+  border: 1rpx solid #dde7e0;
   border-radius: 16rpx;
-  background: #f8fafc;
+  background: #f8fbf9;
 }
 
 .dark-band {
-  background: #173550;
+  background: #103b2d;
   color: #ffffff;
 }
 
@@ -104,7 +104,7 @@ button::after {
 
 .section-title {
   display: block;
-  color: #182331;
+  color: #17211d;
   font-size: 32rpx;
   font-weight: 700;
   line-height: 1.3;
@@ -113,14 +113,14 @@ button::after {
 .section-copy {
   display: block;
   margin-top: 6rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 22rpx;
   line-height: 1.5;
 }
 
 .section-kicker {
   display: block;
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 20rpx;
   font-weight: 700;
 }
@@ -143,7 +143,7 @@ button::after {
 }
 
 .caption {
-  color: #667383;
+  color: #65736c;
   font-size: 22rpx;
   line-height: 1.5;
 }
@@ -204,7 +204,7 @@ button::after {
 }
 
 .btn-primary {
-  background: #173550;
+  background: #103b2d;
   color: #ffffff;
 }
 
@@ -213,13 +213,13 @@ button::after {
 }
 
 .btn-secondary {
-  border: 1rpx solid #c9d4de;
+  border: 1rpx solid #c9d8ce;
   background: #ffffff;
-  color: #243244;
+  color: #24352e;
 }
 
 .btn-ghost {
-  color: #1f6fb2;
+  color: #176b52;
 }
 
 .icon-button {
@@ -228,7 +228,7 @@ button::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1rpx solid #d7e0e9;
+  border: 1rpx solid #d7e2da;
   border-radius: 12rpx;
   background: #ffffff;
 }
@@ -249,10 +249,10 @@ button::after {
 .field-textarea,
 .field-select {
   width: 100%;
-  border: 1rpx solid #d7e0e9;
+  border: 1rpx solid #d7e2da;
   border-radius: 12rpx;
   background: #ffffff;
-  color: #182331;
+  color: #17211d;
   font-size: 26rpx;
 }
 
@@ -269,7 +269,7 @@ button::after {
 }
 
 .field-placeholder {
-  color: #9aa6b3;
+  color: #98a49d;
 }
 
 .chip-row {
@@ -287,27 +287,27 @@ button::after {
   border: 1rpx solid #d7e0da;
   border-radius: 10rpx;
   background: #ffffff;
-  color: #506173;
+  color: #50635a;
   font-size: 22rpx;
 }
 
 .chip.active {
-  border-color: #1f6fb2;
-  background: #e9f2fa;
-  color: #1a568c;
+  border-color: #176b52;
+  background: #e6f2ec;
+  color: #115640;
   font-weight: 600;
 }
 
 .divider {
   height: 1rpx;
-  background: #e6ebf1;
+  background: #e5ece7;
 }
 
 .empty-state {
   padding: 52rpx 28rpx;
-  border: 1rpx dashed #c9d4de;
+  border: 1rpx dashed #c9d8ce;
   border-radius: 16rpx;
-  background: #f8fafc;
+  background: #f8fbf9;
   text-align: center;
 }
 
@@ -320,7 +320,7 @@ button::after {
 .empty-copy {
   display: block;
   margin-top: 8rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 22rpx;
   line-height: 1.6;
 }
@@ -338,13 +338,13 @@ button::after {
   height: 8rpx;
   overflow: hidden;
   border-radius: 8rpx;
-  background: #e0e7ef;
+  background: #e0e8e2;
 }
 
 .step-fill {
   height: 100%;
   border-radius: 8rpx;
-  background: #1f6fb2;
+  background: #176b52;
   transition: width 180ms ease;
 }
 

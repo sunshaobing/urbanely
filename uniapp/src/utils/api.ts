@@ -2,6 +2,7 @@ import { clearSession, getSession } from "./auth";
 import type {
   AuthPayload,
   DashboardSummary,
+  PersonnelUser,
   QuickPhrase,
   RiskSurvey,
   ServiceReport,
@@ -183,6 +184,14 @@ export function reviewWorkOrder(
 
 export function getTemplates() {
   return request<unknown>("/api/templates");
+}
+
+export function getPersonnel(
+  filters: { keyword?: string; role?: string; active?: string } = {},
+) {
+  return request<{ items: PersonnelUser[] }>(
+    `/api/personnel${queryString(filters)}`,
+  );
 }
 
 export function getRiskSurveys(

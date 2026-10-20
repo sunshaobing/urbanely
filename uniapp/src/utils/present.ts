@@ -16,6 +16,7 @@ export const statusPresentation: Record<
   draft: { label: "待处理", tone: "pending" },
   rejected: { label: "已退回", tone: "danger" },
   pending: { label: "进行中", tone: "active" },
+  unassigned: { label: "待派单", tone: "active" },
   assigned: { label: "待接单", tone: "active" },
   accepted: { label: "已接单", tone: "active" },
   checked_in: { label: "已签到", tone: "active" },

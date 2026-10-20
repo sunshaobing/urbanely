@@ -63,7 +63,7 @@ async function submit() {
       <view class="security-card card">
         <view class="security-head">
           <view class="security-icon">
-            <UniIcons type="locked" size="19" color="#1f6fb2" />
+            <UniIcons type="locked" size="19" color="#176b52" />
           </view>
           <view>
             <text class="security-title">账号安全</text>
@@ -126,7 +126,7 @@ async function submit() {
 <style scoped>
 .password-page {
   min-height: 100vh;
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .security-card {
@@ -138,7 +138,7 @@ async function submit() {
   align-items: center;
   gap: 14rpx;
   padding-bottom: 20rpx;
-  border-bottom: 1rpx solid #e6ebf1;
+  border-bottom: 1rpx solid #e5ece7;
 }
 
 .security-icon {
@@ -148,8 +148,8 @@ async function submit() {
   align-items: center;
   justify-content: center;
   border-radius: 14rpx;
-  background: #e9f2fa;
-  color: #1f6fb2;
+  background: #e6f2ec;
+  color: #176b52;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 20rpx;
   font-weight: 700;
@@ -167,7 +167,7 @@ async function submit() {
 
 .security-sub {
   margin-top: 3rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 21rpx;
 }
 
@@ -179,7 +179,7 @@ async function submit() {
   margin-top: 24rpx;
   padding: 20rpx 22rpx;
   border-radius: 16rpx;
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 
 .note-title,
@@ -188,21 +188,21 @@ async function submit() {
 }
 
 .note-title {
-  color: #1a568c;
+  color: #115640;
   font-size: 23rpx;
   font-weight: 700;
 }
 
 .note-copy {
   margin-top: 5rpx;
-  color: #506173;
+  color: #50635a;
   font-size: 21rpx;
   line-height: 1.55;
 }
 
 /* Unified field-console visual system */
 .password-page {
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .security-card {
@@ -211,22 +211,22 @@ async function submit() {
 
 .security-head {
   padding-bottom: 20rpx;
-  border-bottom-color: #e6ebf1;
+  border-bottom-color: #e5ece7;
 }
 
 .security-icon {
   width: 56rpx;
   height: 56rpx;
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 
 .security-icon + view .security-title {
-  color: #182331;
+  color: #17211d;
   font-size: 26rpx;
 }
 
 .security-sub {
-  color: #7c8897;
+  color: #79867f;
   font-size: 20rpx;
 }
 
@@ -239,16 +239,16 @@ async function submit() {
 .security-note {
   border: 1rpx solid #dbe6df;
   border-radius: 12rpx;
-  background: #f7f9fc;
+  background: #f7faf8;
 }
 
 .note-title {
-  color: #243244;
+  color: #24352e;
   font-size: 22rpx;
 }
 
 .note-copy {
-  color: #667383;
+  color: #65736c;
   font-size: 20rpx;
 }
 </style>

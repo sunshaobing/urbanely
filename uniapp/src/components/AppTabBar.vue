@@ -85,7 +85,7 @@ function navigate(key: TabKey, url: string) {
           <UniIcons
             :type="current === item.key ? item.activeIcon : item.icon"
             :size="21"
-            :color="current === item.key ? '#1f6fb2' : '#7c8982'"
+            :color="current === item.key ? '#176b52' : '#7c8982'"
           />
         </view>
         <text class="app-tab-label">{{ item.label }}</text>
@@ -101,7 +101,7 @@ function navigate(key: TabKey, url: string) {
   bottom: 0;
   left: 0;
   z-index: 50;
-  border-top: 1rpx solid #dfe5ec;
+  border-top: 1rpx solid #dde7e0;
   background: #ffffff;
   box-shadow: 0 -10rpx 32rpx rgba(18, 34, 27, 0.07);
 }
@@ -151,7 +151,7 @@ function navigate(key: TabKey, url: string) {
 }
 
 .app-tab.active {
-  color: #1a568c;
+  color: #115640;
 }
 
 .app-tab.active .app-tab-label {
@@ -159,6 +159,6 @@ function navigate(key: TabKey, url: string) {
 }
 
 .app-tab.active .app-tab-icon {
-  background: #e9f2fa;
+  background: #e6f2ec;
 }
 </style>

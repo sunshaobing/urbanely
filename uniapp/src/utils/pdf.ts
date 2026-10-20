@@ -7,35 +7,52 @@ export function reportPdfPath(kind: "risk" | "service", id: number) {
     : `${API_BASE_URL}/api/service-reports/${id}/pdf`;
 }
 
-export function openReportPdf(url: string) {
+function downloadPdf(url: string) {
   const session = getSession();
   if (!session?.token) {
-    uni.showToast({ title: "登录已失效", icon: "none" });
-    return;
+    return Promise.reject(new Error("登录已失效"));
   }
-  uni.showLoading({ title: "正在打开报告" });
-  uni.downloadFile({
-    url,
-    header: { Authorization: `Bearer ${session.token}` },
-    success: (result) => {
-      if (result.statusCode !== 200) {
-        uni.showToast({ title: "报告暂不可用", icon: "none" });
-        return;
-      }
-      uni.openDocument({
-        filePath: result.tempFilePath,
-        fileType: "pdf",
-        showMenu: true,
-        fail: () => {
-          uni.showToast({ title: "当前环境无法打开 PDF", icon: "none" });
-        },
-      });
-    },
+  return new Promise<string>((resolve, reject) => {
+    uni.downloadFile({
+      url,
+      header: { Authorization: `Bearer ${session.token}` },
+      success: (result) => {
+        if (result.statusCode === 200) {
+          resolve(result.tempFilePath);
+          return;
+        }
+        reject(new Error("报告暂不可用"));
+      },
+      fail: () => reject(new Error("报告下载失败")),
+    });
+  });
+}
+
+export function prepareReportPdf(kind: "risk" | "service", id: number) {
+  return downloadPdf(reportPdfPath(kind, id));
+}
+
+export function openReportPath(filePath: string) {
+  uni.openDocument({
+    filePath,
+    fileType: "pdf",
+    showMenu: true,
     fail: () => {
-      uni.showToast({ title: "报告下载失败", icon: "none" });
-    },
-    complete: () => {
-      uni.hideLoading();
+      uni.showToast({ title: "当前环境无法打开 PDF", icon: "none" });
     },
   });
+}
+
+export async function openReportPdf(url: string) {
+  uni.showLoading({ title: "正在打开报告" });
+  try {
+    openReportPath(await downloadPdf(url));
+  } catch (error) {
+    uni.showToast({
+      title: error instanceof Error ? error.message : "报告下载失败",
+      icon: "none",
+    });
+  } finally {
+    uni.hideLoading();
+  }
 }

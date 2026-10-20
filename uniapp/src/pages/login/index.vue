@@ -139,7 +139,7 @@ function showResetHelp() {
   padding: calc(36rpx + env(safe-area-inset-top)) 40rpx
     calc(30rpx + env(safe-area-inset-bottom));
   background: #f4f6f3;
-  color: #182331;
+  color: #17211d;
 }
 
 .login-main {
@@ -158,7 +158,7 @@ function showResetHelp() {
 
 .system-label {
   flex: none;
-  color: #7c8897;
+  color: #79867f;
   font-size: 22rpx;
 }
 
@@ -183,7 +183,7 @@ function showResetHelp() {
 
 .login-subtitle {
   margin-top: 14rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 26rpx;
   line-height: 1.55;
 }
@@ -241,7 +241,7 @@ function showResetHelp() {
   justify-content: center;
   margin-top: 40rpx;
   border-radius: 16rpx;
-  background: #173550;
+  background: #103b2d;
   color: #ffffff;
   font-size: 28rpx;
   font-weight: 700;
@@ -257,20 +257,20 @@ function showResetHelp() {
   justify-content: flex-end;
   gap: 8rpx;
   margin-top: 24rpx;
-  color: #7c8897;
+  color: #79867f;
   font-size: 24rpx;
   line-height: 1.5;
 }
 
 .help-link {
-  color: #1f6fb2;
+  color: #176b52;
   font-weight: 600;
 }
 
 .login-foot {
   display: block;
   padding-top: 40rpx;
-  color: #8a96a4;
+  color: #8a968f;
   font-size: 22rpx;
   text-align: center;
 }
@@ -279,12 +279,12 @@ function showResetHelp() {
 .login-page {
   padding: calc(30rpx + env(safe-area-inset-top)) 36rpx
     calc(28rpx + env(safe-area-inset-bottom));
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .system-label {
   padding: 7rpx 12rpx;
-  border: 1rpx solid #dbe3eb;
+  border: 1rpx solid #dbe4dd;
   border-radius: 8rpx;
   background: #ffffff;
   color: #6b7770;
@@ -300,14 +300,14 @@ function showResetHelp() {
 }
 
 .login-title {
-  color: #182331;
+  color: #17211d;
   font-size: 46rpx;
   line-height: 1.24;
 }
 
 .login-subtitle {
   margin-top: 12rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 24rpx;
 }
 
@@ -328,7 +328,7 @@ function showResetHelp() {
 .login-input {
   height: 94rpx;
   padding: 0 20rpx;
-  border-color: #d7e0e9;
+  border-color: #d7e2da;
   border-radius: 12rpx;
 }
 
@@ -341,25 +341,25 @@ function showResetHelp() {
   height: 92rpx;
   margin-top: 34rpx;
   border-radius: 12rpx;
-  background: #173550;
+  background: #103b2d;
   font-size: 26rpx;
 }
 
 .login-help {
   margin-top: 22rpx;
   padding-top: 18rpx;
-  border-top: 1rpx solid #e6ebf1;
-  color: #7c8897;
+  border-top: 1rpx solid #e5ece7;
+  color: #79867f;
   font-size: 21rpx;
 }
 
 .help-link {
-  color: #1f6fb2;
+  color: #176b52;
 }
 
 .login-foot {
   padding-top: 32rpx;
-  color: #8a96a4;
+  color: #8a968f;
   font-size: 20rpx;
 }
 </style>

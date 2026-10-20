@@ -27,7 +27,7 @@ function goBack() {
   <view class="page-header">
     <view class="page-header-top">
       <view v-if="back" class="header-back" @tap="goBack">
-        <UniIcons type="left" size="19" color="#182331" />
+        <UniIcons type="left" size="19" color="#17211d" />
       </view>
       <view class="header-copy">
         <text v-if="kicker" class="header-kicker">{{ kicker }}</text>
@@ -45,8 +45,8 @@ function goBack() {
 <style scoped>
 .page-header {
   padding: calc(26rpx + env(safe-area-inset-top)) 32rpx 24rpx;
-  border-bottom: 1rpx solid #dfe5ec;
-  background: #f8fafc;
+  border-bottom: 1rpx solid #dde7e0;
+  background: #f8fbf9;
 }
 
 .page-header-top {
@@ -63,7 +63,7 @@ function goBack() {
   align-items: center;
   justify-content: center;
   margin-top: 2rpx;
-  border: 1rpx solid #d8e1ea;
+  border: 1rpx solid #d8e4dc;
   border-radius: 12rpx;
   background: #ffffff;
 }
@@ -75,7 +75,7 @@ function goBack() {
 
 .header-kicker {
   display: block;
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 20rpx;
   font-weight: 700;
 }
@@ -91,7 +91,7 @@ function goBack() {
 .header-subtitle {
   display: block;
   margin-top: 6rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 22rpx;
   line-height: 1.5;
 }

@@ -467,7 +467,7 @@ onLoad(async (query) => {
               <picker mode="date" :value="form.date" @change="onDateChange">
                 <view class="picker-value">
                   <text>{{ form.date }}</text>
-                  <UniIcons type="calendar" size="16" color="#667383" />
+                  <UniIcons type="calendar" size="16" color="#65736c" />
                 </view>
               </picker>
             </view>
@@ -561,7 +561,7 @@ onLoad(async (query) => {
               <text class="section-copy">登记本次施工使用的材料与用量</text>
             </view>
             <button class="add-item" @tap="addMaterial">
-              <UniIcons type="plus" size="16" color="#1f6fb2" />
+              <UniIcons type="plus" size="16" color="#176b52" />
               <text>添加</text>
             </button>
           </view>
@@ -774,7 +774,7 @@ onLoad(async (query) => {
 .service-page {
   min-height: 100vh;
   padding-bottom: calc(138rpx + env(safe-area-inset-bottom));
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .step-summary {
@@ -787,7 +787,7 @@ onLoad(async (query) => {
   justify-content: space-between;
   gap: 20rpx;
   margin-bottom: 10rpx;
-  color: #b6d4eb;
+  color: #b8d8c8;
   font-size: 21rpx;
 }
 
@@ -816,14 +816,14 @@ onLoad(async (query) => {
 }
 
 .site-kicker {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 20rpx;
   font-weight: 700;
   letter-spacing: 1rpx;
 }
 
 .site-code {
-  color: #667383;
+  color: #65736c;
   font-size: 20rpx;
 }
 
@@ -837,7 +837,7 @@ onLoad(async (query) => {
 .site-address {
   display: block;
   margin-top: 8rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 23rpx;
   line-height: 1.5;
 }
@@ -847,7 +847,7 @@ onLoad(async (query) => {
   gap: 48rpx;
   margin-top: 18rpx;
   padding-top: 16rpx;
-  border-top: 1rpx solid #e6ebf1;
+  border-top: 1rpx solid #e5ece7;
 }
 
 .contact-label,
@@ -856,7 +856,7 @@ onLoad(async (query) => {
 }
 
 .contact-label {
-  color: #7c8897;
+  color: #79867f;
   font-size: 20rpx;
 }
 
@@ -883,15 +883,15 @@ onLoad(async (query) => {
   justify-content: space-between;
   gap: 8rpx;
   padding: 0 18rpx;
-  border: 1rpx solid #d7e0e9;
+  border: 1rpx solid #d7e2da;
   border-radius: 16rpx;
   background: #ffffff;
-  color: #182331;
+  color: #17211d;
   font-size: 25rpx;
 }
 
 .choice-count {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 22rpx;
   font-weight: 600;
 }
@@ -918,8 +918,8 @@ onLoad(async (query) => {
   align-items: center;
   justify-content: center;
   border-radius: 10rpx;
-  background: #e9f2fa;
-  color: #1f6fb2;
+  background: #e6f2ec;
+  color: #176b52;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
   font-size: 18rpx;
   font-weight: 700;
@@ -942,7 +942,7 @@ onLoad(async (query) => {
 
 .seal-type {
   margin-top: 3rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 21rpx;
 }
 
@@ -967,10 +967,10 @@ onLoad(async (query) => {
   justify-content: center;
   gap: 4rpx;
   padding: 0 16rpx;
-  border: 1rpx solid #cbd9e5;
+  border: 1rpx solid #cbdace;
   border-radius: 12rpx;
-  background: #f0f6fb;
-  color: #1f6fb2;
+  background: #f0f7f3;
+  color: #176b52;
   font-size: 22rpx;
   font-weight: 600;
 }
@@ -1023,7 +1023,7 @@ onLoad(async (query) => {
 
 .hint-card {
   padding: 18rpx 20rpx;
-  border: 1rpx solid #d8e6f1;
+  border: 1rpx solid #d8e9df;
   border-radius: 16rpx;
   background: #e8f3ec;
 }
@@ -1034,14 +1034,14 @@ onLoad(async (query) => {
 }
 
 .hint-title {
-  color: #1a568c;
+  color: #115640;
   font-size: 23rpx;
   font-weight: 700;
 }
 
 .hint-copy {
   margin-top: 5rpx;
-  color: #506173;
+  color: #50635a;
   font-size: 21rpx;
   line-height: 1.55;
 }
@@ -1063,7 +1063,7 @@ onLoad(async (query) => {
   width: calc(50% - 6rpx);
   padding: 14rpx 16rpx;
   border-radius: 12rpx;
-  background: #f5f8fb;
+  background: #f5f9f6;
 }
 
 .summary-label,
@@ -1072,7 +1072,7 @@ onLoad(async (query) => {
 }
 
 .summary-label {
-  color: #667383;
+  color: #65736c;
   font-size: 20rpx;
 }
 
@@ -1119,7 +1119,7 @@ onLoad(async (query) => {
   display: flex;
   gap: 10rpx;
   padding: 16rpx 24rpx;
-  border-top: 1rpx solid #dfe5ec;
+  border-top: 1rpx solid #dde7e0;
   background: rgba(245, 248, 244, 0.98);
 }
 
@@ -1132,10 +1132,10 @@ onLoad(async (query) => {
   min-width: 118rpx;
   min-height: 78rpx;
   padding: 0 16rpx;
-  border: 1rpx solid #cbd9e5;
+  border: 1rpx solid #cbdace;
   border-radius: 16rpx;
   background: #ffffff;
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 23rpx;
   font-weight: 600;
 }
@@ -1143,7 +1143,7 @@ onLoad(async (query) => {
 /* Unified field-console visual system */
 .service-page {
   padding-bottom: calc(148rpx + env(safe-area-inset-bottom));
-  background: #f3f6fa;
+  background: #f2f6f3;
 }
 
 .step-summary {
@@ -1152,12 +1152,12 @@ onLoad(async (query) => {
 
 .step-meta {
   margin-bottom: 9rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 19rpx;
 }
 
 .step-meta text:last-child {
-  color: #1f6fb2;
+  color: #176b52;
   font-weight: 700;
 }
 
@@ -1177,41 +1177,41 @@ onLoad(async (query) => {
 }
 
 .site-kicker {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 19rpx;
   letter-spacing: 0;
 }
 
 .site-code {
-  color: #7c8897;
+  color: #79867f;
   font-size: 19rpx;
 }
 
 .site-name {
   margin-top: 10rpx;
-  color: #182331;
+  color: #17211d;
   font-size: 30rpx;
 }
 
 .site-address {
   margin-top: 6rpx;
-  color: #667383;
+  color: #65736c;
   font-size: 22rpx;
 }
 
 .site-contact {
   margin-top: 16rpx;
   padding-top: 14rpx;
-  border-top-color: #e6ebf1;
+  border-top-color: #e5ece7;
 }
 
 .contact-label {
-  color: #7c8897;
+  color: #79867f;
   font-size: 19rpx;
 }
 
 .contact-value {
-  color: #243244;
+  color: #24352e;
   font-size: 22rpx;
 }
 
@@ -1222,14 +1222,14 @@ onLoad(async (query) => {
 .picker-value {
   height: 88rpx;
   padding: 0 18rpx;
-  border-color: #d7e0e9;
+  border-color: #d7e2da;
   border-radius: 12rpx;
-  color: #243244;
+  color: #24352e;
   font-size: 23rpx;
 }
 
 .choice-count {
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 20rpx;
 }
 
@@ -1243,17 +1243,17 @@ onLoad(async (query) => {
 }
 
 .seal-index {
-  background: #e9f2fa;
-  color: #1f6fb2;
+  background: #e6f2ec;
+  color: #176b52;
 }
 
 .seal-name {
-  color: #243244;
+  color: #24352e;
   font-size: 24rpx;
 }
 
 .seal-type {
-  color: #7c8897;
+  color: #79867f;
   font-size: 20rpx;
 }
 
@@ -1265,10 +1265,10 @@ onLoad(async (query) => {
 .add-item {
   min-height: 56rpx;
   padding: 0 14rpx;
-  border-color: #cbd9e5;
+  border-color: #cbdace;
   border-radius: 9rpx;
-  background: #f0f6fb;
-  color: #1f6fb2;
+  background: #f0f7f3;
+  color: #176b52;
   font-size: 20rpx;
 }
 
@@ -1277,27 +1277,27 @@ onLoad(async (query) => {
 }
 
 .material-title {
-  color: #243244;
+  color: #24352e;
   font-size: 24rpx;
 }
 
 .hint-card {
-  border-color: #d8e6f1;
-  background: #f0f6fb;
+  border-color: #d8e9df;
+  background: #f0f7f3;
 }
 
 .hint-title {
-  color: #1a568c;
+  color: #115640;
   font-size: 22rpx;
 }
 
 .hint-copy {
-  color: #506173;
+  color: #50635a;
   font-size: 20rpx;
 }
 
 .summary-title {
-  color: #182331;
+  color: #17211d;
   font-size: 26rpx;
 }
 
@@ -1306,12 +1306,12 @@ onLoad(async (query) => {
 }
 
 .summary-label {
-  color: #7c8897;
+  color: #79867f;
   font-size: 19rpx;
 }
 
 .summary-value {
-  color: #243244;
+  color: #24352e;
   font-size: 24rpx;
 }
 
@@ -1328,7 +1328,7 @@ onLoad(async (query) => {
 .bottom-actions {
   gap: 8rpx;
   padding: 14rpx 24rpx;
-  border-top-color: #dfe5ec;
+  border-top-color: #dde7e0;
   background: #ffffff;
   box-shadow: 0 -10rpx 32rpx rgba(18, 34, 27, 0.07);
 }
@@ -1341,9 +1341,9 @@ onLoad(async (query) => {
   min-width: 108rpx;
   min-height: 84rpx;
   padding: 0 14rpx;
-  border-color: #d5dee8;
+  border-color: #d5e0d7;
   border-radius: 12rpx;
-  color: #1f6fb2;
+  color: #176b52;
   font-size: 21rpx;
 }
 </style>
