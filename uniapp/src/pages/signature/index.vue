@@ -498,7 +498,6 @@ function exportCanvas() {
   return new Promise<string>((resolve, reject) => {
     const options = {
       canvas: canvasNode,
-      canvasId: "signature-canvas",
       x: 0,
       y: 0,
       width: cssWidth,
@@ -510,7 +509,7 @@ function exportCanvas() {
         resolve(result.tempFilePath),
       fail: reject,
     } as unknown as UniApp.CanvasToTempFilePathOptions;
-    uni.canvasToTempFilePath(options, instance?.proxy);
+    uni.canvasToTempFilePath(options);
   });
 }
 
