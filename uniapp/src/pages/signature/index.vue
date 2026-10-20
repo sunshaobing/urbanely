@@ -1,3 +1,19 @@
+<!-- App renderjs can only call Options API methods back into the page. -->
+<script lang="ts">
+export default {
+  methods: {
+    onRenderExportBridge(payload: { id?: number; path?: string }) {
+      const handler = (
+        globalThis as {
+          __signatureOnRenderExport?: (value: typeof payload) => void;
+        }
+      ).__signatureOnRenderExport;
+      handler?.(payload);
+    },
+  },
+};
+</script>
+
 <script setup lang="ts">
 import { computed, getCurrentInstance, nextTick, ref } from "vue";
 import {
@@ -17,25 +33,8 @@ import type {
   SignatureVariant,
 } from "../../config/index.js";
 
-interface LegacyCanvasContext {
-  setFillStyle: (color: string) => void;
-  setStrokeStyle: (color: string) => void;
-  setLineWidth: (width: number) => void;
-  setLineCap: (cap: string) => void;
-  setLineJoin: (join: string) => void;
-  setTextAlign: (align: string) => void;
-  setTextBaseline: (baseline: string) => void;
-  setFontSize: (size: number) => void;
-  fillRect: (x: number, y: number, width: number, height: number) => void;
-  fillText: (text: string, x: number, y: number) => void;
-  beginPath: () => void;
-  moveTo: (x: number, y: number) => void;
-  lineTo: (x: number, y: number) => void;
-  stroke: () => void;
-  draw: (reserve?: boolean, callback?: () => void) => void;
-}
-
 interface CanvasPainter {
+  prepare: () => void;
   setFillStyle: (color: string) => void;
   setStrokeStyle: (color: string) => void;
   setLineWidth: (width: number) => void;
@@ -51,6 +50,14 @@ interface CanvasPainter {
   lineTo: (x: number, y: number) => void;
   stroke: () => void;
   draw: () => void;
+}
+
+interface CanvasNode {
+  width: number;
+  height: number;
+  getContext: (contextId: "2d") => CanvasRenderingContext2D | null;
+  getBoundingClientRect?: () => DOMRect;
+  toDataURL?: (type?: string) => string;
 }
 
 const ANDROID_IMMERSIVE_FLAGS =
@@ -71,6 +78,9 @@ const signedAt = ref(formatDateTime(new Date()));
 const hasInk = ref(false);
 const canvasReady = ref(false);
 const completing = ref(false);
+const exportRequest = ref<{ id: number; signedAt: string } | null>(null);
+const renderEpoch = ref(0);
+const clearRequest = ref(0);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const theme = computed(() => getSignatureTheme(role.value, variant.value));
 const sceneStyle = computed(() => ({
@@ -81,10 +91,29 @@ const isCustomer = computed(() => role.value === "customer");
 const roleTitle = computed(() =>
   isCustomer.value ? "客户签字" : "员工签字",
 );
+const renderConfig = computed(() => ({
+  surface: theme.value.surface,
+  border: theme.value.border,
+  ink: theme.value.ink,
+  muted: theme.value.muted,
+  roleTitle: roleTitle.value,
+  signer: signer.value,
+  department: department.value.trim(),
+  signedAt: signedAt.value,
+  isCustomer: isCustomer.value,
+  epoch: renderEpoch.value,
+  exportRequest: exportRequest.value,
+  clearRequest: clearRequest.value,
+}));
 
 let context: CanvasPainter | null = null;
-let domCanvas: HTMLCanvasElement | null = null;
-let canvasOwner: unknown = null;
+let domCanvas: CanvasNode | null = null;
+let canvasNode: CanvasNode | null = null;
+let pendingRenderExport: {
+  id: number;
+  resolve: (path: string) => void;
+  reject: (error: Error) => void;
+} | null = null;
 let cssWidth = 0;
 let cssHeight = 0;
 let drawing = false;
@@ -118,12 +147,12 @@ function setAndroidSystemBarsHidden(hidden: boolean) {
   }
 }
 
-function nativeCanvas() {
-  const isCanvas = (value: unknown): value is HTMLCanvasElement => {
-    const element = value as HTMLCanvasElement | null;
+function nativeCanvas(): CanvasNode | null {
+  const isCanvas = (value: unknown): value is CanvasNode => {
+    const element = value as CanvasNode | null;
     return Boolean(
       element &&
-        element.tagName === "CANVAS" &&
+        (element as unknown as HTMLElement).tagName === "CANVAS" &&
         typeof element.getContext === "function",
     );
   };
@@ -145,8 +174,15 @@ function nativeCanvas() {
   return null;
 }
 
-function domPainter(ctx: CanvasRenderingContext2D): CanvasPainter {
+function canvas2dPainter(
+  ctx: CanvasRenderingContext2D,
+  scale: () => number,
+): CanvasPainter {
   return {
+    prepare: () => {
+      const ratio = scale();
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    },
     setFillStyle: (color) => {
       ctx.fillStyle = color;
     },
@@ -169,7 +205,7 @@ function domPainter(ctx: CanvasRenderingContext2D): CanvasPainter {
       ctx.textBaseline = baseline as CanvasTextBaseline;
     },
     setFont: (size, weight = 400) => {
-      ctx.font = `${weight} ${size}px -apple-system, BlinkMacSystemFont, sans-serif`;
+      ctx.font = `${weight} ${size}px sans-serif`;
     },
     fillRect: (...args) => ctx.fillRect(...args),
     fillText: (...args) => ctx.fillText(...args),
@@ -178,26 +214,6 @@ function domPainter(ctx: CanvasRenderingContext2D): CanvasPainter {
     lineTo: (x, y) => ctx.lineTo(x, y),
     stroke: () => ctx.stroke(),
     draw: () => {},
-  };
-}
-
-function legacyPainter(ctx: LegacyCanvasContext): CanvasPainter {
-  return {
-    setFillStyle: (color) => ctx.setFillStyle(color),
-    setStrokeStyle: (color) => ctx.setStrokeStyle(color),
-    setLineWidth: (width) => ctx.setLineWidth(width),
-    setLineCap: (cap) => ctx.setLineCap(cap),
-    setLineJoin: (join) => ctx.setLineJoin(join),
-    setTextAlign: (align) => ctx.setTextAlign(align),
-    setTextBaseline: (baseline) => ctx.setTextBaseline(baseline),
-    setFont: (size) => ctx.setFontSize(size),
-    fillRect: (...args) => ctx.fillRect(...args),
-    fillText: (...args) => ctx.fillText(...args),
-    beginPath: () => ctx.beginPath(),
-    moveTo: (x, y) => ctx.moveTo(x, y),
-    lineTo: (x, y) => ctx.lineTo(x, y),
-    stroke: () => ctx.stroke(),
-    draw: () => ctx.draw(true),
   };
 }
 
@@ -233,6 +249,7 @@ function fillFooter() {
 
 function resetSurface() {
   if (!context) return;
+  context.prepare();
   context.setFillStyle(theme.value.exportBackground);
   context.fillRect(0, 0, cssWidth, cssHeight);
   if (!hasInk.value) {
@@ -247,62 +264,55 @@ function resetSurface() {
   context.draw();
 }
 
-function initDomCanvas(dom: HTMLCanvasElement) {
-  const rect = dom.getBoundingClientRect();
+function initDomCanvas(dom: CanvasNode) {
+  const rect = dom.getBoundingClientRect?.();
+  if (!rect) return;
+  const scaleX = dom.width / rect.width;
+  const scaleY = dom.height / rect.height;
+  if (
+    !rect.width ||
+    !rect.height ||
+    scaleX < 1 ||
+    scaleY < 1 ||
+    Math.abs(scaleX - scaleY) > 0.1
+  ) {
+    return;
+  }
   cssWidth = rect.width;
   cssHeight = rect.height;
-  dom.width = Math.round(cssWidth * SIGNATURE_EXPORT_SCALE);
-  dom.height = Math.round(cssHeight * SIGNATURE_EXPORT_SCALE);
   domCanvas = dom;
+  canvasNode = dom;
   const ctx = dom.getContext("2d");
-  ctx?.setTransform(
-    SIGNATURE_EXPORT_SCALE,
-    0,
-    0,
-    SIGNATURE_EXPORT_SCALE,
-    0,
-    0,
+  if (!ctx) return;
+  context = canvas2dPainter(
+    ctx,
+    () => dom.width / Math.max(1, cssWidth),
   );
-  context = ctx ? domPainter(ctx) : null;
   canvasReady.value = true;
   resetSurface();
 }
 
-function setupCanvas() {
-  if (canvasReady.value) return;
-  if (typeof document !== "undefined") {
-    const host = document.querySelector("#signature-canvas");
-    const dom =
-      host?.tagName === "CANVAS" ? host : host?.querySelector("canvas");
-    if (dom && typeof (dom as HTMLCanvasElement).getContext === "function") {
-      initDomCanvas(dom as HTMLCanvasElement);
-      return;
-    }
-  }
-  const dom = nativeCanvas();
-  if (dom) {
-    initDomCanvas(dom);
-    return;
-  }
+function initMiniProgramCanvas() {
   uni.createSelectorQuery()
     .in(instance?.proxy)
     .select("#signature-canvas")
-    .boundingClientRect((rect) => {
-      const field = rect as { width?: number; height?: number } | null;
-      if (!field?.width || !field?.height) return;
+    .fields({ node: true, size: true }, (result) => {
+      const field = result as
+        | { node?: CanvasNode; width?: number; height?: number }
+        | null;
+      if (!field?.node || !field.width || !field.height) return;
+      const canvas = field.node;
+      canvas.width = Math.round(field.width * SIGNATURE_EXPORT_SCALE);
+      canvas.height = Math.round(field.height * SIGNATURE_EXPORT_SCALE);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
       cssWidth = field.width;
       cssHeight = field.height;
-      canvasOwner =
-        (
-          instance?.proxy as
-            | ({ $scope?: unknown } & Record<string, unknown>)
-            | null
-        )?.$scope || instance?.proxy;
-      context = legacyPainter(
-        uni.createCanvasContext(
-          "signature-canvas",
-          canvasOwner,
-        ) as unknown as LegacyCanvasContext,
+      canvasNode = canvas;
+      domCanvas = null;
+      context = canvas2dPainter(
+        ctx,
+        () => canvas.width / Math.max(1, cssWidth),
       );
       canvasReady.value = true;
       resetSurface();
@@ -310,21 +320,44 @@ function setupCanvas() {
     .exec();
 }
 
+function setupCanvas() {
+  if (canvasReady.value) {
+    if (!hasInk.value) resetSurface();
+    return;
+  }
+  // #ifdef H5
+  const dom = nativeCanvas();
+  if (dom) {
+    initDomCanvas(dom);
+    return;
+  }
+  // #endif
+  // #ifdef MP-WEIXIN
+  initMiniProgramCanvas();
+  // #endif
+}
+
 function pointFromEvent(event: TouchEvent) {
   const touch = event.touches?.[0] || event.changedTouches?.[0];
   if (!touch) return { x: 0, y: 0 };
-  const dom = nativeCanvas();
-  if (dom) {
-    const rect = dom.getBoundingClientRect();
+  const dom = nativeCanvas() || domCanvas;
+  const rect = dom?.getBoundingClientRect?.();
+  if (rect) {
     return {
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top,
     };
   }
   const miniTouch = touch as Touch & { x?: number; y?: number };
+  if (typeof miniTouch.x === "number" && typeof miniTouch.y === "number") {
+    return {
+      x: miniTouch.x,
+      y: miniTouch.y,
+    };
+  }
   return {
-    x: Number(miniTouch.x ?? miniTouch.clientX ?? 0),
-    y: Number(miniTouch.y ?? miniTouch.clientY ?? 0),
+    x: Number(touch.clientX ?? 0),
+    y: Number(touch.clientY ?? 0),
   };
 }
 
@@ -332,6 +365,7 @@ function begin(event: TouchEvent) {
   if (!context || completing.value) return;
   const point = pointFromEvent(event);
   if (point.y >= cssHeight - 82) return;
+  context.prepare();
   if (!hasInk.value) {
     context.setFillStyle(theme.value.exportBackground);
     context.fillRect(0, 0, cssWidth, cssHeight);
@@ -350,6 +384,7 @@ function move(event: TouchEvent) {
   if (!drawing || !context || completing.value) return;
   const point = pointFromEvent(event);
   if (point.y >= cssHeight - 82) return;
+  context.prepare();
   context.setStrokeStyle(theme.value.ink);
   context.setLineWidth(3.5);
   context.setLineCap("round");
@@ -367,8 +402,13 @@ function end() {
   drawing = false;
 }
 
+function markInk() {
+  hasInk.value = true;
+}
+
 function clearSignature() {
   hasInk.value = false;
+  clearRequest.value += 1;
   resetSurface();
 }
 
@@ -379,6 +419,36 @@ function finishDepartmentInput() {
   // #ifndef APP-PLUS
   uni.hideKeyboard();
   // #endif
+}
+
+function onRenderExport(payload: { id?: number; path?: string }) {
+  if (!payload?.path || payload.id !== pendingRenderExport?.id) return;
+  const pending = pendingRenderExport;
+  if (!pending) return;
+  pendingRenderExport = null;
+  pending.resolve(payload.path);
+}
+
+// Bridge the setup handler to the Options API method used by renderjs.
+(
+  globalThis as {
+    __signatureOnRenderExport?: (
+      payload: { id?: number; path?: string },
+    ) => void;
+  }
+).__signatureOnRenderExport = onRenderExport;
+
+function requestRenderExport(signedAtValue: string) {
+  return new Promise<string>((resolve, reject) => {
+    const id = Date.now();
+    pendingRenderExport = { id, resolve, reject };
+    exportRequest.value = { id, signedAt: signedAtValue };
+    setTimeout(() => {
+      if (pendingRenderExport?.id !== id) return;
+      pendingRenderExport = null;
+      reject(new Error("Signature render timeout"));
+    }, 5000);
+  });
 }
 
 function cancel() {
@@ -402,12 +472,32 @@ function cancel() {
 }
 
 function exportCanvas() {
-  const dom = nativeCanvas();
-  const webPage =
-    typeof location !== "undefined" && /^https?:/.test(location.protocol);
-  if (dom && webPage) return Promise.resolve(dom.toDataURL("image/png"));
+  if (typeof document !== "undefined" && domCanvas) {
+    const exportCanvasElement = document.createElement("canvas");
+    exportCanvasElement.width = Math.round(
+      cssWidth * SIGNATURE_EXPORT_SCALE,
+    );
+    exportCanvasElement.height = Math.round(
+      cssHeight * SIGNATURE_EXPORT_SCALE,
+    );
+    const exportContext = exportCanvasElement.getContext("2d");
+    if (exportContext) {
+      exportContext.drawImage(
+        domCanvas as unknown as CanvasImageSource,
+        0,
+        0,
+        exportCanvasElement.width,
+        exportCanvasElement.height,
+      );
+      return Promise.resolve(exportCanvasElement.toDataURL("image/png"));
+    }
+  }
+  if (!canvasNode) {
+    return Promise.reject(new Error("Signature canvas is not ready"));
+  }
   return new Promise<string>((resolve, reject) => {
-    uni.canvasToTempFilePath({
+    const options = {
+      canvas: canvasNode,
       canvasId: "signature-canvas",
       x: 0,
       y: 0,
@@ -416,9 +506,11 @@ function exportCanvas() {
       destWidth: Math.round(cssWidth * SIGNATURE_EXPORT_SCALE),
       destHeight: Math.round(cssHeight * SIGNATURE_EXPORT_SCALE),
       fileType: "png",
-      success: (result) => resolve(result.tempFilePath),
+      success: (result: { tempFilePath: string }) =>
+        resolve(result.tempFilePath),
       fail: reject,
-    }, canvasOwner || instance?.proxy);
+    } as unknown as UniApp.CanvasToTempFilePathOptions;
+    uni.canvasToTempFilePath(options, instance?.proxy);
   });
 }
 
@@ -431,10 +523,17 @@ async function complete() {
   uni.showLoading({ title: "正在生成签字", mask: true });
   try {
     signedAt.value = formatDateTime(new Date());
+    let path = "";
+    // #ifdef APP-PLUS
+    path = await requestRenderExport(signedAt.value);
+    // #endif
+    // #ifndef APP-PLUS
+    context?.prepare();
     fillFooter();
     context?.draw();
     await nextTick();
-    const path = await exportCanvas();
+    path = await exportCanvas();
+    // #endif
     uni.$emit(SIGNATURE_COMPLETE_EVENT, {
       token: token.value,
       path,
@@ -466,9 +565,22 @@ onLoad((query) => {
 });
 
 onReady(() => {
-  for (const delay of [100, 350, 900]) {
+  renderEpoch.value += 1;
+  // #ifdef APP-PLUS
+  settleTimers.push(
+    setTimeout(() => {
+      renderEpoch.value += 1;
+    }, 600),
+    setTimeout(() => {
+      renderEpoch.value += 1;
+    }, 1800),
+  );
+  // #endif
+  // #ifndef APP-PLUS
+  for (const delay of [80, 160, 320, 640, 1000, 1500, 2200, 3000]) {
     settleTimers.push(setTimeout(setupCanvas, delay));
   }
+  // #endif
 });
 
 onResize(() => {
@@ -488,6 +600,13 @@ onBackPress(() => {
 
 onUnload(() => {
   settleTimers.forEach((timer) => clearTimeout(timer));
+  delete (
+    globalThis as {
+      __signatureOnRenderExport?: (
+        payload: { id?: number; path?: string },
+      ) => void;
+    }
+  ).__signatureOnRenderExport;
   // #ifdef APP-PLUS
   plus.screen.lockOrientation("portrait-primary");
   setAndroidSystemBarsHidden(false);
@@ -504,7 +623,23 @@ onUnload(() => {
     <view
       class="signature-surface"
       :style="{ background: theme.surface, borderColor: theme.border }"
+      @touchstart="markInk"
     >
+      <!-- #ifdef APP-PLUS -->
+      <!-- Renderjs owns this canvas; uni-canvas replaces its inner canvas on App. -->
+      <view
+        id="signature-canvas-host"
+        class="signature-canvas"
+        :disable-scroll="true"
+        :prop="renderConfig"
+        :change:prop="signatureRenderer.configure"
+        @touchstart="signatureRenderer.begin"
+        @touchmove="signatureRenderer.move"
+        @touchend="signatureRenderer.end"
+        @touchcancel="signatureRenderer.end"
+      />
+      <!-- #endif -->
+      <!-- #ifndef APP-PLUS -->
       <canvas
         id="signature-canvas"
         type="2d"
@@ -516,6 +651,7 @@ onUnload(() => {
         @touchend="end"
         @touchcancel="end"
       />
+      <!-- #endif -->
     </view>
 
     <view class="scene-actions">
@@ -564,6 +700,291 @@ onUnload(() => {
     </view>
   </view>
 </template>
+
+<!-- #ifdef APP-PLUS -->
+<script module="signatureRenderer" lang="renderjs">
+import { renderContext } from "../../utils/renderjs";
+
+/**
+ * @typedef {{ x: number, y: number }} SignaturePoint
+ * @typedef {{ points: SignaturePoint[] }} SignatureStroke
+ * @typedef {{ callMethod?: (name: string, value: unknown) => void }} RenderOwner
+ */
+export default {
+  data() {
+    const state = /** @type {any} */ ({
+      canvas: /** @type {any} */ (null),
+      ctx: /** @type {any} */ (null),
+      config: /** @type {any} */ (null),
+      strokes: /** @type {any[]} */ ([]),
+      current: /** @type {any} */ (null),
+      scale: 1,
+      width: 0,
+      height: 0,
+      observer: /** @type {any} */ (null),
+      ownerInstance: /** @type {any} */ (null),
+      lastExportId: 0,
+      lastClearRequest: 0,
+    });
+    return state;
+  },
+  methods: {
+    /**
+     * @param {any} config
+     * @param {any} oldConfig
+     * @param {RenderOwner|null} ownerInstance
+     */
+    // @ts-ignore
+    configure(config, oldConfig, ownerInstance) {
+      const self = renderContext(this);
+      self.config = config;
+      if (ownerInstance) self.ownerInstance = ownerInstance;
+      if (
+        config.exportRequest?.id &&
+        config.exportRequest.id !== self.lastExportId
+      ) {
+        self.lastExportId = config.exportRequest.id;
+        self.exportSignature(config.exportRequest, null, ownerInstance);
+      }
+      if (config.clearRequest !== self.lastClearRequest) {
+        self.lastClearRequest = config.clearRequest;
+        self.strokes = [];
+        self.current = null;
+        self.redraw();
+      }
+      for (const delay of [0, 100, 350, 900]) {
+        setTimeout(() => {
+          if (self.ensureCanvas() && self.config) self.redraw();
+        }, delay);
+      }
+    },
+    ensureCanvas() {
+      const self = renderContext(this);
+      const root = self.$el?.nodeType === 1 ? self.$el : document;
+      const host =
+        root instanceof HTMLElement && root.id === "signature-canvas-host"
+          ? root
+          : root.querySelector("#signature-canvas-host");
+      if (!(host instanceof HTMLElement)) return false;
+      const rect = host.getBoundingClientRect();
+      if (!rect.width || !rect.height) {
+        return false;
+      }
+      let canvas = host.querySelector("canvas");
+      if (!(canvas instanceof HTMLCanvasElement)) {
+        canvas = document.createElement("canvas");
+        canvas.style.cssText =
+          "display:block;width:100%;height:100%;touch-action:none;";
+        host.appendChild(canvas);
+      }
+      const targetWidth = Math.round(rect.width * 2);
+      const targetHeight = Math.round(rect.height * 2);
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+      }
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return false;
+      self.canvas = canvas;
+      self.ctx = ctx;
+      self.scale = canvas.width / rect.width;
+      self.width = rect.width;
+      self.height = rect.height;
+      if (!self.observer && typeof ResizeObserver !== "undefined") {
+        self.observer = new ResizeObserver(() => self.redraw());
+        self.observer.observe(canvas);
+      }
+      return Boolean(self.ctx);
+    },
+    redraw() {
+      const self = renderContext(this);
+      if (!self.ensureCanvas() || !self.ctx || !self.config) return;
+      const ctx = self.ctx;
+      const width = self.width;
+      const height = self.height;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, self.canvas.width, self.canvas.height);
+      ctx.setTransform(self.scale, 0, 0, self.scale, 0, 0);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+      if (!self.strokes.length) {
+        ctx.fillStyle = self.config.muted;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        const fontSize = Math.max(24, Math.min(38, width * 0.052));
+        ctx.font = `500 ${fontSize}px sans-serif`;
+        const label = self.config.roleTitle;
+        const labelWidth = ctx.measureText(label).width;
+        ctx.fillText(
+          label,
+          (width - labelWidth) / 2,
+          height / 2 + fontSize * 0.35,
+        );
+      }
+      self.replayStrokes(ctx);
+      self.drawFooter(ctx);
+    },
+    /** @param {CanvasRenderingContext2D} ctx */
+    // @ts-ignore
+    replayStrokes(ctx) {
+      const self = renderContext(this);
+      ctx.strokeStyle = self.config.ink;
+      ctx.fillStyle = self.config.ink;
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      for (const stroke of self.strokes) {
+        const points = stroke.points;
+        if (points.length === 1) {
+          ctx.beginPath();
+          ctx.arc(points[0].x, points[0].y, 1.75, 0, Math.PI * 2);
+          ctx.fill();
+          continue;
+        }
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let index = 1; index < points.length; index += 1) {
+          ctx.lineTo(points[index].x, points[index].y);
+        }
+        ctx.stroke();
+      }
+    },
+    /**
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {string} [signedAt]
+     */
+    // @ts-ignore
+    drawFooter(ctx, signedAt) {
+      const self = renderContext(this);
+      const width = self.width;
+      const height = self.height;
+      const footerTop = Math.max(0, height - 82);
+      ctx.setTransform(self.scale, 0, 0, self.scale, 0, 0);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, footerTop, width, height - footerTop);
+      ctx.strokeStyle = self.config.border;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(24, footerTop);
+      ctx.lineTo(width - 24, footerTop);
+      ctx.stroke();
+      ctx.fillStyle = self.config.ink;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.font = "600 16px sans-serif";
+      ctx.fillText(
+        `${self.config.roleTitle} · ${self.config.signer}`,
+        26,
+        height - 47,
+      );
+      ctx.font = "400 13px sans-serif";
+      ctx.fillStyle = self.config.muted;
+      const timeText = `签字时间 ${signedAt || self.config.signedAt}`;
+      const timeWidth = ctx.measureText(timeText).width;
+      ctx.fillText(
+        timeText,
+        width - 26 - timeWidth,
+        height - 47,
+      );
+      if (self.config.isCustomer) {
+        ctx.fillText(
+          `签字部门：${self.config.department || "未填写"}`,
+          26,
+          height - 21,
+        );
+      }
+    },
+    /**
+     * @param {any} event
+     * @returns {SignaturePoint|null}
+     */
+    // @ts-ignore
+    pointFromEvent(event) {
+      const self = renderContext(this);
+      const touch = event.touches?.[0] || event.changedTouches?.[0];
+      if (!touch || !self.canvas) return null;
+      const rect = self.canvas.getBoundingClientRect();
+      return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top,
+      };
+    },
+    /**
+     * @param {any} event
+     * @param {RenderOwner} [ownerInstance]
+     */
+    // @ts-ignore
+    begin(event, ownerInstance) {
+      const self = renderContext(this);
+      if (ownerInstance) self.ownerInstance = ownerInstance;
+      if (!self.ensureCanvas() || !self.ctx || !self.config) return;
+      const point = self.pointFromEvent(event);
+      if (!point || point.y >= self.height - 82) return;
+      self.current = { points: [point] };
+      self.strokes.push(self.current);
+      self.redraw();
+    },
+    /** @param {any} event */
+    // @ts-ignore
+    move(event) {
+      const self = renderContext(this);
+      if (!self.current || !self.ctx) return;
+      const point = self.pointFromEvent(event);
+      if (!point || point.y >= self.height - 82) return;
+      const points = self.current.points;
+      const previous = points[points.length - 1];
+      points.push(point);
+      const ctx = self.ctx;
+      ctx.setTransform(self.scale, 0, 0, self.scale, 0, 0);
+      ctx.strokeStyle = self.config.ink;
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(previous.x, previous.y);
+      ctx.lineTo(point.x, point.y);
+      ctx.stroke();
+    },
+    end() {
+      const self = renderContext(this);
+      self.current = null;
+    },
+    /**
+     * @param {any} request
+     * @param {any} oldRequest
+     * @param {RenderOwner} [ownerInstance]
+     */
+    // @ts-ignore
+    exportSignature(request, oldRequest, ownerInstance) {
+      const self = renderContext(this);
+      if (!request?.id || !self.ensureCanvas() || !self.ctx) return;
+      if (ownerInstance) self.ownerInstance = ownerInstance;
+      const signedAt = request.signedAt || self.config?.signedAt;
+      self.redraw();
+      self.drawFooter(self.ctx, signedAt);
+      const output = document.createElement("canvas");
+      output.width = Math.round(self.width * 2);
+      output.height = Math.round(self.height * 2);
+      const outputContext = output.getContext("2d");
+      if (!outputContext) return;
+      outputContext.drawImage(
+        self.canvas,
+        0,
+        0,
+        output.width,
+        output.height,
+      );
+      const payload = {
+        id: request.id,
+        path: output.toDataURL("image/png"),
+      };
+      self.ownerInstance?.callMethod?.("onRenderExportBridge", payload);
+    },
+  },
+};
+
+</script>
+<!-- #endif -->
 
 <style scoped>
 .signature-scene {
@@ -614,6 +1035,13 @@ onUnload(() => {
 }
 
 .signature-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+.signature-canvas > canvas {
   width: 100%;
   height: 100%;
   display: block;

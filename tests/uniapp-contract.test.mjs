@@ -340,6 +340,10 @@ test("survey and sealing flows capture both handwritten signatures", () => {
   assert.match(signaturePage, /getDecorView/);
   assert.match(signaturePage, /setSystemUiVisibility/);
   assert.match(signaturePage, /lockOrientation\("portrait-primary"\)/);
+  assert.match(signaturePage, /signature-canvas-host/);
+  assert.match(signaturePage, /onRenderExportBridge/);
+  assert.match(signaturePage, /clearRequest/);
+  assert.match(signaturePage, /markInk/);
   assert.match(themeConfig, /employee:\s*\{[\s\S]*?background:\s*"#d3e3fd"/);
   assert.match(themeConfig, /customer:\s*\{[\s\S]*?background:\s*"#f9e4e3"/);
   assert.match(themeConfig, /brand:\s*\{/);
