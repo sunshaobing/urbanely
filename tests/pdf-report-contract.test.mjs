@@ -34,5 +34,10 @@ test("PDF photo layout keeps five columns and continuous captions", () => {
   assert.match(contract, /`risk_photos` 显示为 `封堵前照片`/);
   assert.match(contract, /`photos` 显示为 `封堵后照片`/);
   assert.match(contract, /不再使用 `风险跟进照片` 或 `现场工作照`/);
+  assert.match(contract, /上一组末行排满 5 张时使用 4mm 默认间距/);
+  assert.match(contract, /末行仅 2、3、4 张或其它未排满情况时使用 1mm 紧凑间距/);
+  assert.match(contract, /不插入空行或固定分页/);
+  assert.match(contract, /支持连续渲染 3～10 组照片/);
+  assert.match(contract, /签字标题和签字表作为整体分页/);
   assert.match(contract, /页眉页脚、致谢、客户点评、签字、导出接口和业务数据逻辑保持不变/);
 });
