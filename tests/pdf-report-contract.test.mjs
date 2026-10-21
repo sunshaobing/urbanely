@@ -23,7 +23,9 @@ test("PDF photo layout keeps five columns and continuous captions", () => {
 
   assert.match(contract, /每行固定 5 张照片/);
   assert.match(contract, /最后一行按实际照片数量生成，只靠左排列/);
-  assert.match(contract, /保持原始横竖比例并在框内居中/);
+  assert.match(contract, /先等比缩放并放到 33:20 白底画布中/);
+  assert.match(contract, /以 33mm × 20mm 的完全相同尺寸绘制/);
+  assert.match(contract, /不裁剪、不拉伸/);
   assert.match(contract, /现场照片1`、`现场照片2`/);
   assert.match(contract, /分页后继续递增/);
   assert.match(contract, /续页顶部显示原照片区块标题并带 `（续）` 标识/);
