@@ -19,3 +19,10 @@ dist
 *.njsproj
 *.sln
 *.sw?
+
+# HarmonyOS signing material must stay local
+harmony-configs/build-profile.json5
+harmony-configs/config/
+*.cer
+*.p12
+*.p7b

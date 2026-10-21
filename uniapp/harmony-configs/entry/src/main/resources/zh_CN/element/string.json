@@ -1,0 +1,24 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "申汰 PCO 现场服务"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "申汰 PCO 现场服务"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "$string:app_name"
+    },
+    {
+      "name": "permission_location_tips",
+      "value": "用于到达客户门店后的现场考勤签到"
+    },
+    {
+      "name": "permission_camera_tips",
+      "value": "用于拍摄现场服务照片和手写签字确认"
+    }
+  ]
+}

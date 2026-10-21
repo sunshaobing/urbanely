@@ -29,6 +29,8 @@
     "build:mp-qq": "uni build -p mp-qq",
     "build:mp-toutiao": "uni build -p mp-toutiao",
     "build:mp-harmony": "uni build -p mp-harmony",
+    "check:harmony": "powershell -ExecutionPolicy Bypass -File scripts/check-harmony-env.ps1",
+    "pack:harmony": "powershell -ExecutionPolicy Bypass -File scripts/pack-harmony.ps1",
     "build:mp-weixin": "uni build -p mp-weixin && node scripts/finalize-mp-weixin.mjs",
     "build:mp-xhs": "uni build -p mp-xhs",
     "build:quickapp-webview": "uni build -p quickapp-webview",

@@ -1,0 +1,24 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "Shentai PCO Field Service"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Shentai PCO Field Service"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "$string:app_name"
+    },
+    {
+      "name": "permission_location_tips",
+      "value": "Used for on-site attendance check-in at the assigned customer site"
+    },
+    {
+      "name": "permission_camera_tips",
+      "value": "Used to capture on-site evidence and handwritten signatures"
+    }
+  ]
+}

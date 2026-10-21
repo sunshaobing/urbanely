@@ -92,6 +92,24 @@
     "mp-toutiao" : {
         "usingComponents" : true
     },
+    /* HarmonyOS NEXT 企业内测配置 */
+    "app-harmony" : {
+        "distribute" : {
+            "bundleName" : "cn.sunrgw.pco",
+            "modules" : {
+                "uni-location" : {
+                    "system" : {}
+                }
+            },
+            "icons" : {
+                "foreground" : "src/static/icons/app-1024.png",
+                "background" : "src/static/icons/app-1024.png"
+            },
+            "deviceTypes" : [ "phone", "tablet" ],
+            "deviceArchs" : [ "arm64-v8a" ],
+            "no-debug" : false
+        }
+    },
     "uniStatistics" : {
         "enable" : false
     },
