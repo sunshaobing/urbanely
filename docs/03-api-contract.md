@@ -39,6 +39,7 @@
 - `GET|PUT /api/templates`
 - `POST /api/templates/logo`
 - `POST /api/templates/seal`
+- `GET|PUT /api/settings`
 - `POST /api/workorders/{order_id}/review`
 - `GET /api/workorders/{order_id}/checkins`
 - `POST /api/workorders/{order_id}/checkin`
@@ -332,6 +333,8 @@ Returns site profile, risk level, next service, open findings count.
 ### 5.6 Web 报告模板编辑
 
 - 报告中心仅对 `admin` 和 `super_admin` 显示“编辑报告模板”入口；普通报告查看权限不变。
+- Web 侧栏“系统设置”进入独立设置页：`GET /api/settings` 读取公司资料、现场规则和报告开关；仅 `super_admin` 可通过 `PUT /api/settings` 保存。
+- 系统设置包含公司名称、地址、电话、负责人、服务热线、邮箱、网站、区域、报告备注，以及强制现场拍照、签到同步、库存强校验、邮件推送和客户电话脱敏开关。
 - `PUT /api/templates` 保存公司名称、公司电话、编号前缀、年份/流水号位数、封堵报告章节顺序、验收标准、卫生建议、后续服务建议和水印文本。
 - `POST /api/templates/logo` 与 `POST /api/templates/seal` 分别上传报告 Logo 和专用章，仅接受 PNG/JPG/JPEG，单个文件不超过 2 MB。
 - 章节顺序直接写入 `service_report_sections`，后端生成封堵 PDF 时按该顺序渲染；保存后 Web 报告中心立即刷新模板数据。

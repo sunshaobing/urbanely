@@ -11,6 +11,7 @@ import { Permissions } from "./pages/Permissions";
 import { Reports } from "./pages/Reports";
 import { Sealing } from "./pages/Sealing";
 import { ServiceOrders } from "./pages/ServiceOrders";
+import { SystemSettings } from "./pages/SystemSettings";
 import { LiveDataProvider } from "./liveData";
 import type { PageKey, ReportTemplate } from "./types";
 
@@ -96,6 +97,13 @@ export default function App() {
             initialInspectionId={reportInspectionId}
             initialSealingId={reportSealingId}
             canEditTemplates={["admin", "super_admin"].includes(session.role)}
+            onNotify={notify}
+          />
+        ) : null}
+        {activePage === "settings" ? (
+          <SystemSettings
+            canEdit={session.role === "super_admin"}
+            canManageTemplates={["admin", "super_admin"].includes(session.role)}
             onNotify={notify}
           />
         ) : null}

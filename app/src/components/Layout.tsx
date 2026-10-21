@@ -47,6 +47,7 @@ const pageTitles: Record<PageKey, string> = {
   customers: "客户与门店",
   reports: "报告中心",
   permissions: "人员与权限",
+  settings: "系统设置",
 };
 
 const navGroups: Array<{ label: string; keys: PageKey[] }> = [
@@ -159,7 +160,11 @@ export function Layout({
               </span>
             </div>
           </div>
-          <button type="button" className="nav-item muted">
+          <button
+            type="button"
+            className={`nav-item muted ${activePage === "settings" ? "active" : ""}`}
+            onClick={() => onNavigate("settings")}
+          >
             <Settings2 size={18} />
             <span>系统设置</span>
           </button>
@@ -269,6 +274,15 @@ export function Layout({
               </button>
             );
           })}
+        <button
+          type="button"
+          className={activePage === "settings" ? "active" : ""}
+          onClick={() => onNavigate("settings")}
+          aria-label="系统设置"
+        >
+          <Settings2 size={18} />
+          <span>设置</span>
+        </button>
       </nav>
 
       <CommandPalette

@@ -249,3 +249,28 @@ test("admins can edit report templates from the report center", () => {
   assert.match(css, /\.template-section-list/);
 });
 
+test("web system settings are wired to production settings APIs", () => {
+  const app = read("app/src/App.tsx");
+  const layout = read("app/src/components/Layout.tsx");
+  const page = read("app/src/pages/SystemSettings.tsx");
+  const api = read("app/src/api.ts");
+  const css = read("app/src/styles.css");
+
+  assert.match(app, /SystemSettings/);
+  assert.match(app, /activePage === "settings"/);
+  assert.match(app, /canEdit=\{session\.role === "super_admin"\}/);
+  assert.match(layout, /onNavigate\("settings"\)/);
+  assert.match(layout, /settings: "系统设置"/);
+  assert.match(page, /getSystemSettings/);
+  assert.match(page, /updateSystemSettings/);
+  assert.match(page, /ReportTemplateEditor/);
+  assert.match(page, /checkout_force_photo/);
+  assert.match(page, /work_checkin_sync/);
+  assert.match(page, /report_hide_customer_phone/);
+  assert.match(page, /保存设置/);
+  assert.match(api, /export function getSystemSettings/);
+  assert.match(api, /export function updateSystemSettings/);
+  assert.match(css, /\.system-settings-layout/);
+  assert.match(css, /\.settings-switch-row/);
+});
+

@@ -317,6 +317,41 @@ export interface TemplateUploadResult {
   path: string;
 }
 
+export interface BackendSystemSettings {
+  company_name?: string;
+  company_address?: string;
+  company_phone?: string;
+  contact?: string;
+  hotline?: string;
+  email?: string;
+  website?: string;
+  region?: string;
+  report_remark?: string;
+  checkout_force_photo?: boolean;
+  work_checkin_sync?: boolean;
+  report_email_send?: boolean;
+  report_hide_customer_phone?: boolean;
+  stock_strong_check?: boolean;
+  [key: string]: unknown;
+}
+
+export interface SystemSettingsInput {
+  company_name: string;
+  company_address: string;
+  company_phone: string;
+  contact: string;
+  hotline: string;
+  email: string;
+  website: string;
+  region: string;
+  report_remark: string;
+  checkout_force_photo: boolean;
+  work_checkin_sync: boolean;
+  report_email_send: boolean;
+  report_hide_customer_phone: boolean;
+  stock_strong_check: boolean;
+}
+
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   body?: unknown;
@@ -536,6 +571,17 @@ export function uploadReportLogo(file: File) {
 
 export function uploadReportSeal(file: File) {
   return uploadTemplateAsset("/api/templates/seal", file);
+}
+
+export function getSystemSettings() {
+  return request<BackendSystemSettings>("/api/settings");
+}
+
+export function updateSystemSettings(body: SystemSettingsInput) {
+  return request<BackendSystemSettings>("/api/settings", {
+    method: "PUT",
+    body,
+  });
 }
 
 export function updateRiskSurvey(id: number, body: Record<string, unknown>) {
