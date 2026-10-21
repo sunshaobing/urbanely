@@ -13,6 +13,7 @@ test("HarmonyOS internal-test packaging config is complete", () => {
   const docs = read("docs/10-harmony-internal-release.md");
 
   assert.match(manifest, /"app-harmony"/);
+  assert.match(manifest, /"name"\s*:\s*"申汰封堵勘测系统"/);
   assert.match(manifest, /"bundleName"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /"deviceArchs"\s*:\s*\[\s*"arm64-v8a"\s*\]/);
   assert.match(app, /"bundleName"\s*:\s*"cn\.sunrgw\.pco"/);

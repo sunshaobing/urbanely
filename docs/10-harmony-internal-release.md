@@ -2,7 +2,7 @@
 
 ## 1. 发布目标
 
-- 应用名称：申汰 PCO
+- 应用名称：申汰封堵勘测系统
 - 应用形态：HarmonyOS NEXT 原生企业应用
 - Bundle Name：`cn.sunrgw.pco`
 - 当前版本：`3.1.4 / 314`
@@ -32,7 +32,7 @@
 ## 3. AGC 创建应用信息
 
 ```text
-应用名称：申汰 PCO
+应用名称：申汰封堵勘测系统
 应用包名：cn.sunrgw.pco
 应用平台：HarmonyOS
 应用分类：商务 / 企业办公
