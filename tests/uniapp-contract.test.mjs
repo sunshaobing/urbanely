@@ -30,8 +30,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.1\.0"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"310"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.1\.1"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"311"/);
   assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
   assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /android\.permission\.ACCESS_FINE_LOCATION/);
@@ -186,6 +186,21 @@ test("workbench brand title is enlarged for field readability", () => {
   assert.match(workbench, /:name-size="15"/);
   assert.match(workbench, /\.page-title\s*\{[\s\S]*?font-size:\s*42rpx/);
   assert.match(workbench, /class="metric-strip"/);
+});
+
+test("workbench metrics use equal three-column spacing", () => {
+  const workbench = read("src/pages/workbench/index.vue");
+
+  assert.match(
+    workbench,
+    /\.metric-strip\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/,
+  );
+  assert.match(
+    workbench,
+    /\.metric-primary,\s*\.metric-item\s*\{[\s\S]*?flex-direction:\s*column;[\s\S]*?align-items:\s*center;[\s\S]*?justify-content:\s*center;/,
+  );
+  assert.doesNotMatch(workbench, /\.metric-item\s*\{[^}]*text-align:\s*right/);
+  assert.match(workbench, /#ifdef APP-PLUS[\s\S]*?\.workbench-header/);
 });
 
 test("the field workflow follows survey approval, dispatch, check-in, sealing and report generation", () => {

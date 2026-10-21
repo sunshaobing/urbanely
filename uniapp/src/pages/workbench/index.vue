@@ -442,33 +442,30 @@ onPullDownRefresh(async () => {
 }
 
 .metric-strip {
-  margin-top: 28rpx;
-  padding: 20rpx 22rpx;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  margin-top: 24rpx;
+  padding: 20rpx 0;
   border: 1rpx solid #dde7e0;
-  border-radius: 16rpx;
+  border-radius: 14rpx;
   background: #ffffff;
+  box-shadow: 0 6rpx 18rpx rgba(18, 34, 27, 0.04);
 }
 
 .metric-primary,
 .metric-item {
-  flex: 1;
-  min-width: 0;
-}
-
-.metric-primary {
   display: flex;
-  align-items: baseline;
-  gap: 10rpx;
-  padding-right: 22rpx;
-  border-right: 1rpx solid #e5ece7;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  min-width: 0;
+  padding: 0 10rpx;
+  text-align: center;
 }
 
 .metric-item {
-  padding-left: 22rpx;
-  text-align: right;
-}
-
-.metric-item + .metric-item {
   border-left: 1rpx solid #e5ece7;
 }
 
@@ -480,19 +477,22 @@ onPullDownRefresh(async () => {
 .metric-value {
   color: #103b2d;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
-  font-size: 40rpx;
+  font-size: 36rpx;
   font-weight: 700;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .metric-value.small {
   color: #17211d;
-  font-size: 32rpx;
+  font-size: 36rpx;
 }
 
 .metric-label {
   color: #65736c;
   font-size: 20rpx;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 
 .workbench-content {
@@ -500,10 +500,13 @@ onPullDownRefresh(async () => {
 }
 
 .sync-row {
+  margin-top: 4rpx;
+  padding: 16rpx 18rpx;
+  border: 1rpx solid #e1e9e4;
+  border-radius: 12rpx;
+  background: rgba(255, 255, 255, 0.82);
   justify-content: space-between;
   gap: 18rpx;
-  padding: 14rpx 0 18rpx;
-  border-bottom: 1rpx solid #e5ece7;
 }
 
 .sync-copy {
@@ -584,7 +587,7 @@ onPullDownRefresh(async () => {
   align-items: flex-end;
   justify-content: space-between;
   gap: 20rpx;
-  margin-top: 28rpx;
+  margin-top: 24rpx;
 }
 
 .reports-link {
@@ -596,33 +599,33 @@ onPullDownRefresh(async () => {
 
 .status-tabs {
   display: flex;
-  gap: 4rpx;
-  margin-top: 16rpx;
-  padding: 5rpx;
+  gap: 6rpx;
+  margin-top: 14rpx;
+  padding: 6rpx;
   border: 1rpx solid #dde7e0;
-  border-radius: 12rpx;
+  border-radius: 14rpx;
   background: #eff4f0;
 }
 
 .status-tab {
   flex: 1;
-  min-height: 58rpx;
+  min-height: 62rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  border-radius: 9rpx;
+  border-radius: 10rpx;
   color: #65736c;
-  font-size: 22rpx;
+  font-size: 23rpx;
 }
 
 .tab-count {
-  min-width: 28rpx;
-  height: 28rpx;
+  min-width: 32rpx;
+  height: 32rpx;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 7rpx;
+  border-radius: 8rpx;
   background: #e6f2ec;
   color: #115640;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
@@ -640,15 +643,17 @@ onPullDownRefresh(async () => {
 .task-skeleton {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
-  margin-top: 18rpx;
+  gap: 14rpx;
+  margin-top: 16rpx;
 }
 
 .task-card {
   position: relative;
   display: flex;
   overflow: hidden;
+  border-color: #e0e9e3;
   background: #ffffff;
+  box-shadow: 0 4rpx 14rpx rgba(18, 34, 27, 0.04);
 }
 
 .task-accent {
@@ -660,7 +665,7 @@ onPullDownRefresh(async () => {
 .task-card-body {
   flex: 1;
   min-width: 0;
-  padding: 22rpx 22rpx 20rpx;
+  padding: 20rpx 20rpx 18rpx;
 }
 
 .task-topline {
@@ -675,9 +680,9 @@ onPullDownRefresh(async () => {
 
 .task-customer {
   display: block;
-  margin-top: 8rpx;
+  margin-top: 7rpx;
   color: #17211d;
-  font-size: 32rpx;
+  font-size: 31rpx;
   font-weight: 700;
   line-height: 1.35;
 }
@@ -705,8 +710,8 @@ onPullDownRefresh(async () => {
 .task-footer {
   justify-content: space-between;
   gap: 16rpx;
-  margin-top: 18rpx;
-  padding-top: 16rpx;
+  margin-top: 16rpx;
+  padding-top: 14rpx;
   border-top: 1rpx solid #e5ece7;
   color: #79867f;
   font-size: 20rpx;
@@ -752,4 +757,10 @@ onPullDownRefresh(async () => {
   border-radius: 16rpx;
   background: #e6f2ec;
 }
+
+/* #ifdef APP-PLUS */
+.workbench-header {
+  padding-top: calc(52rpx + env(safe-area-inset-top));
+}
+/* #endif */
 </style>
