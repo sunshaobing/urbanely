@@ -37,6 +37,7 @@ const navItems: Array<{
   { key: "customers", label: "客户与门店", icon: Store, hint: "合同与服务计划" },
   { key: "reports", label: "报告中心", icon: FileText, hint: "A4 报告与版本" },
   { key: "permissions", label: "人员与权限", icon: Users, hint: "角色、范围与敏感权限" },
+  { key: "settings", label: "系统设置", icon: Settings2, hint: "公司资料、字典与报告配置" },
 ];
 
 const pageTitles: Record<PageKey, string> = {
@@ -53,7 +54,7 @@ const pageTitles: Record<PageKey, string> = {
 const navGroups: Array<{ label: string; keys: PageKey[] }> = [
   { label: "运营", keys: ["dashboard", "inspections", "sealing", "services"] },
   { label: "主数据", keys: ["customers", "reports"] },
-  { label: "管理", keys: ["permissions"] },
+  { label: "管理", keys: ["permissions", "settings"] },
 ];
 
 interface LayoutProps {
@@ -160,14 +161,6 @@ export function Layout({
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            className={`nav-item muted ${activePage === "settings" ? "active" : ""}`}
-            onClick={() => onNavigate("settings")}
-          >
-            <Settings2 size={18} />
-            <span>系统设置</span>
-          </button>
         </div>
       </aside>
 

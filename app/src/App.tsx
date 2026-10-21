@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Layout } from "./components/Layout";
 import { Toast } from "./components/ui";
-import { clearSession, loadSession, saveSession } from "./auth";
+import { getCurrentUser } from "./api";
+import { clearSession, loadSession, saveSession, SESSION_KEY } from "./auth";
 import type { AuthSession } from "./auth";
 import { Customers } from "./pages/Customers";
 import { Dashboard } from "./pages/Dashboard";
@@ -34,6 +35,35 @@ export default function App() {
     const timer = window.setTimeout(() => setToast(null), 3200);
     return () => window.clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    if (!session) return;
+    let cancelled = false;
+    void getCurrentUser()
+      .then((user) => {
+        if (cancelled) return;
+        const phoneMasked =
+          user.phone && user.phone.length >= 7
+            ? `${user.phone.slice(0, 3)}****${user.phone.slice(-4)}`
+            : session.phoneMasked;
+        const refreshed: AuthSession = {
+          ...session,
+          id: user.id,
+          username: user.username,
+          name: user.name,
+          role: user.role,
+          phoneMasked,
+        };
+        saveSession(refreshed, Boolean(window.localStorage.getItem(SESSION_KEY)));
+        setSession(refreshed);
+      })
+      .catch(() => {
+        // The shared API client handles expired sessions.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.token]);
 
   const navigate = (page: PageKey) => {
     setActivePage(page);

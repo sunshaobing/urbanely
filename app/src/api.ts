@@ -483,6 +483,10 @@ export function loginWithPassword(username: string, password: string) {
   });
 }
 
+export function getCurrentUser() {
+  return request<AuthUser>("/api/auth/me");
+}
+
 export function getDashboardSummary() {
   return request<BackendDashboardSummary>("/api/dashboard/summary");
 }

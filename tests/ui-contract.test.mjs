@@ -257,6 +257,8 @@ test("web system settings are wired to production settings APIs", () => {
   const css = read("app/src/styles.css");
 
   assert.match(app, /SystemSettings/);
+  assert.match(app, /getCurrentUser/);
+  assert.match(app, /saveSession\(refreshed/);
   assert.match(app, /activePage === "settings"/);
   assert.match(app, /canEdit=\{\["admin", "super_admin"\]\.includes\(session\.role\)\}/);
   assert.match(layout, /onNavigate\("settings"\)/);
@@ -272,6 +274,7 @@ test("web system settings are wired to production settings APIs", () => {
   assert.match(page, /保存设置/);
   assert.match(api, /export function getSystemSettings/);
   assert.match(api, /export function updateSystemSettings/);
+  assert.match(api, /export function getCurrentUser/);
   assert.match(api, /export function getDictionary/);
   assert.match(api, /export function createDictionaryItem/);
   assert.match(api, /export function updateDictionaryItem/);
