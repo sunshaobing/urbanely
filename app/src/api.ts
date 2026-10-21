@@ -158,9 +158,13 @@ export interface BackendRiskSurvey {
   id: number;
   code?: string;
   customer_id?: number;
+  customer_code?: string;
   customer_name?: string;
+  customer_address?: string;
   site_id?: number;
+  site_name?: string;
   employee_id?: number;
+  employee_name?: string;
   survey_date?: string;
   survey_time?: string;
   contact_person?: string;
@@ -488,6 +492,13 @@ export function submitRiskSurvey(id: number) {
 export function updateServiceReport(id: number, body: Record<string, unknown>) {
   return request<BackendServiceReport>(`/api/service-reports/${id}`, {
     method: "PUT",
+    body,
+  });
+}
+
+export function createServiceReport(body: Record<string, unknown>) {
+  return request<BackendServiceReport>("/api/service-reports", {
+    method: "POST",
     body,
   });
 }

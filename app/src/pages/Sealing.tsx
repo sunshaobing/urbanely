@@ -24,6 +24,7 @@ import type {
   Site,
 } from "../types";
 import { SealingReportSheet } from "../components/ReportSheet";
+import { DispatchSealingDialog } from "../components/DispatchSealingDialog";
 import { SignatureCapture, SignaturePartyCard } from "../components/SignatureCapture";
 import { getSealingSignatures, useSealingSignatures } from "../signatureStore";
 import { PageHeader } from "../components/PageHeader";
@@ -48,7 +49,7 @@ import {
   openBackendPdf,
   updateServiceReport,
 } from "../api";
-import type { BackendServiceReport } from "../api";
+import type { BackendRiskSurvey, BackendServiceReport } from "../api";
 
 interface SealingProps {
   onNotify: (message: string) => void;
@@ -91,10 +92,52 @@ export function Sealing({ onNotify, onOpenReport }: SealingProps) {
   const siteById = new Map(liveSites.map((site) => [site.id, site]));
   const [status, setStatus] = useState<"全部" | SealingStatus>("全部");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [dispatchSurvey, setDispatchSurvey] = useState<BackendRiskSurvey | null>(
+    null,
+  );
 
   const filtered = useMemo(
     () => liveOrders.filter((order) => status === "全部" || order.status === status),
     [liveOrders, status],
+  );
+  const linkedReportForSurvey = (survey: BackendRiskSurvey) => {
+    const code = survey.code?.trim();
+    const exact = serviceReports.find(
+      (report) =>
+        Boolean(code) &&
+        (report.task_tag?.includes(code!) ||
+          report.content?.includes(code!)),
+    );
+    if (exact) return exact;
+    const customerReports = serviceReports.filter(
+      (report) => report.customer_id === survey.customer_id,
+    );
+    return customerReports.length === 1 ? customerReports[0] : undefined;
+  };
+  const pendingDispatchSurveys = useMemo(
+    () =>
+      riskSurveys.filter((survey) => {
+        if (
+          !["approved", "reviewed", "completed"].includes(survey.status)
+        ) {
+          return false;
+        }
+        const code = survey.code?.trim();
+        const exact = serviceReports.find(
+          (report) =>
+            Boolean(code) &&
+            (report.task_tag?.includes(code!) ||
+              report.content?.includes(code!)),
+        );
+        const customerReports = serviceReports.filter(
+          (report) => report.customer_id === survey.customer_id,
+        );
+        const report =
+          exact ||
+          (customerReports.length === 1 ? customerReports[0] : undefined);
+        return !report?.service_person;
+      }),
+    [riskSurveys, serviceReports],
   );
 
   if (selectedId && liveOrders.length) {
@@ -149,16 +192,67 @@ export function Sealing({ onNotify, onOpenReport }: SealingProps) {
         meta={
           <>
             <span className="live-dot" />
-            {liveOrders.length} 张封堵单 · {liveOrders.filter((order) => order.status === "待验收").length} 张待验收 · {liveOrders.filter((order) => order.status === "施工中").length} 张施工中
+            {liveOrders.length} 张封堵单 · {pendingDispatchSurveys.length} 个待派单 · {liveOrders.filter((order) => order.status === "待验收").length} 张待验收 · {liveOrders.filter((order) => order.status === "施工中").length} 张施工中
           </>
         }
         actions={
-          <button type="button" className="button primary" onClick={() => onNotify("已创建封堵单草稿，请选择来源勘测单")}>
+          <button
+            type="button"
+            className="button primary"
+            onClick={() => {
+              const panel = document.getElementById("sealing-dispatch");
+              if (panel) {
+                panel.scrollIntoView({ behavior: "smooth", block: "start" });
+              } else {
+                onNotify("当前没有待派单的勘测客户");
+              }
+            }}
+          >
             <Plus size={16} />
-            新建封堵单
+            待派单 {pendingDispatchSurveys.length}
           </button>
         }
       />
+
+      {pendingDispatchSurveys.length ? (
+        <section className="panel sealing-dispatch-panel" id="sealing-dispatch">
+          <SectionTitle
+            title="勘测完成 · 待封堵派单"
+            subtitle="从审批通过的勘测客户中选择需要封堵的门店，派给封堵师傅"
+          />
+          <div className="sealing-dispatch-list">
+            {pendingDispatchSurveys.map((survey) => {
+              const site = siteById.get(`customer-${survey.customer_id || 0}`);
+              const report = linkedReportForSurvey(survey);
+              return (
+                <div className="sealing-dispatch-row" key={survey.id}>
+                  <div className="sealing-dispatch-main">
+                    <strong>
+                      {survey.customer_name || site?.customer || "—"}
+                    </strong>
+                    <span className="mono">
+                      {survey.code || `RS-${survey.id}`}
+                    </span>
+                    <small>
+                      {site?.name || survey.site_name || "—"} ·{" "}
+                      {survey.survey_date || "日期待补"}
+                    </small>
+                  </div>
+                  <StatusPill status={report ? "待派单" : "待生成清单"} />
+                  <button
+                    type="button"
+                    className="button secondary"
+                    onClick={() => setDispatchSurvey(survey)}
+                  >
+                    <Wrench size={15} />
+                    派单封堵
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <section className="metrics-strip compact-metrics">
         <div className="mini-metric">
@@ -243,6 +337,17 @@ export function Sealing({ onNotify, onOpenReport }: SealingProps) {
           })}
         </div>
       </section>
+
+      {dispatchSurvey ? (
+        <DispatchSealingDialog
+          survey={dispatchSurvey}
+          report={linkedReportForSurvey(dispatchSurvey)}
+          site={siteById.get(`customer-${dispatchSurvey.customer_id || 0}`)}
+          onClose={() => setDispatchSurvey(null)}
+          onDispatched={refresh}
+          onNotify={onNotify}
+        />
+      ) : null}
     </div>
   );
 }

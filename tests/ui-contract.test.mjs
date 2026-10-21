@@ -85,6 +85,26 @@ test("authenticated PDF export opens its tab before the async request", () => {
   assert.match(api, /link\.download = "report\.pdf"/);
 });
 
+test("web dispatches approved surveys to sealing engineers and previews sealing photos", () => {
+  const sealing = read("app/src/pages/Sealing.tsx");
+  const dialog = read("app/src/components/DispatchSealingDialog.tsx");
+  const mappers = read("app/src/backendMappers.ts");
+  const sheet = read("app/src/components/ReportSheet.tsx");
+
+  assert.match(sealing, /DispatchSealingDialog/);
+  assert.match(sealing, /pendingDispatchSurveys/);
+  assert.match(sealing, /sealing-dispatch-panel/);
+  assert.match(sealing, /派单封堵/);
+  assert.match(dialog, /sealing_engineer/);
+  assert.match(dialog, /createServiceReport/);
+  assert.match(dialog, /service_person:\s*engineer\.name/);
+  assert.match(dialog, /status:\s*"assigned"/);
+  assert.match(mappers, /status === "assigned"\) return "已排期"/);
+  assert.match(mappers, /beforePhotoUrl/);
+  assert.match(sheet, /previewUrl=\{item\.beforePhotoUrl\}/);
+  assert.match(sheet, /previewUrl=\{item\.afterPhotoUrl\}/);
+});
+
 test("the web console no longer exposes the field-mode page", () => {
   const types = read("app/src/types.ts");
   const layout = read("app/src/components/Layout.tsx");

@@ -299,7 +299,14 @@ export function SealingReportSheet({ order, site }: { order: SealingOrder; site:
           <h2>封堵前图片</h2>
           <div className="paper-photo-grid paper-photo-grid-5">
             {beforeItems.map((item, index) => (
-              <PhotoTile key={item.id} label={item.beforePhoto} sublabel={item.location} tone="before" captured />
+              <PhotoTile
+                key={item.id}
+                label={item.beforePhoto}
+                sublabel={item.location}
+                tone="before"
+                captured={Boolean(item.beforePhotoUrl)}
+                previewUrl={item.beforePhotoUrl}
+              />
             ))}
             {beforeItems.length < 5
               ? Array.from({ length: 5 - beforeItems.length }).map((_, index) => (
@@ -322,7 +329,8 @@ export function SealingReportSheet({ order, site }: { order: SealingOrder; site:
                 label={item.afterPhoto ?? "待补拍"}
                 sublabel={item.location}
                 tone="after"
-                captured={Boolean(item.afterPhoto)}
+                captured={Boolean(item.afterPhotoUrl)}
+                previewUrl={item.afterPhotoUrl}
               />
             ))}
             {afterItems.length < 10

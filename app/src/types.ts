@@ -117,6 +117,8 @@ export interface SealingItem {
   result: "已封堵" | "待封堵" | "无法施工";
   beforePhoto: string;
   afterPhoto?: string;
+  beforePhotoUrl?: string;
+  afterPhotoUrl?: string;
 }
 
 export interface SealingOrder {

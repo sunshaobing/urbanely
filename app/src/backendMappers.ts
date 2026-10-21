@@ -50,9 +50,8 @@ export function inspectionStatusFromBackend(status?: string): InspectionStatus {
 export function sealingStatusFromBackend(status?: string): SealingStatus {
   if (status === "approved" || status === "completed") return "已验收";
   if (status === "submitted" || status === "reviewed") return "待验收";
-  if (
-    ["accepted", "checked_in", "in_progress", "assigned"].includes(status || "")
-  ) {
+  if (status === "assigned") return "已排期";
+  if (["accepted", "checked_in", "in_progress"].includes(status || "")) {
     return "施工中";
   }
   return "草稿";
@@ -253,6 +252,56 @@ export function toSealingOrder(
   };
   const beforePhotos = report.risk_photos || [];
   const afterPhotos = report.photos || [];
+  const workSites = task?.sites || [];
+  const items = workSites.length
+    ? workSites.map((item, index) => ({
+        id: `${report.id}-item-${item.id}`,
+        area: item.remark || item.name,
+        location: item.name,
+        holeType: item.hole_type || "结构孔洞",
+        result:
+          sealingStatusFromBackend(report.status) === "已验收"
+            ? ("已封堵" as const)
+            : ("待封堵" as const),
+        beforePhoto:
+          beforePhotos[index]?.caption ||
+          beforePhotos[0]?.caption ||
+          "封堵前",
+        afterPhoto:
+          afterPhotos[index]?.caption ||
+          afterPhotos[0]?.caption ||
+          "封堵后",
+        beforePhotoUrl: mediaUrl(
+          beforePhotos[index]?.url || beforePhotos[0]?.url,
+        ),
+        afterPhotoUrl: mediaUrl(
+          afterPhotos[index]?.url || afterPhotos[0]?.url,
+        ),
+      }))
+    : Array.from(
+        { length: Math.max(beforePhotos.length, afterPhotos.length) },
+        (_, index) => ({
+          id: `${report.id}-photo-item-${index}`,
+          area: "现场封堵",
+          location:
+            beforePhotos[index]?.caption ||
+            afterPhotos[index]?.caption ||
+            `封堵点位 ${index + 1}`,
+          holeType: "结构孔洞",
+          result:
+            sealingStatusFromBackend(report.status) === "已验收"
+              ? ("已封堵" as const)
+              : ("待封堵" as const),
+          beforePhoto: beforePhotos[index]?.caption || "封堵前",
+          afterPhoto: afterPhotos[index]?.caption || "封堵后",
+          beforePhotoUrl: mediaUrl(
+            beforePhotos[index]?.url || beforePhotos[0]?.url,
+          ),
+          afterPhotoUrl: mediaUrl(
+            afterPhotos[index]?.url || afterPhotos[0]?.url,
+          ),
+        }),
+      );
   return {
     id: String(report.id),
     reportNo: report.report_no || report.code || `STFD-${report.id}`,
@@ -260,7 +309,7 @@ export function toSealingOrder(
     inspectionId: task ? String(task.id) : "",
     date: report.service_date || report.created_at?.slice(0, 10) || "—",
     weather: task?.weather || "—",
-    leader: report.service_person || task?.engineer_name || "—",
+    leader: report.service_person || "待派单",
     supervisor: report.service_person || task?.supervisor_name || "—",
     rodent: "鼠",
     density: task?.density || "—",
@@ -275,16 +324,7 @@ export function toSealingOrder(
       unit: item.unit || "",
       quantity: item.qty || 0,
     })),
-    items: (task?.sites || []).map((item, index) => ({
-      id: `${report.id}-item-${item.id}`,
-      area: item.remark || item.name,
-      location: item.name,
-      holeType: item.hole_type || "结构孔洞",
-      result: sealingStatusFromBackend(report.status) === "已验收" ? "已封堵" : "待封堵",
-      beforePhoto: beforePhotos[index]?.caption || beforePhotos[0]?.caption || "封堵前",
-      afterPhoto:
-        afterPhotos[index]?.caption || afterPhotos[0]?.caption || "封堵后",
-    })),
+    items,
     acceptanceResult:
       sealingStatusFromBackend(report.status) === "已验收" ? "已采纳" : "待验收",
     frequency: "",

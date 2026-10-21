@@ -300,6 +300,13 @@ Returns site profile, risk level, next service, open findings count.
 - `POST /risk-surveys/{id}/submit` 返回完整记录（包含 `items`、`photos`、`signatures`），便于客户端立即生成报告。
 - `GET /risk-surveys/{id}`、`GET /risk-surveys/{id}/pdf`、作业单详情和封堵报告详情/PDF 都执行客户归属校验；封堵工程师可通过 `service_person` 访问自己的服务单。
 
+### 5.3 封堵派单与服务单
+
+- Web 管理员从 `status=approved` 的勘测记录派单。存在由勘测审批生成的待派单报告时，使用 `PUT /service-reports/{id}` 写入 `service_person` 并将状态改为 `assigned`；不存在时使用 `POST /service-reports` 创建。
+- `service_person` 保存封堵师傅姓名；封堵工程师的 `GET /workorders` 范围包含其已分配服务单对应的客户，确保手机端能收到派单。
+- 封堵师傅的签到、接单、双签、提交和 PDF 下载均通过 `service_person` 校验；服务单列表按 `service_person`/客户归属过滤。
+- 封堵服务单的 `risk_photos` 表示封堵前照片，`photos` 表示封堵后照片；Web 预览和 PDF 都使用实际图片 URL。
+
 ## 6. Rechecks
 
 ### POST `/rechecks`

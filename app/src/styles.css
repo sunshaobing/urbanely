@@ -6442,6 +6442,73 @@ button.chip {
   line-height: 1.6;
 }
 
+.sealing-dispatch-panel {
+  margin-top: 16px;
+  padding: 16px;
+}
+
+.sealing-dispatch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sealing-dispatch-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.sealing-dispatch-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.sealing-dispatch-main strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sealing-dispatch-main span {
+  color: var(--teal);
+  font-size: 10px;
+}
+
+.sealing-dispatch-main small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sealing-dispatch-row > .button {
+  flex: none;
+  min-height: 32px;
+  padding: 0 11px;
+  font-size: 11px;
+}
+
+@media (max-width: 720px) {
+  .sealing-dispatch-row {
+    flex-wrap: wrap;
+  }
+
+  .sealing-dispatch-row > .button {
+    width: 100%;
+  }
+}
+
 .customer-form-section {
   margin-top: 18px;
 }
