@@ -293,6 +293,13 @@ Returns site profile, risk level, next service, open findings count.
 - 封堵人员签字统一写为 `service`（兼容入参 `responsible`，服务端归一为 `service`），客户签字为 `customer`。
 - `PUT /risk-surveys/{id}` 和 `PUT /service-reports/{id}` 省略 `signatures` 时保留现有签字；只有显式传入数组时才替换。由此，派单、接单、审批或其它局部更新不会清空手写签字。
 
+### 5.2 勘测报告数据完整性
+
+- `RiskSurvey.employee_id` 指向员工档案表，不是登录用户 ID。移动端不传该字段；服务端会拒绝写入不存在的员工 ID 并将其置空。
+- 报告中的“勘测人员”优先取员工档案姓名；没有员工档案时回退到 `engineer` 角色的手写签字姓名。
+- `POST /risk-surveys/{id}/submit` 返回完整记录（包含 `items`、`photos`、`signatures`），便于客户端立即生成报告。
+- `GET /risk-surveys/{id}`、`GET /risk-surveys/{id}/pdf`、作业单详情和封堵报告详情/PDF 都执行客户归属校验；封堵工程师可通过 `service_person` 访问自己的服务单。
+
 ## 6. Rechecks
 
 ### POST `/rechecks`

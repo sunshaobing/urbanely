@@ -77,6 +77,14 @@ test("web signing seeds from backend records and never erases them", () => {
   assert.doesNotMatch(sealing, /role: "responsible"/);
 });
 
+test("authenticated PDF export opens its tab before the async request", () => {
+  const api = read("app/src/api.ts");
+
+  assert.match(api, /const popup = window\.open\(\"\", \"_blank\"\)/);
+  assert.match(api, /popup\.location\.href = url/);
+  assert.match(api, /link\.download = "report\.pdf"/);
+});
+
 test("the web console no longer exposes the field-mode page", () => {
   const types = read("app/src/types.ts");
   const layout = read("app/src/components/Layout.tsx");

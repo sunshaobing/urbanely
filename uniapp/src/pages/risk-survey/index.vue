@@ -277,7 +277,9 @@ function surveyPayload(
     code: task.value?.report_no || "",
     customer_id: task.value?.customer_id || 0,
     site_id: null,
-    employee_id: task.value?.engineer_id || null,
+    // RiskSurvey.employee_id references the employee master table, not a user
+    // account. The report falls back to the engineer signature name.
+    employee_id: null,
     survey_date: form.date,
     survey_time: form.time,
     contact_person: form.contact,

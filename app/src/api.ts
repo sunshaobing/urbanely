@@ -536,15 +536,44 @@ export function changeOwnPassword(oldPassword: string, newPassword: string) {
 
 export async function openBackendPdf(path: string) {
   const session = loadSession();
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: session?.token
-      ? { Authorization: `Bearer ${session.token}` }
-      : undefined,
-  });
-  if (!response.ok) {
-    throw new Error(errorMessage(await response.json().catch(() => null), response.status));
+  // Open the tab while still inside the click gesture, then navigate it after
+  // the authenticated request finishes. Opening after `await` is popup-blocked
+  // by common desktop browsers.
+  const popup = window.open("", "_blank");
+  if (popup) {
+    popup.document.write(
+      "<!doctype html><title>正在生成报告</title><body style=\"display:grid;place-items:center;height:100vh;margin:0;background:#f2f6f3;color:#176b52;font:14px sans-serif\">正在生成报告，请稍候…</body>",
+    );
+    popup.document.close();
   }
-  const url = URL.createObjectURL(await response.blob());
-  window.open(url, "_blank", "noopener,noreferrer");
-  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: session?.token
+        ? { Authorization: `Bearer ${session.token}` }
+        : undefined,
+    });
+    if (!response.ok) {
+      throw new Error(
+        errorMessage(await response.json().catch(() => null), response.status),
+      );
+    }
+    const url = URL.createObjectURL(await response.blob());
+    if (popup) {
+      popup.opener = null;
+      popup.location.href = url;
+    } else {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "report.pdf";
+      link.target = "_blank";
+      link.rel = "noopener";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch (error) {
+    popup?.close();
+    throw error;
+  }
 }
