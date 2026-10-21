@@ -12,6 +12,7 @@ import { Permissions } from "./pages/Permissions";
 import { Reports } from "./pages/Reports";
 import { Sealing } from "./pages/Sealing";
 import { ServiceOrders } from "./pages/ServiceOrders";
+import { SystemDictionaryPage } from "./pages/SystemDictionaryPage";
 import { SystemSettings } from "./pages/SystemSettings";
 import { LiveDataProvider } from "./liveData";
 import type { PageKey, ReportTemplate } from "./types";
@@ -134,6 +135,13 @@ export default function App() {
           <SystemSettings
             canEdit={["admin", "super_admin"].includes(session.role)}
             canManageTemplates={["admin", "super_admin"].includes(session.role)}
+            onOpenDictionary={() => setActivePage("dictionary")}
+            onNotify={notify}
+          />
+        ) : null}
+        {activePage === "dictionary" ? (
+          <SystemDictionaryPage
+            canEdit={["admin", "super_admin"].includes(session.role)}
             onNotify={notify}
           />
         ) : null}

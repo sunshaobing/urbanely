@@ -41,3 +41,12 @@ test("PDF photo layout keeps five columns and continuous captions", () => {
   assert.match(contract, /签字标题和签字表作为整体分页/);
   assert.match(contract, /页眉页脚、致谢、客户点评、签字、导出接口和业务数据逻辑保持不变/);
 });
+
+test("approved reports receive a final-page seal without changing workflow", () => {
+  const contract = read("docs/03-api-contract.md");
+
+  assert.match(contract, /仅在状态为 `approved` 或 `completed` 时自动绘制报告专用章/);
+  assert.match(contract, /未审批、待审核、已驳回或草稿状态不绘制印章/);
+  assert.match(contract, /最后一页右下角页脚文字区域/);
+  assert.match(contract, /不改变签字、审批、报告数据和下载接口/);
+});

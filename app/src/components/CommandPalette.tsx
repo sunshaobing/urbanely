@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowUpRight,
+  BookOpenText,
   ClipboardCheck,
   Command,
   FileText,
@@ -29,6 +30,7 @@ const commands: Array<{
   { page: "reports", label: "报告中心", hint: "A4 报告、版本与导出", icon: FileText, group: "页面" },
   { page: "permissions", label: "人员与权限", hint: "角色、门店范围与敏感权限", icon: Users, group: "页面" },
   { page: "settings", label: "系统设置", hint: "公司资料、现场规则与报告配置", icon: Settings2, group: "页面" },
+  { page: "dictionary", label: "系统字典", hint: "业务分类、编码与可选值", icon: BookOpenText, group: "页面" },
   { page: "inspections", label: "新建勘测", hint: "创建一张新的现场勘测单", icon: ClipboardCheck, group: "快捷操作" },
   { page: "sealing", label: "发起封堵", hint: "从隐患点进入封堵流程", icon: Wrench, group: "快捷操作" },
   { page: "reports", label: "打开报告中心", hint: "预览或导出当前报告", icon: FileText, group: "快捷操作" },

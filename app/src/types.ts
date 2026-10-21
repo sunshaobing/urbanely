@@ -10,7 +10,8 @@ export type PageKey =
   | "customers"
   | "permissions"
   | "reports"
-  | "settings";
+  | "settings"
+  | "dictionary";
 
 export type ReportTemplate = "survey" | "sealing";
 

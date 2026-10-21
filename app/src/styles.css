@@ -341,6 +341,17 @@ p {
   background: var(--surface-soft);
 }
 
+.nav-item.nav-secondary {
+  min-height: 34px;
+  padding-left: 38px;
+  font-size: 10px;
+}
+
+.nav-item.nav-secondary svg {
+  width: 16px;
+  height: 16px;
+}
+
 .notification-dot {
   position: absolute;
   top: 7px;
@@ -5317,6 +5328,121 @@ button.chip {
   font-size: 10px;
 }
 
+.role-field {
+  grid-column: 1 / -1;
+}
+
+.role-selector {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.personnel-form-grid .role-selector {
+  grid-template-columns: 1fr 1fr;
+}
+
+.role-choice {
+  --role-color: var(--teal);
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.role-choice:hover {
+  border-color: var(--role-color);
+}
+
+.role-choice.active {
+  border-color: var(--role-color);
+  box-shadow: inset 3px 0 var(--role-color);
+  background: var(--surface-soft);
+}
+
+.role-red { --role-color: #b24b4b; }
+.role-green { --role-color: #176b52; }
+.role-teal { --role-color: #207b84; }
+.role-blue { --role-color: #3d6fa8; }
+.role-amber { --role-color: #a66b24; }
+
+.role-choice-icon {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--role-color);
+}
+
+.role-choice-copy {
+  min-width: 0;
+}
+
+.role-choice-copy strong,
+.role-choice-copy small {
+  display: block;
+}
+
+.role-choice-copy strong {
+  color: var(--ink);
+  font-size: 10px;
+}
+
+.role-choice-copy small {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-definition-inline {
+  --role-color: var(--teal);
+  margin-top: 12px;
+  padding: 10px;
+  border-left: 3px solid var(--role-color);
+  border-radius: 0 6px 6px 0;
+  background: var(--surface-soft);
+}
+
+.role-definition-inline strong {
+  color: var(--role-color);
+  font-size: 11px;
+}
+
+.role-definition-inline p {
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.role-definition-inline > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 7px;
+}
+
+.role-definition-inline > div span {
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 8px;
+}
+
 .user-scope-section {
   margin-top: 15px;
 }
@@ -6659,6 +6785,14 @@ button.chip {
   width: min(980px, 100%);
 }
 
+.dictionary-editor-embedded {
+  padding: 18px;
+}
+
+.dictionary-editor-embedded .dictionary-layout {
+  margin-top: 0;
+}
+
 .dictionary-layout {
   display: grid;
   grid-template-columns: 190px minmax(0, 1fr);
@@ -7200,6 +7334,10 @@ button.chip {
 
   .dictionary-form-grid label.wide {
     grid-column: auto;
+  }
+
+  .personnel-form-grid .role-selector {
+    grid-template-columns: 1fr;
   }
 }
 

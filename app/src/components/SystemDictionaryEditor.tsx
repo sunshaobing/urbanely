@@ -21,6 +21,7 @@ import type {
 
 interface SystemDictionaryEditorProps {
   open: boolean;
+  embedded?: boolean;
   canEdit: boolean;
   onClose: () => void;
   onSaved: () => void;
@@ -38,6 +39,7 @@ const emptyForm: DictionaryItemInput = {
 
 export function SystemDictionaryEditor({
   open,
+  embedded = false,
   canEdit,
   onClose,
   onSaved,
@@ -74,20 +76,20 @@ export function SystemDictionaryEditor({
   };
 
   useEffect(() => {
-    if (!open) return;
+    if (!open && !embedded) return;
     setEditingId(null);
     setForm(emptyForm);
     void load();
-  }, [open]);
+  }, [embedded, open]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open && !embedded) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !saving) onClose();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose, open, saving]);
+  }, [embedded, onClose, open, saving]);
 
   const visibleItems = useMemo(
     () => items.filter((item) => item.category === selectedCategory),
@@ -182,30 +184,32 @@ export function SystemDictionaryEditor({
     }
   };
 
-  if (!open) return null;
+  if (!open && !embedded) return null;
 
   return (
-    <div className="personnel-modal-backdrop" role="presentation">
+    <div className={embedded ? "dictionary-embedded-root" : "personnel-modal-backdrop"} role="presentation">
       <section
-        className="personnel-modal dictionary-editor"
-        role="dialog"
-        aria-modal="true"
+        className={embedded ? "panel dictionary-editor-embedded" : "personnel-modal dictionary-editor"}
+        role={embedded ? undefined : "dialog"}
+        aria-modal={embedded ? undefined : "true"}
         aria-labelledby="dictionary-editor-title"
       >
-        <header className="personnel-modal-head">
-          <div>
-            <span className="eyebrow">SYSTEM DICTIONARY</span>
-            <h2 id="dictionary-editor-title">系统字典</h2>
-          </div>
-          <button
-            type="button"
-            className="icon-button"
-            onClick={onClose}
-            aria-label="关闭系统字典"
-          >
-            <X size={18} />
-          </button>
-        </header>
+        {!embedded ? (
+          <header className="personnel-modal-head">
+            <div>
+              <span className="eyebrow">SYSTEM DICTIONARY</span>
+              <h2 id="dictionary-editor-title">系统字典</h2>
+            </div>
+            <button
+              type="button"
+              className="icon-button"
+              onClick={onClose}
+              aria-label="关闭系统字典"
+            >
+              <X size={18} />
+            </button>
+          </header>
+        ) : null}
 
         <div className="dictionary-layout">
           <aside className="dictionary-categories">

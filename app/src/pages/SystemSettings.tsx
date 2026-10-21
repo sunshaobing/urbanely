@@ -18,7 +18,6 @@ import type {
 } from "../api";
 import { PageHeader } from "../components/PageHeader";
 import { ReportTemplateEditor } from "../components/ReportTemplateEditor";
-import { SystemDictionaryEditor } from "../components/SystemDictionaryEditor";
 import { SectionTitle, StatusPill } from "../components/ui";
 import { mediaUrl } from "../backendMappers";
 import { useLiveData } from "../liveData";
@@ -26,6 +25,7 @@ import { useLiveData } from "../liveData";
 interface SystemSettingsProps {
   canEdit: boolean;
   canManageTemplates: boolean;
+  onOpenDictionary: () => void;
   onNotify: (message: string) => void;
 }
 
@@ -105,6 +105,7 @@ function SettingSwitch({
 export function SystemSettings({
   canEdit,
   canManageTemplates,
+  onOpenDictionary,
   onNotify,
 }: SystemSettingsProps) {
   const { refresh: refreshLiveData, templates } = useLiveData();
@@ -113,7 +114,6 @@ export function SystemSettings({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
-  const [dictionaryEditorOpen, setDictionaryEditorOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -407,7 +407,7 @@ export function SystemSettings({
             <button
               type="button"
               className="button secondary full-width"
-              onClick={() => setDictionaryEditorOpen(true)}
+              onClick={onOpenDictionary}
             >
               <Database size={15} />
               {canEdit ? "管理系统字典" : "查看系统字典"}
@@ -423,15 +423,6 @@ export function SystemSettings({
         onSaved={() => {
           void refreshLiveData();
           onNotify("报告模板已保存");
-        }}
-      />
-      <SystemDictionaryEditor
-        open={dictionaryEditorOpen}
-        canEdit={canEdit}
-        onClose={() => setDictionaryEditorOpen(false)}
-        onSaved={() => {
-          void refreshLiveData();
-          onNotify("系统字典已更新");
         }}
       />
     </div>

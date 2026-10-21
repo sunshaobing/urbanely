@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
   ArrowUpRight,
   Bell,
+  BookOpenText,
   ChevronDown,
   ClipboardCheck,
   Command,
@@ -29,6 +30,7 @@ const navItems: Array<{
   label: string;
   icon: typeof LayoutDashboard;
   hint: string;
+  secondary?: boolean;
 }> = [
   { key: "dashboard", label: "运营工作台", icon: LayoutDashboard, hint: "风险与今日作业" },
   { key: "inspections", label: "勘测单", icon: ClipboardCheck, hint: "现场勘测与隐患" },
@@ -38,6 +40,7 @@ const navItems: Array<{
   { key: "reports", label: "报告中心", icon: FileText, hint: "A4 报告与版本" },
   { key: "permissions", label: "人员与权限", icon: Users, hint: "角色、范围与敏感权限" },
   { key: "settings", label: "系统设置", icon: Settings2, hint: "公司资料、字典与报告配置" },
+  { key: "dictionary", label: "系统字典", icon: BookOpenText, hint: "业务分类与字典项维护", secondary: true },
 ];
 
 const pageTitles: Record<PageKey, string> = {
@@ -49,12 +52,13 @@ const pageTitles: Record<PageKey, string> = {
   reports: "报告中心",
   permissions: "人员与权限",
   settings: "系统设置",
+  dictionary: "系统字典",
 };
 
 const navGroups: Array<{ label: string; keys: PageKey[] }> = [
   { label: "运营", keys: ["dashboard", "inspections", "sealing", "services"] },
   { label: "主数据", keys: ["customers", "reports"] },
-  { label: "管理", keys: ["permissions", "settings"] },
+  { label: "管理", keys: ["permissions", "settings", "dictionary"] },
 ];
 
 interface LayoutProps {
@@ -125,7 +129,7 @@ export function Layout({
                   <button
                     key={item.key}
                     type="button"
-                    className={`nav-item ${active ? "active" : ""}`}
+                    className={`nav-item ${active ? "active" : ""} ${item.secondary ? "nav-secondary" : ""}`}
                     onClick={() => onNavigate(item.key)}
                     title={item.hint}
                   >

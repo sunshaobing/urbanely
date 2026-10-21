@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import {
+  BadgeCheck,
+  ClipboardCheck,
+  Eye,
   KeyRound,
   RefreshCw,
   Save,
   Search,
   ShieldCheck,
   UserPlus,
+  Wrench,
   X,
 } from "lucide-react";
 import {
@@ -19,18 +23,49 @@ import type { PersonnelInput, PersonnelRecord } from "../api";
 import { CartoonAvatar } from "../components/CartoonAvatar";
 import { PageHeader } from "../components/PageHeader";
 import { StatusPill } from "../components/ui";
+import {
+  roleCatalog,
+  roleDefinition,
+  roleLabels,
+} from "../roleCatalog";
 
-const roleOptions = [
-  { value: "super_admin", label: "超级管理员" },
-  { value: "admin", label: "管理员" },
-  { value: "supervisor", label: "质量监理" },
-  { value: "sealing_engineer", label: "封堵工程师" },
-  { value: "service_engineer", label: "勘测工程师" },
-  { value: "engineer", label: "工程师" },
-  { value: "finance", label: "财务" },
-] as const;
+const roleIcons = {
+  super_admin: ShieldCheck,
+  admin: BadgeCheck,
+  supervisor: Eye,
+  service_engineer: ClipboardCheck,
+  sealing_engineer: Wrench,
+};
 
-const roleLabels = Object.fromEntries(roleOptions.map((role) => [role.value, role.label]));
+function RoleSelector({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (role: string) => void;
+}) {
+  return (
+    <div className="role-selector">
+      {roleCatalog.map((role) => {
+        const Icon = roleIcons[role.value as keyof typeof roleIcons] || ShieldCheck;
+        return (
+          <button
+            type="button"
+            key={role.value}
+            className={`role-choice role-${role.tone} ${value === role.value ? "active" : ""}`}
+            onClick={() => onChange(role.value)}
+          >
+            <span className="role-choice-icon"><Icon size={18} /></span>
+            <span className="role-choice-copy">
+              <strong>{role.label}</strong>
+              <small>{role.scope}</small>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function emptyDraft(): PersonnelInput {
   return {
@@ -38,7 +73,7 @@ function emptyDraft(): PersonnelInput {
     password: "",
     name: "",
     phone: "",
-    role: "engineer",
+    role: "service_engineer",
     active: true,
   };
 }
@@ -75,6 +110,7 @@ export function Permissions({ onNotify }: { onNotify: (message: string) => void 
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const selectedUser = users.find((user) => user.id === selectedId) ?? null;
+  const selectedRole = roleDefinition(draft.role);
 
   const loadUsers = async (preferredId?: number) => {
     setLoading(true);
@@ -378,16 +414,12 @@ export function Permissions({ onNotify }: { onNotify: (message: string) => void 
                     onChange={(event) => setDraft({ ...draft, phone: event.target.value })}
                   />
                 </label>
-                <label>
-                  <span>角色</span>
-                  <select
+                <label className="role-field">
+                  <span>角色与权限范围</span>
+                  <RoleSelector
                     value={draft.role}
-                    onChange={(event) => setDraft({ ...draft, role: event.target.value })}
-                  >
-                    {roleOptions.map((role) => (
-                      <option key={role.value} value={role.value}>{role.label}</option>
-                    ))}
-                  </select>
+                    onChange={(role) => setDraft({ ...draft, role })}
+                  />
                 </label>
                 <label>
                   <span>新密码</span>
@@ -414,6 +446,18 @@ export function Permissions({ onNotify }: { onNotify: (message: string) => void 
                 <ShieldCheck size={15} />
                 <span>密码留空表示保持原密码；修改后立即生效。</span>
               </div>
+
+              {selectedRole ? (
+                <div className={`role-definition-inline role-${selectedRole.tone}`}>
+                  <strong>{selectedRole.label}</strong>
+                  <p>{selectedRole.description}</p>
+                  <div>
+                    {selectedRole.permissions.map((permission) => (
+                      <span key={permission}>{permission}</span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
 
               <button
                 type="button"
@@ -468,16 +512,12 @@ export function Permissions({ onNotify }: { onNotify: (message: string) => void 
                   onChange={(event) => setAddDraft({ ...addDraft, phone: event.target.value })}
                 />
               </label>
-              <label>
-                <span>角色</span>
-                <select
+              <label className="role-field">
+                <span>角色与权限范围</span>
+                <RoleSelector
                   value={addDraft.role}
-                  onChange={(event) => setAddDraft({ ...addDraft, role: event.target.value })}
-                >
-                  {roleOptions.map((role) => (
-                    <option key={role.value} value={role.value}>{role.label}</option>
-                  ))}
-                </select>
+                  onChange={(role) => setAddDraft({ ...addDraft, role })}
+                />
               </label>
               <label>
                 <span>初始密码</span>

@@ -217,11 +217,16 @@ test("admin can dispatch a customer to a survey engineer", () => {
 
 test("the survey engineer role is labelled 勘测工程师 across the web app", () => {
   const permissions = read("app/src/pages/Permissions.tsx");
+  const roleCatalog = read("app/src/roleCatalog.ts");
   const login = read("app/src/pages/LoginPage.tsx");
   const dispatch = read("app/src/components/DispatchSurveyDialog.tsx");
 
-  assert.match(permissions, /label:\s*"勘测工程师"/);
-  assert.doesNotMatch(permissions, /label:\s*"服务工程师"/);
+  assert.match(roleCatalog, /label:\s*"勘测工程师"/);
+  assert.match(roleCatalog, /label:\s*"封堵工程师"/);
+  assert.match(roleCatalog, /label:\s*"运营管理员"/);
+  assert.match(permissions, /RoleSelector/);
+  assert.doesNotMatch(roleCatalog, /value:\s*"finance"/);
+  assert.doesNotMatch(roleCatalog, /value:\s*"engineer"/);
   assert.match(login, /service_engineer:\s*"勘测工程师"/);
   assert.match(dispatch, /service_engineer:\s*"勘测工程师"/);
 });
@@ -253,6 +258,7 @@ test("web system settings are wired to production settings APIs", () => {
   const app = read("app/src/App.tsx");
   const layout = read("app/src/components/Layout.tsx");
   const page = read("app/src/pages/SystemSettings.tsx");
+  const dictionaryPage = read("app/src/pages/SystemDictionaryPage.tsx");
   const api = read("app/src/api.ts");
   const css = read("app/src/styles.css");
 
@@ -260,13 +266,19 @@ test("web system settings are wired to production settings APIs", () => {
   assert.match(app, /getCurrentUser/);
   assert.match(app, /saveSession\(refreshed/);
   assert.match(app, /activePage === "settings"/);
+  assert.match(app, /activePage === "dictionary"/);
   assert.match(app, /canEdit=\{\["admin", "super_admin"\]\.includes\(session\.role\)\}/);
   assert.match(layout, /onNavigate\("settings"\)/);
   assert.match(layout, /settings: "系统设置"/);
+  assert.match(layout, /dictionary: "系统字典"/);
+  assert.match(layout, /nav-secondary/);
   assert.match(page, /getSystemSettings/);
   assert.match(page, /updateSystemSettings/);
   assert.match(page, /ReportTemplateEditor/);
-  assert.match(page, /SystemDictionaryEditor/);
+  assert.match(page, /onOpenDictionary/);
+  assert.match(dictionaryPage, /SystemDictionaryEditor/);
+  assert.match(dictionaryPage, /embedded/);
+  assert.match(dictionaryPage, /PageHeader/);
   assert.match(page, /管理系统字典/);
   assert.match(page, /checkout_force_photo/);
   assert.match(page, /work_checkin_sync/);
@@ -282,5 +294,6 @@ test("web system settings are wired to production settings APIs", () => {
   assert.match(css, /\.system-settings-layout/);
   assert.match(css, /\.settings-switch-row/);
   assert.match(css, /\.dictionary-layout/);
+  assert.match(css, /\.role-selector/);
 });
 
