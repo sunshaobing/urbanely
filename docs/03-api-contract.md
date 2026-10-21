@@ -40,6 +40,8 @@
 - `POST /api/templates/logo`
 - `POST /api/templates/seal`
 - `GET|PUT /api/settings`
+- `GET|POST /api/dictionary`
+- `PUT|DELETE /api/dictionary/{item_id}`
 - `POST /api/workorders/{order_id}/review`
 - `GET /api/workorders/{order_id}/checkins`
 - `POST /api/workorders/{order_id}/checkin`
@@ -333,12 +335,19 @@ Returns site profile, risk level, next service, open findings count.
 ### 5.6 Web 报告模板编辑
 
 - 报告中心仅对 `admin` 和 `super_admin` 显示“编辑报告模板”入口；普通报告查看权限不变。
-- Web 侧栏“系统设置”进入独立设置页：`GET /api/settings` 读取公司资料、现场规则和报告开关；仅 `super_admin` 可通过 `PUT /api/settings` 保存。
+- Web 侧栏“系统设置”进入独立设置页：`GET /api/settings` 读取公司资料、现场规则和报告开关；`admin` 和 `super_admin` 可通过 `PUT /api/settings` 保存。
 - 系统设置包含公司名称、地址、电话、负责人、服务热线、邮箱、网站、区域、报告备注，以及强制现场拍照、签到同步、库存强校验、邮件推送和客户电话脱敏开关。
 - `PUT /api/templates` 保存公司名称、公司电话、编号前缀、年份/流水号位数、封堵报告章节顺序、验收标准、卫生建议、后续服务建议和水印文本。
 - `POST /api/templates/logo` 与 `POST /api/templates/seal` 分别上传报告 Logo 和专用章，仅接受 PNG/JPG/JPEG，单个文件不超过 2 MB。
 - 章节顺序直接写入 `service_report_sections`，后端生成封堵 PDF 时按该顺序渲染；保存后 Web 报告中心立即刷新模板数据。
 - 公司名称和联系电话写入模板后，勘测、封堵及作业单 PDF 的页眉/页脚和致谢信息使用同一设置，避免 Web 配置与导出文件不一致。
+
+### 5.7 系统字典
+
+- `GET /api/dictionary` 返回全部字典分类与字典项；首次访问自动初始化风险等级、虫害种类、结构情况、勘测范围、漏洞类型、客户类型和任务标签。
+- `admin` 和 `super_admin` 可通过 `POST /api/dictionary`、`PUT /api/dictionary/{id}` 和 `DELETE /api/dictionary/{id}` 新增、编辑和删除字典项。
+- 字典项包含分类编码、稳定编码、显示名称、排序、启停、颜色和备注；同一分类内的编码唯一。
+- Web 系统设置页提供字典编辑器，可切换分类、扩展新分类、维护启停状态和排序；普通读取权限保持不变。
 
 ## 6. Rechecks
 

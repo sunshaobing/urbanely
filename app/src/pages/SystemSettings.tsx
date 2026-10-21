@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   Building2,
+  Database,
   FileText,
   Pencil,
   Save,
@@ -17,6 +18,7 @@ import type {
 } from "../api";
 import { PageHeader } from "../components/PageHeader";
 import { ReportTemplateEditor } from "../components/ReportTemplateEditor";
+import { SystemDictionaryEditor } from "../components/SystemDictionaryEditor";
 import { SectionTitle, StatusPill } from "../components/ui";
 import { mediaUrl } from "../backendMappers";
 import { useLiveData } from "../liveData";
@@ -111,6 +113,7 @@ export function SystemSettings({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
+  const [dictionaryEditorOpen, setDictionaryEditorOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -176,7 +179,7 @@ export function SystemSettings({
         meta={
           <>
             <span className="live-dot" />
-            {canEdit ? "超级管理员可编辑" : "当前账号只读"}
+            {canEdit ? "管理员可编辑" : "当前账号只读"}
           </>
         }
         actions={
@@ -391,6 +394,25 @@ export function SystemSettings({
               <div><span>邮件推送</span><strong>{form.report_email_send ? "开启" : "关闭"}</strong></div>
             </div>
           </section>
+
+          <section className="panel settings-summary">
+            <SectionTitle title="系统字典" subtitle="统一维护分类与可选值" />
+            <div className="settings-dictionary-card">
+              <Database size={22} />
+              <div>
+                <strong>业务字典中心</strong>
+                <span>风险等级、虫害、结构情况、漏洞类型等</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="button secondary full-width"
+              onClick={() => setDictionaryEditorOpen(true)}
+            >
+              <Database size={15} />
+              {canEdit ? "管理系统字典" : "查看系统字典"}
+            </button>
+          </section>
         </aside>
       </div>
 
@@ -401,6 +423,15 @@ export function SystemSettings({
         onSaved={() => {
           void refreshLiveData();
           onNotify("报告模板已保存");
+        }}
+      />
+      <SystemDictionaryEditor
+        open={dictionaryEditorOpen}
+        canEdit={canEdit}
+        onClose={() => setDictionaryEditorOpen(false)}
+        onSaved={() => {
+          void refreshLiveData();
+          onNotify("系统字典已更新");
         }}
       />
     </div>

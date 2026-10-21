@@ -352,6 +352,39 @@ export interface SystemSettingsInput {
   stock_strong_check: boolean;
 }
 
+export interface BackendDictionaryItem {
+  id: number;
+  category: string;
+  code: string;
+  label: string;
+  sort_order: number;
+  active: boolean;
+  color: string;
+  remark: string;
+  updated_at?: string;
+}
+
+export interface BackendDictionaryCategory {
+  category: string;
+  label: string;
+  count: number;
+}
+
+export interface BackendDictionary {
+  categories: BackendDictionaryCategory[];
+  items: BackendDictionaryItem[];
+}
+
+export interface DictionaryItemInput {
+  category: string;
+  code: string;
+  label: string;
+  sort_order: number;
+  active: boolean;
+  color: string;
+  remark: string;
+}
+
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   body?: unknown;
@@ -581,6 +614,32 @@ export function updateSystemSettings(body: SystemSettingsInput) {
   return request<BackendSystemSettings>("/api/settings", {
     method: "PUT",
     body,
+  });
+}
+
+export function getDictionary(category = "") {
+  return request<BackendDictionary>(
+    `/api/dictionary${queryString({ category })}`,
+  );
+}
+
+export function createDictionaryItem(body: DictionaryItemInput) {
+  return request<BackendDictionaryItem>("/api/dictionary", {
+    method: "POST",
+    body,
+  });
+}
+
+export function updateDictionaryItem(id: number, body: DictionaryItemInput) {
+  return request<BackendDictionaryItem>(`/api/dictionary/${id}`, {
+    method: "PUT",
+    body,
+  });
+}
+
+export function deleteDictionaryItem(id: number) {
+  return request<{ ok: boolean }>(`/api/dictionary/${id}`, {
+    method: "DELETE",
   });
 }
 

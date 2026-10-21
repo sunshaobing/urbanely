@@ -258,19 +258,26 @@ test("web system settings are wired to production settings APIs", () => {
 
   assert.match(app, /SystemSettings/);
   assert.match(app, /activePage === "settings"/);
-  assert.match(app, /canEdit=\{session\.role === "super_admin"\}/);
+  assert.match(app, /canEdit=\{\["admin", "super_admin"\]\.includes\(session\.role\)\}/);
   assert.match(layout, /onNavigate\("settings"\)/);
   assert.match(layout, /settings: "系统设置"/);
   assert.match(page, /getSystemSettings/);
   assert.match(page, /updateSystemSettings/);
   assert.match(page, /ReportTemplateEditor/);
+  assert.match(page, /SystemDictionaryEditor/);
+  assert.match(page, /管理系统字典/);
   assert.match(page, /checkout_force_photo/);
   assert.match(page, /work_checkin_sync/);
   assert.match(page, /report_hide_customer_phone/);
   assert.match(page, /保存设置/);
   assert.match(api, /export function getSystemSettings/);
   assert.match(api, /export function updateSystemSettings/);
+  assert.match(api, /export function getDictionary/);
+  assert.match(api, /export function createDictionaryItem/);
+  assert.match(api, /export function updateDictionaryItem/);
+  assert.match(api, /export function deleteDictionaryItem/);
   assert.match(css, /\.system-settings-layout/);
   assert.match(css, /\.settings-switch-row/);
+  assert.match(css, /\.dictionary-layout/);
 });
 

@@ -102,7 +102,7 @@ export default function App() {
         ) : null}
         {activePage === "settings" ? (
           <SystemSettings
-            canEdit={session.role === "super_admin"}
+            canEdit={["admin", "super_admin"].includes(session.role)}
             canManageTemplates={["admin", "super_admin"].includes(session.role)}
             onNotify={notify}
           />
