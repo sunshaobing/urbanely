@@ -34,6 +34,14 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.match(manifest, /"versionCode"\s*:\s*"313"/);
   assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
   assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
+  assert.match(manifest, /"NSLocationWhenInUseUsageDescription"/);
+  assert.match(manifest, /"NSCameraUsageDescription"/);
+  assert.match(manifest, /"NSPhotoLibraryUsageDescription"/);
+  assert.match(
+    manifest,
+    /"appstore"\s*:\s*"src\/static\/icons\/app-1024\.png"/,
+  );
+  assert.match(manifest, /"idfa"\s*:\s*false/);
   assert.match(manifest, /android\.permission\.ACCESS_FINE_LOCATION/);
   assert.match(manifest, /android\.permission\.CAMERA/);
   assert.match(manifest, /"Geolocation"/);

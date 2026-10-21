@@ -44,7 +44,13 @@
             },
             /* ios打包配置 */
             "ios" : {
-                "dSYMs" : false
+                "dSYMs" : false,
+                "idfa" : false,
+                "privacyDescription" : {
+                    "NSLocationWhenInUseUsageDescription" : "用于现场服务人员到达客户门店后完成签到并记录到场位置。",
+                    "NSCameraUsageDescription" : "用于拍摄现场服务照片和手写签字确认。",
+                    "NSPhotoLibraryUsageDescription" : "用于选择现场服务照片并上传至服务报告。"
+                }
             },
             /* SDK配置 */
             "sdkConfigs" : {},
@@ -54,6 +60,9 @@
                     "xhdpi" : "src/static/icons/app-96.png",
                     "xxhdpi" : "src/static/icons/app-144.png",
                     "xxxhdpi" : "src/static/icons/app-192.png"
+                },
+                "ios" : {
+                    "appstore" : "src/static/icons/app-1024.png"
                 }
             }
         }
