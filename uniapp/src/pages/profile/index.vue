@@ -575,35 +575,40 @@ onPullDownRefresh(async () => {
 }
 
 .metric-grid {
+  gap: 0;
   overflow: hidden;
   padding: 0;
+  align-items: stretch;
 }
 
 .metric-card {
-  width: 50%;
-  padding: 20rpx 22rpx;
+  width: 25%;
+  min-height: 112rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14rpx 6rpx;
   border-right: 1rpx solid #e5ece7;
-  border-bottom: 1rpx solid #e5ece7;
-  background: #ffffff;
-}
-
-.metric-card:nth-child(2n) {
-  border-right: 0;
-}
-
-.metric-card:nth-last-child(-n + 2) {
   border-bottom: 0;
+  background: #ffffff;
+  text-align: center;
+}
+
+.metric-card:nth-child(4n) {
+  border-right: 0;
 }
 
 .metric-value {
   color: #103b2d;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
-  font-size: 34rpx;
+  font-size: 30rpx;
 }
 
 .metric-label {
   color: #65736c;
-  font-size: 20rpx;
+  font-size: 18rpx;
+  white-space: nowrap;
 }
 
 .sync-card {
@@ -677,5 +682,21 @@ onPullDownRefresh(async () => {
 
 .profile-footnote {
   color: #8a968f;
+}
+
+@media (max-width: 300px) {
+  .metric-card {
+    width: 50%;
+    border-right: 1rpx solid #e5ece7;
+    border-bottom: 1rpx solid #e5ece7;
+  }
+
+  .metric-card:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .metric-card:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
 }
 </style>

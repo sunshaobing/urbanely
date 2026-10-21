@@ -5,7 +5,7 @@
 - 应用名称：申汰封堵勘测
 - Android 包名：`cn.sunrgw.pco`
 - DCloud AppID：`__UNI__D1F98CA`
-- 当前版本：`3.1.1` / versionCode `311`
+- 当前版本：`3.1.2` / versionCode `312`
 - 最低适用系统：Android 8.0
 - 分发方式：企业内部直接下载安装，不上架应用商店
 
@@ -25,10 +25,10 @@
 
 - 构建日期：2026-10-21
 - APK 大小：15,246,920 字节（约 14.5 MB）
-- SHA-256：`E1485595C5530968A85D401C5A211E9FDA600FEDA4F077659BBB4425C292B9CC`
+- SHA-256：`AB690133E842224879715F63D5D0309CE9950B336B681C5D62C1629638729DB8`
 - APK 签名：v1 + v2 校验通过，签名证书 SHA-256 与本节一致
 - Android minSdk：21；targetSdk：28；compileSdk：36
-- 本版修复：登录状态跨启动保持；现场照片选择后立即持久化并上传，避免临时文件过期导致 422；存草稿按钮文字居中；小程序声明 `requiredPrivateInfos/getLocation` 与位置权限说明，签到定位支持高精度超时后普通定位和 WGS84 回退；工作台三项统计改为等宽三等分，统一间距，并收紧任务筛选和任务卡片的视觉节奏。
+- 本版修复：登录状态跨启动保持；现场照片选择后立即持久化并上传，避免临时文件过期导致 422；存草稿按钮文字居中；小程序声明 `requiredPrivateInfos/getLocation` 与位置权限说明，签到定位支持高精度超时后普通定位和 WGS84 回退；工作台三项改为横向“标签 + 数量”等宽排列；“我的”页四个统计入口在常规手机上一行四项，极窄屏自动折成两行。
 
 ## 3. 构建
 
@@ -69,7 +69,7 @@ APK、安装说明页和 SHA-256 校验文件统一放在服务器：
 
 ```text
 https://sunrgw.cn/download/
-https://sunrgw.cn/download/shentai-pco-3.1.1.apk
+https://sunrgw.cn/download/shentai-pco-3.1.2.apk
 https://sunrgw.cn/download/shentai-pco-latest.apk
 ```
 

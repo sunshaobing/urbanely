@@ -30,8 +30,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.1\.1"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"311"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.1\.2"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"312"/);
   assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
   assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /android\.permission\.ACCESS_FINE_LOCATION/);
@@ -197,10 +197,27 @@ test("workbench metrics use equal three-column spacing", () => {
   );
   assert.match(
     workbench,
-    /\.metric-primary,\s*\.metric-item\s*\{[\s\S]*?flex-direction:\s*column;[\s\S]*?align-items:\s*center;[\s\S]*?justify-content:\s*center;/,
+    /\.metric-primary,\s*\.metric-item\s*\{[\s\S]*?flex-direction:\s*row;[\s\S]*?align-items:\s*center;[\s\S]*?justify-content:\s*center;[\s\S]*?min-height:\s*72rpx;[\s\S]*?border-radius:\s*10rpx;/,
   );
   assert.doesNotMatch(workbench, /\.metric-item\s*\{[^}]*text-align:\s*right/);
   assert.match(workbench, /#ifdef APP-PLUS[\s\S]*?\.workbench-header/);
+});
+
+test("profile quick metrics stay in one row and wrap only when very narrow", () => {
+  const profile = read("src/pages/profile/index.vue");
+
+  assert.match(profile, /class="metric-grid card"/);
+  assert.match(
+    profile,
+    /\.metric-card\s*\{[\s\S]*?width:\s*25%;[\s\S]*?min-height:\s*112rpx;[\s\S]*?border-right:\s*1rpx solid #e5ece7;/,
+  );
+  assert.match(
+    profile,
+    /@media\s*\(max-width:\s*300px\)[\s\S]*?\.metric-card\s*\{[\s\S]*?width:\s*50%;/,
+  );
+  for (const label of ["本月任务", "风险勘测", "封堵记录", "到期复检"]) {
+    assert.match(profile, new RegExp(label));
+  }
 });
 
 test("the field workflow follows survey approval, dispatch, check-in, sealing and report generation", () => {

@@ -228,16 +228,16 @@ onPullDownRefresh(async () => {
 
       <view class="metric-strip">
         <view class="metric-primary">
-          <text class="metric-value">{{ loading ? "--" : allTasks.length }}</text>
           <text class="metric-label">{{ taskMetricLabel }}</text>
+          <text class="metric-value">{{ loading ? "--" : allTasks.length }}</text>
         </view>
         <view class="metric-item">
-          <text class="metric-value small">{{ loading ? "--" : openCount }}</text>
           <text class="metric-label">待处理</text>
+          <text class="metric-value small">{{ loading ? "--" : openCount }}</text>
         </view>
         <view class="metric-item">
-          <text class="metric-value small">{{ loading ? "--" : doneCount }}</text>
           <text class="metric-label">已完成</text>
+          <text class="metric-value small">{{ loading ? "--" : doneCount }}</text>
         </view>
       </view>
     </view>
@@ -445,8 +445,9 @@ onPullDownRefresh(async () => {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: stretch;
+  gap: 8rpx;
   margin-top: 24rpx;
-  padding: 20rpx 0;
+  padding: 10rpx;
   border: 1rpx solid #dde7e0;
   border-radius: 14rpx;
   background: #ffffff;
@@ -456,17 +457,20 @@ onPullDownRefresh(async () => {
 .metric-primary,
 .metric-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 6rpx;
+  gap: 8rpx;
   min-width: 0;
-  padding: 0 10rpx;
+  min-height: 72rpx;
+  padding: 0 8rpx;
+  border-radius: 10rpx;
+  background: #f6f9f7;
   text-align: center;
 }
 
 .metric-item {
-  border-left: 1rpx solid #e5ece7;
+  border-left: 0;
 }
 
 .metric-value,
@@ -477,7 +481,7 @@ onPullDownRefresh(async () => {
 .metric-value {
   color: #103b2d;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
-  font-size: 36rpx;
+  font-size: 30rpx;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
@@ -485,7 +489,7 @@ onPullDownRefresh(async () => {
 
 .metric-value.small {
   color: #17211d;
-  font-size: 36rpx;
+  font-size: 30rpx;
 }
 
 .metric-label {
