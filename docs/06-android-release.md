@@ -71,7 +71,10 @@ APK、安装说明页和 SHA-256 校验文件统一放在服务器：
 https://sunrgw.cn/download/
 https://sunrgw.cn/download/shentai-pco-3.1.2.apk
 https://sunrgw.cn/download/shentai-pco-latest.apk
+https://sunrgw.cn/download/android-download-qr.png
 ```
+
+下载二维码指向安装说明页，扫码后从页面进入 APK 下载；当前 3.1.2 二维码已用本地 QR 解码器回读校验，内容为 `https://sunrgw.cn/download/`。
 
 安装步骤：
 

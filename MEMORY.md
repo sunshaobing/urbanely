@@ -190,4 +190,5 @@
 - The Web sealing report preview now renders actual before/after photos, not placeholders, using `beforePhotoUrl`/`afterPhotoUrl`; the PDF still includes the same photos and signatures. The filter status `assigned` now displays as `已排期`, and unassigned leaders display `待派单`.
 - The workbench metrics now use three equal horizontal chips (`label + count`) with fixed 8rpx gaps and uniform 72rpx height/10rpx radius. Playwright at 320/375/390 px measured identical widths, equal gaps, horizontal label/value alignment, no clipping and no horizontal overflow.
 - The profile four quick metrics use 25% width each for one row on 320/375/390 px, and switch to 50% width/two rows at 300 px and below. All four cards have uniform height, typography and divider treatment; the profile data query and navigation remain unchanged.
+- The Android download page at `https://sunrgw.cn/download/` includes a hosted QR image at `/download/android-download-qr.png`. The QR points to the download page and was decoded back locally as `https://sunrgw.cn/download/`; it is intended for in-place upgrades, not uninstalling the current app.
 
