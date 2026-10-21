@@ -59,6 +59,10 @@ function openPassword() {
   uni.navigateTo({ url: "/pages/password/index" });
 }
 
+function openAgreement(type: "service" | "privacy") {
+  uni.navigateTo({ url: `/pages/agreement/index?type=${type}` });
+}
+
 function about() {
   uni.showModal({
     title: "申汰封堵勘测",
@@ -174,6 +178,26 @@ onPullDownRefresh(async () => {
             <view class="menu-copy">
               <text class="menu-title">关于系统</text>
               <text class="menu-sub">uni-app 现场作业端 · v1.0</text>
+            </view>
+            <UniIcons type="right" size="16" color="#8a968f" />
+          </view>
+          <view class="menu-row pressable" @tap="openAgreement('service')">
+            <view class="menu-icon">
+              <UniIcons type="compose" size="19" color="#176b52" />
+            </view>
+            <view class="menu-copy">
+              <text class="menu-title">用户服务协议</text>
+              <text class="menu-sub">现场服务、账号使用与数据规则</text>
+            </view>
+            <UniIcons type="right" size="16" color="#8a968f" />
+          </view>
+          <view class="menu-row pressable" @tap="openAgreement('privacy')">
+            <view class="menu-icon">
+              <UniIcons type="locked" size="19" color="#176b52" />
+            </view>
+            <view class="menu-copy">
+              <text class="menu-title">隐私政策</text>
+              <text class="menu-sub">信息收集、位置、照片与签字说明</text>
             </view>
             <UniIcons type="right" size="16" color="#8a968f" />
           </view>

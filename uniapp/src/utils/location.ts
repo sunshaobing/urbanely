@@ -1,13 +1,6 @@
-export const MAX_ACCURACY_METERS = 80;
+import { ensurePrivacyAuthorized } from "./privacy";
 
-declare const wx:
-  | {
-      requirePrivacyAuthorize?: (options: {
-        success: () => void;
-        fail: () => void;
-      }) => void;
-    }
-  | undefined;
+export const MAX_ACCURACY_METERS = 80;
 
 export interface PreciseLocation {
   latitude: number;
@@ -122,15 +115,7 @@ function requestLocation(attempt: LocationAttempt) {
 
 async function ensureMiniProgramPermission() {
   // #ifdef MP-WEIXIN
-  if (wx?.requirePrivacyAuthorize) {
-    await new Promise<void>((resolve, reject) => {
-      wx?.requirePrivacyAuthorize?.({
-        success: resolve,
-        fail: () =>
-          reject(new Error("请先同意隐私保护指引后再进行现场签到")),
-      });
-    });
-  }
+  await ensurePrivacyAuthorized();
 
   const setting = await new Promise<UniApp.GetSettingSuccessResult>(
     (resolve, reject) => {

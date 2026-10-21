@@ -30,8 +30,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.1\.2"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"312"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.1\.3"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"313"/);
   assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
   assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /android\.permission\.ACCESS_FINE_LOCATION/);
@@ -482,6 +482,24 @@ test("login requires agreement to the service and privacy policies", () => {
   );
 });
 
+test("official WeChat privacy authorization precedes data collection", () => {
+  const login = read("src/pages/login/index.vue");
+  const privacy = read("src/utils/privacy.ts");
+  const location = read("src/utils/location.ts");
+  const photoGrid = read("src/components/PhotoGrid.vue");
+  const agreement = read("src/pages/agreement/index.vue");
+  const profile = read("src/pages/profile/index.vue");
+
+  assert.match(privacy, /requirePrivacyAuthorize/);
+  assert.match(login, /ensurePrivacyAuthorized/);
+  assert.match(location, /ensurePrivacyAuthorized/);
+  assert.match(photoGrid, /ensurePrivacyAuthorized/);
+  assert.match(agreement, /运营者：上海申汰实业有限公司/);
+  assert.match(agreement, /授权与同意/);
+  assert.match(profile, /openAgreement\('service'\)/);
+  assert.match(profile, /openAgreement\('privacy'\)/);
+});
+
 test("app login restores the saved session and requests a long-lived token", () => {
   const login = read("src/pages/login/index.vue");
   const api = read("src/utils/api.ts");
@@ -525,11 +543,13 @@ test("picked photos persist and upload before temporary files expire", () => {
 test("location check-in declares WeChat privacy permission and retries", () => {
   const manifest = read("src/manifest.json");
   const location = read("src/utils/location.ts");
+  const privacy = read("src/utils/privacy.ts");
 
   assert.match(manifest, /requiredPrivateInfos/);
   assert.match(manifest, /getLocation/);
   assert.match(manifest, /scope\.userLocation/);
-  assert.match(location, /requirePrivacyAuthorize/);
+  assert.match(privacy, /requirePrivacyAuthorize/);
+  assert.match(location, /ensurePrivacyAuthorized/);
   assert.match(location, /LOCATION_ATTEMPTS/);
   assert.match(location, /type: "wgs84"/);
   assert.match(location, /highAccuracyExpireTime:\s*attempt\.highAccuracy\s*\?\s*15000/);

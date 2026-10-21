@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 import type { PhotoDraft } from "../utils/types";
 import { persistLocalFile } from "../utils/files";
+import { ensurePrivacyAuthorized } from "../utils/privacy";
 
 const props = withDefaults(
   defineProps<{
@@ -28,6 +29,18 @@ const uploading = ref(false);
 async function choosePhotos() {
   if (remaining.value <= 0 || uploading.value) {
     uni.showToast({ title: `最多上传 ${props.max} 张`, icon: "none" });
+    return;
+  }
+  try {
+    await ensurePrivacyAuthorized();
+  } catch (privacyError) {
+    uni.showToast({
+      title:
+        privacyError instanceof Error
+          ? privacyError.message
+          : "请先同意隐私保护指引后再选择照片",
+      icon: "none",
+    });
     return;
   }
   uni.chooseImage({

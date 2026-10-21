@@ -6,6 +6,7 @@ import BrandLogo from "../../components/BrandLogo.vue";
 import { login } from "../../utils/api";
 import { getSession, saveAuth } from "../../utils/auth";
 import { ensureBrand } from "../../utils/brand";
+import { ensurePrivacyAuthorized } from "../../utils/privacy";
 
 const identifier = ref("");
 const password = ref("");
@@ -49,6 +50,7 @@ async function submit() {
   loading.value = true;
   error.value = "";
   try {
+    await ensurePrivacyAuthorized();
     const payload = await login(identifier.value.trim(), password.value);
     saveAuth(payload);
     uni.reLaunch({
@@ -158,6 +160,9 @@ function showResetHelp() {
               </text>
             </view>
           </view>
+          <text class="agreement-helper">
+            未同意前不会提交账号密码，也不会获取位置、相机或照片信息
+          </text>
 
           <button class="login-submit" :disabled="!canSubmit" @tap="submit">
             {{ loading ? "正在登录" : "登录" }}
@@ -330,6 +335,14 @@ function showResetHelp() {
 .agreement-link {
   color: #176b52;
   font-weight: 600;
+}
+
+.agreement-helper {
+  display: block;
+  margin-top: 8rpx;
+  color: #8a968f;
+  font-size: 19rpx;
+  line-height: 1.5;
 }
 
 .login-submit[disabled] {
