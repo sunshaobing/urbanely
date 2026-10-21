@@ -30,8 +30,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.9"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"309"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.1\.0"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"310"/);
   assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
   assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /android\.permission\.ACCESS_FINE_LOCATION/);
@@ -406,7 +406,8 @@ test("both field roles check in with high-accuracy GPS before work", () => {
   const detail = read("src/pages/task-detail/index.vue");
   const workflow = read("src/utils/workflow.ts");
 
-  assert.match(location, /isHighAccuracy:\s*true/);
+  assert.match(location, /highAccuracy:\s*true/);
+  assert.match(location, /isHighAccuracy:\s*attempt\.highAccuracy/);
   assert.match(location, /highAccuracyExpireTime/);
   assert.match(location, /MAX_ACCURACY_METERS/);
   assert.match(location, /定位精度不足/);
@@ -487,6 +488,20 @@ test("picked photos persist and upload before temporary files expire", () => {
   assert.match(files, /uni\.saveFile/);
   assert.match(api, /persistLocalFile\(filePath\)/);
   assert.match(api, /图片文件未上传成功/);
+});
+
+test("location check-in declares WeChat privacy permission and retries", () => {
+  const manifest = read("src/manifest.json");
+  const location = read("src/utils/location.ts");
+
+  assert.match(manifest, /requiredPrivateInfos/);
+  assert.match(manifest, /getLocation/);
+  assert.match(manifest, /scope\.userLocation/);
+  assert.match(location, /requirePrivacyAuthorize/);
+  assert.match(location, /LOCATION_ATTEMPTS/);
+  assert.match(location, /type: "wgs84"/);
+  assert.match(location, /highAccuracyExpireTime:\s*attempt\.highAccuracy\s*\?\s*15000/);
+  assert.match(location, /uni\.authorize/);
 });
 
 test("root WeChat project points at the uni-app build output", () => {

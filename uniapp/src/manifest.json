@@ -2,8 +2,8 @@
     "name" : "申汰封堵勘测",
     "appid" : "__UNI__D1F98CA",
     "description" : "申汰 PCO 现场服务系统",
-    "versionName" : "3.0.9",
-    "versionCode" : "309",
+    "versionName" : "3.1.0",
+    "versionCode" : "310",
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
@@ -63,6 +63,12 @@
     /* 小程序特有相关 */
     "mp-weixin" : {
         "appid" : "wx9469d5e631279f7b",
+        "requiredPrivateInfos" : [ "getLocation" ],
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "用于现场到达签到并记录精确定位"
+            }
+        },
         "setting" : {
             "urlCheck" : true
         },
