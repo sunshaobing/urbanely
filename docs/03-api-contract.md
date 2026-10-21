@@ -307,6 +307,13 @@ Returns site profile, risk level, next service, open findings count.
 - 封堵师傅的签到、接单、双签、提交和 PDF 下载均通过 `service_person` 校验；服务单列表按 `service_person`/客户归属过滤。
 - 封堵服务单的 `risk_photos` 表示封堵前照片，`photos` 表示封堵后照片；Web 预览和 PDF 都使用实际图片 URL。
 
+### 5.4 PDF 报告表头
+
+- 现场勘测 PDF 的表头固定为 `现场勘测报告`，标题在页面水平居中，报告编号保持在右上区域。
+- 封堵完成 PDF 的表头固定为 `结构漏洞(鼠洞)封堵报告`，标题在页面水平居中，报告编号保持在右上区域；不再使用 `现场服务报告` 或 `现场服务管理报告`。
+- `GET /service-reports/{id}/pdf` 每次请求都按当前模板重新生成 PDF，并返回 `Cache-Control: no-store`，防止历史文件或浏览器缓存继续显示旧标题。
+- 表头调整只影响 PDF 模板和响应缓存策略，不改变报告数据、签字、照片、下载地址或其它前后端交互。
+
 ## 6. Rechecks
 
 ### POST `/rechecks`
