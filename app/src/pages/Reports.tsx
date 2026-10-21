@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, FileCheck2, FileText, Printer, RefreshCw, Wrench } from "lucide-react";
+import { Download, FileCheck2, FileText, Pencil, Printer, RefreshCw, Wrench } from "lucide-react";
 import { getRiskSurvey, getServiceReport, openBackendPdf } from "../api";
 import type { BackendRiskSurvey, BackendServiceReport } from "../api";
 import type { CheckinRecord, ReportTemplate, Site } from "../types";
 import { buildSites, toInspection, toSealingOrder } from "../backendMappers";
 import { SealingReportSheet, SurveyReportSheet } from "../components/ReportSheet";
+import { ReportTemplateEditor } from "../components/ReportTemplateEditor";
 import { PageHeader } from "../components/PageHeader";
 import { SectionTitle, StatusPill } from "../components/ui";
 import { useLiveData } from "../liveData";
@@ -13,6 +14,7 @@ interface ReportsProps {
   initialTemplate: ReportTemplate;
   initialInspectionId: string;
   initialSealingId: string;
+  canEditTemplates: boolean;
   onNotify: (message: string) => void;
 }
 
@@ -20,6 +22,7 @@ export function Reports({
   initialTemplate,
   initialInspectionId,
   initialSealingId,
+  canEditTemplates,
   onNotify,
 }: ReportsProps) {
   const {
@@ -31,6 +34,7 @@ export function Reports({
     riskSurveys,
     serviceReports,
     sites,
+    templates,
     workorders,
   } = useLiveData();
   const liveSites = useMemo(
@@ -41,6 +45,7 @@ export function Reports({
   const [surveyDetail, setSurveyDetail] = useState<BackendRiskSurvey | null>(null);
   const [reportDetail, setReportDetail] = useState<BackendServiceReport | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
   const inspections = useMemo(
     () =>
       riskSurveys.map((survey) =>
@@ -172,7 +177,24 @@ export function Reports({
 
       <div className="reports-layout">
         <aside className="panel report-templates no-print">
-          <SectionTitle title="报告模板" subtitle="实时后端报告" />
+          <SectionTitle
+            title="报告模板"
+            subtitle="实时后端报告"
+            action={
+              canEditTemplates ? (
+                <button
+                  type="button"
+                  className="button ghost report-template-edit"
+                  title="编辑报告模板"
+                  aria-label="编辑报告模板"
+                  onClick={() => setTemplateEditorOpen(true)}
+                >
+                  <Pencil size={16} />
+                  编辑
+                </button>
+              ) : null
+            }
+          />
           <button type="button" className={`template-card ${template === "survey" ? "active" : ""}`} onClick={() => setTemplate("survey")}>
             <FileText size={18} />
             <div><strong>现场勘测报告</strong><span>{riskSurveys.length} 份记录</span></div>
@@ -281,6 +303,15 @@ export function Reports({
           </div>
         </aside>
       </div>
+      <ReportTemplateEditor
+        open={canEditTemplates && templateEditorOpen}
+        templates={templates}
+        onClose={() => setTemplateEditorOpen(false)}
+        onSaved={() => {
+          void refresh();
+          onNotify("报告模板已保存");
+        }}
+      />
     </div>
   );
 }

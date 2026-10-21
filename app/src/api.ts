@@ -282,9 +282,39 @@ export interface SiteInput {
 
 export interface BackendTemplates {
   logo_url?: string;
+  report_logo?: string;
+  report_seal?: string;
   company_name?: string;
+  company_address?: string;
+  company_phone?: string;
   service_company?: string;
+  report_prefix?: string;
+  report_year_digits?: number | string;
+  report_seq_digits?: number | string;
+  acceptance_items?: string[] | string;
+  hygiene_items?: string[] | string;
+  service_suggestion?: string;
+  service_report_sections?: string[];
+  report_watermark_text?: string;
   [key: string]: unknown;
+}
+
+export interface ReportTemplateInput {
+  company_name: string;
+  company_phone: string;
+  report_prefix: string;
+  report_year_digits: number;
+  report_seq_digits: number;
+  acceptance_items: string[];
+  hygiene_items: string[];
+  service_suggestion: string;
+  service_report_sections: string[];
+  report_watermark_text: string;
+}
+
+export interface TemplateUploadResult {
+  ok: boolean;
+  path: string;
 }
 
 interface RequestOptions {
@@ -343,6 +373,23 @@ export async function request<T>(
   if (response.status === 401) clearSession();
   if (!response.ok) throw new Error(errorMessage(payload, response.status));
   return payload as T;
+}
+
+async function uploadTemplateAsset(path: string, file: File) {
+  const session = loadSession();
+  const form = new FormData();
+  form.append("file", file);
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: session?.token
+      ? { Authorization: `Bearer ${session.token}` }
+      : undefined,
+    body: form,
+  });
+  const payload = await response.json().catch(() => null);
+  if (response.status === 401) clearSession();
+  if (!response.ok) throw new Error(errorMessage(payload, response.status));
+  return payload as TemplateUploadResult;
 }
 
 export function itemsOf<T>(payload: unknown): T[] {
@@ -474,6 +521,21 @@ export function deleteSite(id: number) {
 
 export function getTemplates() {
   return request<BackendTemplates>("/api/templates");
+}
+
+export function updateTemplates(body: ReportTemplateInput) {
+  return request<BackendTemplates>("/api/templates", {
+    method: "PUT",
+    body,
+  });
+}
+
+export function uploadReportLogo(file: File) {
+  return uploadTemplateAsset("/api/templates/logo", file);
+}
+
+export function uploadReportSeal(file: File) {
+  return uploadTemplateAsset("/api/templates/seal", file);
 }
 
 export function updateRiskSurvey(id: number, body: Record<string, unknown>) {

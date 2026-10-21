@@ -2721,6 +2721,12 @@ button.chip {
   top: 82px;
 }
 
+.report-template-edit {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 10px;
+}
+
 .template-card {
   display: flex;
   gap: 10px;
@@ -6394,6 +6400,199 @@ button.chip {
   width: min(720px, 100%);
 }
 
+.report-template-editor {
+  width: min(880px, 100%);
+}
+
+.report-template-editor-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.template-editor-section {
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.template-editor-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.template-editor-section-head h3 {
+  font-size: 13px;
+}
+
+.template-editor-section-head p {
+  max-width: 430px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.report-template-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 0;
+}
+
+.report-template-assets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.template-asset-row {
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+}
+
+.template-asset-preview {
+  width: 50px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.template-asset-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.template-asset-copy {
+  min-width: 0;
+}
+
+.template-asset-copy strong,
+.template-asset-copy span {
+  display: block;
+}
+
+.template-asset-copy strong {
+  font-size: 11px;
+}
+
+.template-asset-copy span {
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.template-file-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.template-file-button input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.template-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.template-section-list li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 5px 8px 5px 5px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+.template-section-index {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--teal-soft);
+  color: var(--teal);
+  font: 600 10px/1 "SFMono-Regular", "Cascadia Code", monospace;
+}
+
+.template-section-list strong {
+  font-size: 11px;
+}
+
+.template-section-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.template-section-actions .icon-button {
+  width: 30px;
+  height: 30px;
+}
+
+.icon-button:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+}
+
+.report-template-copy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.report-template-copy-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.report-template-copy-grid label.wide {
+  grid-column: 1 / -1;
+}
+
+.report-template-copy-grid textarea {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
 .dispatch-modal {
   width: min(560px, 100%);
 }
@@ -6433,6 +6632,28 @@ button.chip {
   color: var(--red);
   font-size: 11px;
   line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .report-template-grid,
+  .report-template-assets,
+  .report-template-copy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-template-copy-grid label.wide {
+    grid-column: auto;
+  }
+
+  .template-editor-section-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .template-editor-section-head p {
+    text-align: left;
+  }
 }
 
 .dispatch-hint {

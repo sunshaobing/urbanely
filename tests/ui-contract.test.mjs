@@ -226,3 +226,26 @@ test("the survey engineer role is labelled 勘测工程师 across the web app", 
   assert.match(dispatch, /service_engineer:\s*"勘测工程师"/);
 });
 
+test("admins can edit report templates from the report center", () => {
+  const reports = read("app/src/pages/Reports.tsx");
+  const app = read("app/src/App.tsx");
+  const editor = read("app/src/components/ReportTemplateEditor.tsx");
+  const api = read("app/src/api.ts");
+  const css = read("app/src/styles.css");
+
+  assert.match(app, /canEditTemplates=/);
+  assert.match(reports, /ReportTemplateEditor/);
+  assert.match(reports, /编辑报告模板/);
+  assert.match(editor, /updateTemplates/);
+  assert.match(editor, /uploadReportLogo/);
+  assert.match(editor, /uploadReportSeal/);
+  assert.match(editor, /service_report_sections/);
+  assert.match(editor, /report_watermark_text/);
+  assert.match(editor, /保存模板/);
+  assert.match(api, /export function updateTemplates/);
+  assert.match(api, /export function uploadReportLogo/);
+  assert.match(api, /export function uploadReportSeal/);
+  assert.match(css, /\.report-template-editor/);
+  assert.match(css, /\.template-section-list/);
+});
+

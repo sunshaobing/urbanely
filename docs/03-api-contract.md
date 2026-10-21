@@ -36,7 +36,9 @@
 - `POST /api/service-reports/{report_id}/submit`
 - `GET|POST /api/drafts`
 - `GET /api/quick-phrases`
-- `GET /api/templates`
+- `GET|PUT /api/templates`
+- `POST /api/templates/logo`
+- `POST /api/templates/seal`
 - `POST /api/workorders/{order_id}/review`
 - `GET /api/workorders/{order_id}/checkins`
 - `POST /api/workorders/{order_id}/checkin`
@@ -326,6 +328,14 @@ Returns site profile, risk level, next service, open findings count.
 - 连续照片组使用自适应组间距：上一组末行排满 5 张时使用 4mm 默认间距；末行仅 2、3、4 张或其它未排满情况时使用 1mm 紧凑间距，不插入空行或固定分页。该规则与照片组数量解耦，支持连续渲染 3～10 组照片。
 - 封堵报告签字标题和签字表作为整体分页，避免照片组压缩后出现标题孤行；签字内容与样式不变。
 - 此版式仅作用于 PDF 照片网格；页眉页脚、致谢、客户点评、签字、导出接口和业务数据逻辑保持不变。
+
+### 5.6 Web 报告模板编辑
+
+- 报告中心仅对 `admin` 和 `super_admin` 显示“编辑报告模板”入口；普通报告查看权限不变。
+- `PUT /api/templates` 保存公司名称、公司电话、编号前缀、年份/流水号位数、封堵报告章节顺序、验收标准、卫生建议、后续服务建议和水印文本。
+- `POST /api/templates/logo` 与 `POST /api/templates/seal` 分别上传报告 Logo 和专用章，仅接受 PNG/JPG/JPEG，单个文件不超过 2 MB。
+- 章节顺序直接写入 `service_report_sections`，后端生成封堵 PDF 时按该顺序渲染；保存后 Web 报告中心立即刷新模板数据。
+- 公司名称和联系电话写入模板后，勘测、封堵及作业单 PDF 的页眉/页脚和致谢信息使用同一设置，避免 Web 配置与导出文件不一致。
 
 ## 6. Rechecks
 

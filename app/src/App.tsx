@@ -95,6 +95,7 @@ export default function App() {
             initialTemplate={reportTemplate}
             initialInspectionId={reportInspectionId}
             initialSealingId={reportSealingId}
+            canEditTemplates={["admin", "super_admin"].includes(session.role)}
             onNotify={notify}
           />
         ) : null}
