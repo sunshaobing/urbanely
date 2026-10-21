@@ -16,9 +16,9 @@ if (-not (Test-Path -LiteralPath $modulePath)) {
 }
 
 $devEcoCandidates = @(
-  "$env:ProgramFiles\Huawei\DevEco Studio\bin\deveco-studio64.exe",
-  "${env:ProgramFiles(x86)}\Huawei\DevEco Studio\bin\deveco-studio64.exe",
-  "$env:LOCALAPPDATA\Huawei\DevEco Studio\bin\deveco-studio64.exe"
+  "$env:ProgramFiles\Huawei\DevEco Studio\bin\devecostudio64.exe",
+  "${env:ProgramFiles(x86)}\Huawei\DevEco Studio\bin\devecostudio64.exe",
+  "$env:LOCALAPPDATA\Huawei\DevEco Studio\bin\devecostudio64.exe"
 )
 $devEco = $devEcoCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
 

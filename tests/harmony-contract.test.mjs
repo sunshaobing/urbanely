@@ -11,6 +11,7 @@ test("HarmonyOS internal-test packaging config is complete", () => {
   const module = read("uniapp/harmony-configs/entry/src/main/module.json5");
   const app = read("uniapp/harmony-configs/AppScope/app.json5");
   const docs = read("docs/10-harmony-internal-release.md");
+  const check = read("uniapp/scripts/check-harmony-env.ps1");
 
   assert.match(manifest, /"app-harmony"/);
   assert.match(manifest, /"name"\s*:\s*"申汰封堵勘测系统"/);
@@ -27,4 +28,6 @@ test("HarmonyOS internal-test packaging config is complete", () => {
   assert.match(docs, /企业内部测试或企业应用/);
   assert.match(docs, /DevEco Studio 5\.1\.0\.849/);
   assert.match(docs, /cn\.sunrgw\.pco/);
+  assert.match(check, /devecostudio64\.exe/);
+  assert.doesNotMatch(check, /deveco-studio64\.exe/);
 });
