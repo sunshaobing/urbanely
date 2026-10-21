@@ -30,8 +30,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.1\.3"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"313"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.1\.4"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"314"/);
   assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
   assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /"NSLocationWhenInUseUsageDescription"/);
@@ -556,12 +556,17 @@ test("location check-in declares WeChat privacy permission and retries", () => {
   assert.match(manifest, /requiredPrivateInfos/);
   assert.match(manifest, /getLocation/);
   assert.match(manifest, /scope\.userLocation/);
+  assert.match(manifest, /用于到达客户门店后的现场考勤打卡/);
   assert.match(privacy, /requirePrivacyAuthorize/);
   assert.match(location, /ensurePrivacyAuthorized/);
   assert.match(location, /LOCATION_ATTEMPTS/);
   assert.match(location, /type: "wgs84"/);
   assert.match(location, /highAccuracyExpireTime:\s*attempt\.highAccuracy\s*\?\s*15000/);
   assert.match(location, /uni\.authorize/);
+  assert.match(
+    read("src/pages/agreement/index.vue"),
+    /用于核验是否到达任务指定的客户门店并生成现场考勤签到记录/,
+  );
 });
 
 test("root WeChat project points at the uni-app build output", () => {

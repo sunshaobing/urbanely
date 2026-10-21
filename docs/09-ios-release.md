@@ -6,7 +6,7 @@ iOS 版基于现有 uni-app 现场服务客户端，不另建一套原生 SwiftU
 
 - Bundle ID：`cn.sunrgw.pco`
 - 应用名称：申汰封堵勘测
-- 版本：`3.1.3` / versionCode `313`
+- 版本：`3.1.4` / versionCode `314`
 - App Store 1024×1024 图标
 - 定位、相机、相册隐私用途说明
 - 关闭 IDFA

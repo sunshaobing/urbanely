@@ -2,8 +2,8 @@
     "name" : "申汰封堵勘测",
     "appid" : "__UNI__D1F98CA",
     "description" : "申汰 PCO 现场服务系统",
-    "versionName" : "3.1.3",
-    "versionCode" : "313",
+    "versionName" : "3.1.4",
+    "versionCode" : "314",
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
@@ -47,7 +47,7 @@
                 "dSYMs" : false,
                 "idfa" : false,
                 "privacyDescription" : {
-                    "NSLocationWhenInUseUsageDescription" : "用于现场服务人员到达客户门店后完成签到并记录到场位置。",
+                    "NSLocationWhenInUseUsageDescription" : "用于现场服务人员到达客户门店后的考勤打卡签到，并记录本次签到位置。",
                     "NSCameraUsageDescription" : "用于拍摄现场服务照片和手写签字确认。",
                     "NSPhotoLibraryUsageDescription" : "用于选择现场服务照片并上传至服务报告。"
                 }
@@ -75,7 +75,7 @@
         "requiredPrivateInfos" : [ "getLocation" ],
         "permission" : {
             "scope.userLocation" : {
-                "desc" : "用于现场到达签到并记录精确定位"
+                "desc" : "用于到达客户门店后的现场考勤打卡"
             }
         },
         "setting" : {
