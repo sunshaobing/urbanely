@@ -30,5 +30,9 @@ test("PDF photo layout keeps five columns and continuous captions", () => {
   assert.match(contract, /分页后继续递增/);
   assert.match(contract, /续页顶部显示原照片区块标题并带 `（续）` 标识/);
   assert.match(contract, /直接衔接后续客户点评和签字区域/);
+  assert.match(contract, /封堵报告使用业务状态命名照片区块/);
+  assert.match(contract, /`risk_photos` 显示为 `封堵前照片`/);
+  assert.match(contract, /`photos` 显示为 `封堵后照片`/);
+  assert.match(contract, /不再使用 `风险跟进照片` 或 `现场工作照`/);
   assert.match(contract, /页眉页脚、致谢、客户点评、签字、导出接口和业务数据逻辑保持不变/);
 });
