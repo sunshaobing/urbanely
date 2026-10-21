@@ -27,6 +27,8 @@
 
 如未配置该指引，微信隐私授权 API 可能无法弹窗，审核员仍可能认为隐私告知不完整。
 
+可直接粘贴到微信后台的标准化指引和逐项勾选清单见 [08-wechat-privacy-guide.md](08-wechat-privacy-guide.md)。
+
 ## 审核体验账号
 
 - 账号：`wxreview`
