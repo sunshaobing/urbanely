@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 import type { PhotoDraft } from "../utils/types";
+import { persistLocalFile } from "../utils/files";
 
 const props = withDefaults(
   defineProps<{
@@ -9,6 +10,7 @@ const props = withDefaults(
     title: string;
     hint?: string;
     max?: number;
+    upload?: (path: string, caption: string) => Promise<string>;
   }>(),
   {
     hint: "",
@@ -21,9 +23,10 @@ const emit = defineEmits<{
 }>();
 
 const remaining = computed(() => Math.max(0, props.max - props.photos.length));
+const uploading = ref(false);
 
-function choosePhotos() {
-  if (remaining.value <= 0) {
+async function choosePhotos() {
+  if (remaining.value <= 0 || uploading.value) {
     uni.showToast({ title: `最多上传 ${props.max} 张`, icon: "none" });
     return;
   }
@@ -31,16 +34,40 @@ function choosePhotos() {
     count: Math.min(9, remaining.value),
     sizeType: ["compressed"],
     sourceType: ["camera", "album"],
-    success: (result) => {
+    success: async (result) => {
       const selected = Array.isArray(result.tempFilePaths)
         ? result.tempFilePaths
         : [result.tempFilePaths];
       const paths = selected.filter(Boolean).slice(0, remaining.value);
-      const next = paths.map((path: string, index: number) => ({
-        path,
-        caption: `现场照片 ${props.photos.length + index + 1}`,
-      }));
-      emit("update:photos", [...props.photos, ...next]);
+      if (!paths.length) return;
+      uploading.value = true;
+      const next: PhotoDraft[] = [...props.photos];
+      const startIndex = props.photos.length;
+      let failed = 0;
+      try {
+        for (let index = 0; index < paths.length; index += 1) {
+          const caption = `现场照片 ${startIndex + index + 1}`;
+          const savedPath = await persistLocalFile(String(paths[index]));
+          let uploadPath = savedPath;
+          if (props.upload) {
+            try {
+              uploadPath = await props.upload(savedPath, caption);
+            } catch {
+              failed += 1;
+            }
+          }
+          next.push({ path: uploadPath, caption });
+          emit("update:photos", [...next]);
+        }
+        if (failed) {
+          uni.showToast({
+            title: `${failed} 张图片暂未上传，提交时会重试`,
+            icon: "none",
+          });
+        }
+      } finally {
+        uploading.value = false;
+      }
     },
   });
 }
@@ -83,10 +110,11 @@ function preview(index: number) {
       <view
         v-if="remaining > 0"
         class="photo-item photo-add"
+        :class="{ uploading }"
         @tap="choosePhotos"
       >
-        <UniIcons type="plus" size="22" color="#176b52" />
-        <text class="photo-add-text">添加</text>
+        <UniIcons v-if="!uploading" type="plus" size="22" color="#176b52" />
+        <text class="photo-add-text">{{ uploading ? "上传中" : "添加" }}</text>
       </view>
     </view>
   </view>
@@ -169,6 +197,11 @@ function preview(index: number) {
   border-style: dashed;
   border-color: #a8c4b8;
   background: #f1f7f3;
+}
+
+.photo-add.uploading {
+  opacity: 0.72;
+  pointer-events: none;
 }
 
 .photo-add-text {

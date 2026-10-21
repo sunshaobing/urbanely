@@ -636,6 +636,7 @@ onLoad(async (query) => {
               title="封堵前图片"
               hint="每个封堵部位至少保留一张全景照片"
               :max="100"
+              :upload="uploadPhoto"
             />
           </view>
           <view class="photo-card card">
@@ -644,6 +645,7 @@ onLoad(async (query) => {
               title="封堵后图片"
               hint="与封堵前照片成对归档"
               :max="100"
+              :upload="uploadPhoto"
             />
           </view>
           <view class="hint-card">
@@ -1353,10 +1355,14 @@ onLoad(async (query) => {
 .draft-button {
   min-width: 108rpx;
   min-height: 84rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0 14rpx;
   border-color: #d5e0d7;
   border-radius: 12rpx;
   color: #176b52;
   font-size: 21rpx;
+  line-height: 1;
 }
 </style>

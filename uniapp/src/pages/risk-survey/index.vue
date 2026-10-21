@@ -666,6 +666,7 @@ onLoad(async (query) => {
               title="现场照片"
               hint="支持拍照和相册批量选择，累计最多 100 张"
               :max="100"
+              :upload="uploadPhoto"
             />
           </view>
           <view class="hint-card">
@@ -1403,10 +1404,14 @@ onLoad(async (query) => {
 .draft-button {
   min-width: 108rpx;
   min-height: 84rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0 14rpx;
   border-color: #d5e0d7;
   border-radius: 12rpx;
   color: #176b52;
   font-size: 21rpx;
+  line-height: 1;
 }
 </style>

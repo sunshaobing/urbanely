@@ -1,4 +1,5 @@
 import { clearSession, getSession } from "./auth";
+import { isPersistedFile, persistLocalFile } from "./files";
 import type {
   AuthPayload,
   DashboardSummary,
@@ -30,6 +31,14 @@ function errorMessage(statusCode: number, payload: unknown) {
     const body = payload as Record<string, unknown>;
     if (typeof body.detail === "string") return body.detail;
     if (Array.isArray(body.detail)) {
+      const missingFile = body.detail.some((item) => {
+        if (!item || typeof item !== "object") return false;
+        const loc = (item as { loc?: unknown }).loc;
+        return Array.isArray(loc) && loc.includes("file");
+      });
+      if (missingFile) {
+        return "图片文件未上传成功，请重新选择图片后重试";
+      }
       const details = body.detail
         .map((item) =>
           item && typeof item === "object" && "msg" in item
@@ -154,7 +163,10 @@ export async function uploadMedia(
   filePath: string,
   formData: Record<string, string | number> = {},
 ) {
-  const uploadPath = await prepareUploadPath(filePath);
+  const durablePath = isPersistedFile(filePath)
+    ? filePath
+    : await persistLocalFile(filePath);
+  const uploadPath = await prepareUploadPath(durablePath);
   const session = getSession();
   return new Promise<Record<string, unknown>>((resolve, reject) => {
     uni.uploadFile({
@@ -189,7 +201,7 @@ export async function uploadMedia(
 export function login(identifier: string, password: string) {
   return request<AuthPayload>("/api/auth/login", {
     method: "POST",
-    data: { username: identifier, password },
+    data: { username: identifier, password, client: "app" },
     skipAuthRedirect: true,
   });
 }

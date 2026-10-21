@@ -30,8 +30,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.7"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"307"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.0\.9"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"309"/);
   assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
   assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /android\.permission\.ACCESS_FINE_LOCATION/);
@@ -447,6 +447,46 @@ test("login requires agreement to the service and privacy policies", () => {
   assert.ok(
     pages.pages.some((page) => page.path === "pages/agreement/index"),
   );
+});
+
+test("app login restores the saved session and requests a long-lived token", () => {
+  const login = read("src/pages/login/index.vue");
+  const api = read("src/utils/api.ts");
+
+  assert.match(login, /getSession\(\)\?\.token/);
+  assert.match(
+    login,
+    /reLaunch\(\{\s*url:\s*"\/pages\/workbench\/index"\s*\}\)/,
+  );
+  assert.match(api, /client:\s*"app"/);
+});
+
+test("draft buttons center their label", () => {
+  for (const page of ["risk-survey", "service-report"]) {
+    const source = read(`src/pages/${page}/index.vue`);
+    assert.match(
+      source,
+      /\.draft-button\s*\{[\s\S]*?display:\s*flex;[\s\S]*?align-items:\s*center;[\s\S]*?justify-content:\s*center;/,
+    );
+  }
+});
+
+test("picked photos persist and upload before temporary files expire", () => {
+  const grid = read("src/components/PhotoGrid.vue");
+  const files = read("src/utils/files.ts");
+  const api = read("src/utils/api.ts");
+  const survey = read("src/pages/risk-survey/index.vue");
+  const service = read("src/pages/service-report/index.vue");
+
+  assert.match(grid, /persistLocalFile/);
+  assert.match(grid, /props\.upload/);
+  assert.match(grid, /emit\("update:photos", \[\.\.\.next\]\)/);
+  assert.match(survey, /<PhotoGrid[\s\S]*?:upload="uploadPhoto"/);
+  assert.match(service, /<PhotoGrid[\s\S]*?:upload="uploadPhoto"/);
+  assert.match(files, /copyFileSync/);
+  assert.match(files, /uni\.saveFile/);
+  assert.match(api, /persistLocalFile\(filePath\)/);
+  assert.match(api, /图片文件未上传成功/);
 });
 
 test("root WeChat project points at the uni-app build output", () => {

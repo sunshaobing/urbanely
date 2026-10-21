@@ -4,7 +4,7 @@ import { computed, ref } from "vue";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 import BrandLogo from "../../components/BrandLogo.vue";
 import { login } from "../../utils/api";
-import { saveAuth } from "../../utils/auth";
+import { getSession, saveAuth } from "../../utils/auth";
 import { ensureBrand } from "../../utils/brand";
 
 const identifier = ref("");
@@ -22,6 +22,10 @@ const canSubmit = computed(
 );
 
 onLoad(() => {
+  if (getSession()?.token) {
+    uni.reLaunch({ url: "/pages/workbench/index" });
+    return;
+  }
   void ensureBrand();
 });
 

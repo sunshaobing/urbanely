@@ -5,7 +5,7 @@
 - 应用名称：申汰封堵勘测
 - Android 包名：`cn.sunrgw.pco`
 - DCloud AppID：`__UNI__D1F98CA`
-- 当前版本：`3.0.7` / versionCode `307`
+- 当前版本：`3.0.9` / versionCode `309`
 - 最低适用系统：Android 8.0
 - 分发方式：企业内部直接下载安装，不上架应用商店
 
@@ -23,11 +23,12 @@
 
 ### 当前构建
 
-- 构建日期：2026-10-20
-- APK 大小：15,173,465 字节（约 14.5 MB）
-- SHA-256：`EA11D3D894F33566A410698BAAB8F0FEF49435B273BA75FE756C3A88235364A3`
+- 构建日期：2026-10-21
+- APK 大小：15,246,920 字节（约 14.5 MB）
+- SHA-256：`055762F4892E49A0A4F57CCE4C2C624DD754A89A21B16880416EC179334FE850`
 - APK 签名：v1 + v2 校验通过，签名证书 SHA-256 与本节一致
 - Android minSdk：21；targetSdk：28；compileSdk：36
+- 本版修复：登录状态跨启动保持；现场照片选择后立即持久化并上传，避免临时文件过期导致 422；存草稿按钮文字居中。
 
 ## 3. 构建
 
@@ -68,7 +69,8 @@ APK、安装说明页和 SHA-256 校验文件统一放在服务器：
 
 ```text
 https://sunrgw.cn/download/
-https://sunrgw.cn/download/shentai-pco-3.0.7.apk
+https://sunrgw.cn/download/shentai-pco-3.0.9.apk
+https://sunrgw.cn/download/shentai-pco-latest.apk
 ```
 
 安装步骤：
