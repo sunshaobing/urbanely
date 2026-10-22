@@ -5,7 +5,7 @@ import { getCurrentUser } from "./api";
 import { clearSession, loadSession, saveSession, SESSION_KEY } from "./auth";
 import type { AuthSession } from "./auth";
 import { Customers } from "./pages/Customers";
-import { Dashboard } from "./pages/Dashboard";
+import { DataCenter } from "./pages/DataCenter";
 import { Inspections } from "./pages/Inspections";
 import { LoginPage } from "./pages/LoginPage";
 import { Permissions } from "./pages/Permissions";
@@ -108,7 +108,7 @@ export default function App() {
         }}
       >
         {activePage === "dashboard" ? (
-          <Dashboard onNavigate={navigate} onOpenInspection={openInspection} />
+          <DataCenter onNavigate={navigate} onOpenInspection={openInspection} />
         ) : null}
         {activePage === "inspections" ? (
           <Inspections
@@ -142,6 +142,7 @@ export default function App() {
         {activePage === "dictionary" ? (
           <SystemDictionaryPage
             canEdit={["admin", "super_admin"].includes(session.role)}
+            onBack={() => setActivePage("settings")}
             onNotify={notify}
           />
         ) : null}

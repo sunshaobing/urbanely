@@ -258,6 +258,7 @@ test("web system settings are wired to production settings APIs", () => {
   const app = read("app/src/App.tsx");
   const layout = read("app/src/components/Layout.tsx");
   const page = read("app/src/pages/SystemSettings.tsx");
+  const modules = read("app/src/components/settings/SettingsModules.tsx");
   const dictionaryPage = read("app/src/pages/SystemDictionaryPage.tsx");
   const api = read("app/src/api.ts");
   const css = read("app/src/styles.css");
@@ -271,7 +272,8 @@ test("web system settings are wired to production settings APIs", () => {
   assert.match(layout, /onNavigate\("settings"\)/);
   assert.match(layout, /settings: "系统设置"/);
   assert.match(layout, /dictionary: "系统字典"/);
-  assert.match(layout, /nav-secondary/);
+  assert.doesNotMatch(layout, /key: "dictionary"/);
+  assert.doesNotMatch(read("app/src/components/CommandPalette.tsx"), /page: "dictionary"/);
   assert.match(page, /getSystemSettings/);
   assert.match(page, /updateSystemSettings/);
   assert.match(page, /ReportTemplateEditor/);
@@ -279,13 +281,29 @@ test("web system settings are wired to production settings APIs", () => {
   assert.match(dictionaryPage, /SystemDictionaryEditor/);
   assert.match(dictionaryPage, /embedded/);
   assert.match(dictionaryPage, /PageHeader/);
+  assert.match(dictionaryPage, /返回系统设置/);
   assert.match(page, /管理系统字典/);
   assert.match(page, /checkout_force_photo/);
   assert.match(page, /work_checkin_sync/);
   assert.match(page, /report_hide_customer_phone/);
-  assert.match(page, /保存设置/);
+  assert.match(page, /onNotify\("保存成功"\)/);
+  assert.match(page, /ServiceItemsPanel/);
+  assert.match(page, /MaterialsPanel/);
+  assert.match(page, /QuickPhrasesPanel/);
+  assert.match(page, /QualificationFilesPanel/);
+  assert.match(page, /ReportSealPanel/);
+  assert.match(page, /CodeSettingsPanel/);
+  assert.match(page, /settingsSections/);
+  assert.match(page, /settings-workspace/);
+  assert.match(modules, /aria-label="上传报告公章"/);
+  assert.match(modules, /aria-label="编辑快捷用语"/);
+  assert.match(modules, /aria-label=\{`编辑\$\{item\.name\}`\}/);
   assert.match(api, /export function getSystemSettings/);
   assert.match(api, /export function updateSystemSettings/);
+  assert.match(api, /export function listMaterials/);
+  assert.match(api, /export function createMaterial/);
+  assert.match(api, /export function listQuickPhrases/);
+  assert.match(api, /export function createQuickPhrase/);
   assert.match(api, /export function getCurrentUser/);
   assert.match(api, /export function getDictionary/);
   assert.match(api, /export function createDictionaryItem/);
@@ -293,7 +311,34 @@ test("web system settings are wired to production settings APIs", () => {
   assert.match(api, /export function deleteDictionaryItem/);
   assert.match(css, /\.system-settings-layout/);
   assert.match(css, /\.settings-switch-row/);
+  assert.match(css, /\.settings-subnav/);
+  assert.match(css, /\.settings-data-table/);
   assert.match(css, /\.dictionary-layout/);
   assert.match(css, /\.role-selector/);
+});
+
+test("web data center mirrors the reference operating dashboard", () => {
+  const app = read("app/src/App.tsx");
+  const layout = read("app/src/components/Layout.tsx");
+  const page = read("app/src/pages/DataCenter.tsx");
+  const api = read("app/src/api.ts");
+  const css = read("app/src/styles.css");
+
+  assert.match(app, /from "\.\/pages\/DataCenter"/);
+  assert.match(app, /<DataCenter/);
+  assert.match(layout, /label: "数据中心"/);
+  assert.match(page, /年总工单/);
+  assert.match(page, /当日未接单/);
+  assert.match(page, /今日收款/);
+  assert.match(page, /待审核合同/);
+  assert.match(page, /员工排行榜/);
+  assert.match(page, /工单情况/);
+  assert.match(page, /扫码进入移动端/);
+  assert.match(page, /系统消息/);
+  assert.match(page, /listContracts/);
+  assert.match(api, /export function listContracts/);
+  assert.match(css, /\.data-kpi-grid/);
+  assert.match(css, /\.data-center-layout/);
+  assert.match(css, /\.data-trend-chart/);
 });
 

@@ -1,12 +1,14 @@
-import { Database } from "lucide-react";
+import { ArrowLeft, Database } from "lucide-react";
 import { PageHeader } from "../components/PageHeader";
 import { SystemDictionaryEditor } from "../components/SystemDictionaryEditor";
 
 export function SystemDictionaryPage({
   canEdit,
+  onBack,
   onNotify,
 }: {
   canEdit: boolean;
+  onBack: () => void;
   onNotify: (message: string) => void;
 }) {
   return (
@@ -20,6 +22,12 @@ export function SystemDictionaryPage({
             <Database size={14} />
             {canEdit ? "管理员可编辑" : "当前账号只读"}
           </>
+        }
+        actions={
+          <button type="button" className="button ghost" onClick={onBack}>
+            <ArrowLeft size={15} />
+            返回系统设置
+          </button>
         }
       />
       <SystemDictionaryEditor

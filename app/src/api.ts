@@ -352,6 +352,65 @@ export interface SystemSettingsInput {
   stock_strong_check: boolean;
 }
 
+export interface BackendMaterial {
+  id: number;
+  name: string;
+  category?: string;
+  spec?: string;
+  unit?: string;
+  stock?: number;
+  warning_stock?: number;
+  remark?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MaterialInput {
+  name: string;
+  category: string;
+  spec: string;
+  unit: string;
+  stock: number;
+  warning_stock: number;
+  remark: string;
+}
+
+export interface BackendQuickPhrase {
+  id: number;
+  category: string;
+  content: string;
+  sort_order?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface QuickPhraseInput {
+  category: string;
+  content: string;
+  sort_order: number;
+}
+
+export interface BackendContract {
+  id: number;
+  customer_id: number;
+  customer_name?: string;
+  code?: string;
+  name?: string;
+  start_date?: string;
+  end_date?: string;
+  amount?: number;
+  status?: string;
+  note?: string;
+  created_at?: string;
+}
+
+export interface UploadedAsset {
+  url?: string;
+  path?: string;
+  file_path?: string;
+  filename?: string;
+}
+
 export interface BackendDictionaryItem {
   id: number;
   category: string;
@@ -410,7 +469,9 @@ function errorMessage(payload: unknown, status: number) {
   return `请求失败（${status || "网络异常"}）`;
 }
 
-function queryString(values: Record<string, string | number | undefined>) {
+function queryString(
+  values: Record<string, string | number | boolean | undefined>,
+) {
   const entries = Object.entries(values).filter(
     ([, value]) => value !== undefined && value !== "",
   );
@@ -458,6 +519,24 @@ async function uploadTemplateAsset(path: string, file: File) {
   if (response.status === 401) clearSession();
   if (!response.ok) throw new Error(errorMessage(payload, response.status));
   return payload as TemplateUploadResult;
+}
+
+async function uploadSystemAsset(file: File) {
+  const session = loadSession();
+  const form = new FormData();
+  form.append("file", file);
+  form.append("stage", "qualification");
+  const response = await fetch(`${API_BASE_URL}/api/photos/upload`, {
+    method: "POST",
+    headers: session?.token
+      ? { Authorization: `Bearer ${session.token}` }
+      : undefined,
+    body: form,
+  });
+  const payload = await response.json().catch(() => null);
+  if (response.status === 401) clearSession();
+  if (!response.ok) throw new Error(errorMessage(payload, response.status));
+  return payload as UploadedAsset;
 }
 
 export function itemsOf<T>(payload: unknown): T[] {
@@ -619,6 +698,66 @@ export function updateSystemSettings(body: SystemSettingsInput) {
     method: "PUT",
     body,
   });
+}
+
+export function listMaterials(
+  filters: { keyword?: string; category?: string; low_stock?: boolean } = {},
+) {
+  return request<unknown>(`/api/materials${queryString(filters)}`);
+}
+
+export function createMaterial(body: MaterialInput) {
+  return request<BackendMaterial>("/api/materials", {
+    method: "POST",
+    body,
+  });
+}
+
+export function updateMaterial(id: number, body: MaterialInput) {
+  return request<BackendMaterial>(`/api/materials/${id}`, {
+    method: "PUT",
+    body,
+  });
+}
+
+export function deleteMaterial(id: number) {
+  return request<{ ok: boolean }>(`/api/materials/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function listQuickPhrases(category = "") {
+  return request<unknown>(`/api/quick-phrases${queryString({ category })}`);
+}
+
+export function createQuickPhrase(body: QuickPhraseInput) {
+  return request<BackendQuickPhrase>("/api/quick-phrases", {
+    method: "POST",
+    body,
+  });
+}
+
+export function updateQuickPhrase(id: number, body: QuickPhraseInput) {
+  return request<BackendQuickPhrase>(`/api/quick-phrases/${id}`, {
+    method: "PUT",
+    body,
+  });
+}
+
+export function deleteQuickPhrase(id: number) {
+  return request<{ ok: boolean }>(`/api/quick-phrases/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function listContracts(
+  filters: { keyword?: string; status?: string; customer_id?: number } = {},
+) {
+  return request<unknown>(`/api/contracts${queryString(filters)}`);
+}
+
+export function uploadSettingsFile(file: File) {
+  return uploadSystemAsset(file);
 }
 
 export function getDictionary(category = "") {
