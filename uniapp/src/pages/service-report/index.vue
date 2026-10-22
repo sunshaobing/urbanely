@@ -276,7 +276,7 @@ async function persistDraft(mode: "manual" | "auto" = "manual") {
     }
   } catch {
     autoSaveState.value = "local";
-    autoSaveText.value = "已保存到本机，联网后自动同步";
+    autoSaveText.value = "已保存到本机，请联网后重试同步";
     if (mode === "manual") {
       uni.showToast({ title: "已保存到本机", icon: "none" });
     }
