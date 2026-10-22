@@ -33,6 +33,7 @@
 - Sealing: seven explicit steps: service information, materials and locations, before photos, after photos, service record, signatures, and checkout confirmation.
 - The final checkout step requires a camera photo and a fresh precise location, then writes the existing checkout data before submission.
 - Reports and profile: lower density, centered hierarchy, larger tap targets.
+- Survey and sealing forms save locally on every field/photo/signature change, debounce server draft sync by 800ms, force a save on step navigation, and show a persistent save state plus explicit manual-save and final-submit success feedback.
 
 ## Verification
 

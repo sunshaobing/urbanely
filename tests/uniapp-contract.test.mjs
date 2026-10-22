@@ -613,6 +613,22 @@ test("two-step form actions remain centered and uncrowded", () => {
   }
 });
 
+test("survey and sealing drafts save locally on every change and sync automatically", () => {
+  const survey = read("src/pages/risk-survey/index.vue");
+  const service = read("src/pages/service-report/index.vue");
+
+  for (const source of [survey, service]) {
+    assert.match(source, /watch\(form, scheduleAutoSave, \{ deep: true, flush: "sync" \}\)/);
+    assert.match(source, /writeLocalDraft\(draftKey\(\), draftData\(\)\)/);
+    assert.match(source, /setTimeout\([\s\S]*?persistDraft\("auto"\)[\s\S]*?800\)/);
+    assert.match(source, /await persistDraft\("auto"\)/);
+    assert.match(source, /title: "保存成功"/);
+    assert.match(source, /class="auto-save-row"/);
+  }
+  assert.match(survey, /title: "勘测提交成功"/);
+  assert.match(service, /title: "封堵提交成功"/);
+});
+
 test("mobile controls use a soft rounded business surface", () => {
   const app = read("src/App.vue");
   const header = read("src/components/PageHeader.vue");

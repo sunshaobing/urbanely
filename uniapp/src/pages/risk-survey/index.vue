@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, onBeforeUnmount, reactive, ref, watch } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 import PageHeader from "../../components/PageHeader.vue";
@@ -75,7 +75,12 @@ const loading = ref(true);
 const error = ref("");
 const saving = ref(false);
 const submitting = ref(false);
+const autoSaveState = ref<"local" | "pending" | "saving" | "saved">("local");
+const autoSaveText = ref("已保存到本机");
 const quickPhrases = ref<QuickPhrase[]>([]);
+let autoSaveReady = false;
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+let saveQueued = false;
 
 const form = reactive<RiskDraft>({
   date: today(),
@@ -217,15 +222,18 @@ function validateStep() {
   return true;
 }
 
-function nextStep() {
+async function nextStep() {
   if (!validateStep()) return;
+  await persistDraft("auto");
   if (step.value < steps.length - 1) {
     step.value += 1;
   }
 }
 
-function previousStep() {
-  if (step.value > 0) step.value -= 1;
+async function previousStep() {
+  if (step.value <= 0) return;
+  await persistDraft("auto");
+  step.value -= 1;
 }
 
 function draftData() {
@@ -240,19 +248,64 @@ function draftData() {
   };
 }
 
-async function persistDraft() {
-  if (saving.value) return;
+function currentTimeLabel() {
+  const date = new Date();
+  return `${String(date.getHours()).padStart(2, "0")}:${String(
+    date.getMinutes(),
+  ).padStart(2, "0")}`;
+}
+
+function clearAutoSaveTimer() {
+  if (!autoSaveTimer) return;
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = null;
+}
+
+async function persistDraft(mode: "manual" | "auto" = "manual") {
+  if (saving.value) {
+    saveQueued = true;
+    return;
+  }
+  clearAutoSaveTimer();
   saving.value = true;
   writeLocalDraft(draftKey(), draftData());
+  autoSaveState.value = "saving";
+  autoSaveText.value = "正在保存";
   try {
     await saveDraft("risk_survey", draftKey(), draftData());
-    uni.showToast({ title: "草稿已保存", icon: "success" });
+    autoSaveState.value = "saved";
+    autoSaveText.value = `已保存 ${currentTimeLabel()}`;
+    if (mode === "manual") {
+      uni.showToast({ title: "保存成功", icon: "success" });
+    }
   } catch {
-    uni.showToast({ title: "已保存到本机", icon: "none" });
+    autoSaveState.value = "local";
+    autoSaveText.value = "已保存到本机，联网后自动同步";
+    if (mode === "manual") {
+      uni.showToast({ title: "已保存到本机", icon: "none" });
+    }
   } finally {
     saving.value = false;
+    if (saveQueued) {
+      saveQueued = false;
+      void persistDraft("auto");
+    }
   }
 }
+
+function scheduleAutoSave() {
+  if (!autoSaveReady || loading.value || submitting.value) return;
+  writeLocalDraft(draftKey(), draftData());
+  autoSaveState.value = "pending";
+  autoSaveText.value = "等待自动保存";
+  clearAutoSaveTimer();
+  autoSaveTimer = setTimeout(() => {
+    autoSaveTimer = null;
+    void persistDraft("auto");
+  }, 800);
+}
+
+watch(form, scheduleAutoSave, { deep: true, flush: "sync" });
 
 async function uploadPhoto(path: string, caption: string) {
   if (path.startsWith("data:") || path.startsWith("http")) return path;
@@ -331,6 +384,7 @@ async function submit() {
     return;
   }
   submitting.value = true;
+  clearAutoSaveTimer();
   uni.showLoading({ title: "正在提交勘测", mask: true });
   try {
     const photos = [];
@@ -368,7 +422,7 @@ async function submit() {
     );
     uni.hideLoading();
     uni.showModal({
-      title: reportPath ? "勘测报告已生成" : "勘测记录已提交",
+      title: "勘测提交成功",
       content: reportPath
         ? "双方签字已完成，完整勘测报告已生成。审批通过后将进入封堵清单。"
         : "记录、照片和双方签字已保存。报告生成暂未完成，请稍后在任务详情中重新打开。",
@@ -392,6 +446,13 @@ async function submit() {
     submitting.value = false;
   }
 }
+
+onBeforeUnmount(() => {
+  clearAutoSaveTimer();
+  if (autoSaveReady && !submitting.value) {
+    writeLocalDraft(draftKey(), draftData());
+  }
+});
 
 onLoad(async (query) => {
   const current = getSession();
@@ -435,6 +496,7 @@ onLoad(async (query) => {
       loadError instanceof Error ? loadError.message : "任务加载失败";
   } finally {
     loading.value = false;
+    autoSaveReady = true;
   }
 });
 </script>
@@ -454,6 +516,10 @@ onLoad(async (query) => {
         </view>
         <view class="step-track">
           <view class="step-fill" :style="{ width: `${progress}%` }" />
+        </view>
+        <view class="auto-save-row" :class="`state-${autoSaveState}`">
+          <view class="auto-save-dot" />
+          <text>{{ autoSaveText }}</text>
         </view>
       </view>
     </PageHeader>
@@ -1553,5 +1619,31 @@ onLoad(async (query) => {
 
 .summary-item {
   border-radius: 16rpx;
+}
+
+.auto-save-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7rpx;
+  margin-top: 10rpx;
+  color: #607067;
+  font-size: max(11px, 18rpx);
+}
+
+.auto-save-dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: #8fa198;
+}
+
+.auto-save-row.state-saving .auto-save-dot,
+.auto-save-row.state-pending .auto-save-dot {
+  background: #b78432;
+}
+
+.auto-save-row.state-saved .auto-save-dot {
+  background: #2f7656;
 }
 </style>
