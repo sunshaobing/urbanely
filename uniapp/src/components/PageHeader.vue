@@ -48,6 +48,7 @@ function goBack() {
   border-bottom: 1rpx solid #dce5df;
   border-radius: 0 0 24rpx 24rpx;
   background: #ffffff;
+  box-shadow: 0 4rpx 18rpx rgba(18, 34, 27, 0.035);
 }
 
 .page-header-top {

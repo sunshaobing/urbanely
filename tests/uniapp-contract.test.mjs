@@ -179,7 +179,7 @@ test("login keeps a focused business layout without marketing content", () => {
   assert.match(login, /class="login-help"/);
   assert.match(login, /showResetHelp/);
   assert.match(login, /login\(identifier\.value\.trim\(\), password\.value\)/);
-  assert.match(login, /background:\s*#f4f7f5/);
+  assert.match(login, /background:\s*#f3f6f4/);
   assert.match(login, /\.login-submit\s*\{[\s\S]*?background:\s*#103b2d/);
   assert.doesNotMatch(
     login,
@@ -195,6 +195,8 @@ test("workbench follows the approved task-first hierarchy", () => {
   assert.match(workbench, /:name-size="16"/);
   assert.match(workbench, /今天还有 \$\{openCount\.value\} 个任务/);
   assert.match(workbench, /class="task-action"/);
+  assert.match(workbench, /task-card--featured/);
+  assert.match(workbench, /class="task-feature-label"/);
   assert.match(workbench, /\.page-title\s*\{[\s\S]*?font-size:\s*max\(20px,\s*38rpx\)/);
   assert.match(workbench, /\.task-action\s*\{[\s\S]*?background:\s*#145a3a/);
   assert.doesNotMatch(workbench, /class="metric-strip"/);
@@ -304,11 +306,11 @@ test("the field client follows an MHP-inspired deep-green service hierarchy", ()
   const service = read("src/pages/service-report/index.vue");
   const header = read("src/components/PageHeader.vue");
 
-  assert.match(app, /--field-dark:\s*#103b2d/);
-  assert.match(app, /--field-accent:\s*#176b52/);
-  assert.match(app, /--field-accent-soft:\s*#e6f2ec/);
-  assert.match(app, /background:\s*#f4f7f5/);
-  assert.match(app, /border-radius:\s*20rpx\s*!important/);
+  assert.match(app, /--field-dark:\s*#113b2d/);
+  assert.match(app, /--field-accent:\s*#17654b/);
+  assert.match(app, /--field-accent-soft:\s*#e7f1eb/);
+  assert.match(app, /background:\s*#f3f6f4/);
+  assert.match(app, /border-radius:\s*24rpx\s*!important/);
   assert.match(app, /button[\s\S]*?border-radius:\s*999px\s*!important/);
   assert.match(app, /font-size:\s*max\(15px,\s*30rpx\)/);
   assert.match(app, /font-size:\s*max\(13\.5px,\s*28rpx\)/);
@@ -616,7 +618,7 @@ test("mobile controls use a soft rounded business surface", () => {
   const reports = read("src/pages/reports/index.vue");
 
   assert.match(app, /button\s*\{[\s\S]*?border-radius:\s*999px\s*!important/);
-  assert.match(app, /\.card\s*\{[\s\S]*?border-radius:\s*20rpx\s*!important/);
+  assert.match(app, /\.card\s*\{[\s\S]*?border-radius:\s*24rpx\s*!important/);
   assert.match(app, /\.field-input,[\s\S]*?border-radius:\s*16rpx\s*!important/);
   assert.match(header, /border-radius:\s*0 0 24rpx 24rpx/);
   assert.match(header, /\.header-back\s*\{[\s\S]*?border-radius:\s*999px/);

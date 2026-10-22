@@ -1580,7 +1580,7 @@ onLoad(async (query) => {
 
 .service-page {
   padding-bottom: calc(170rpx + env(safe-area-inset-bottom));
-  background: #f4f7f5;
+  background: #f3f6f4;
 }
 
 .service-content {

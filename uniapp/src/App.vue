@@ -4,32 +4,32 @@ export default {};
 
 <style>
 :root {
-  --field-canvas: #f4f7f5;
+  --field-canvas: #f3f6f4;
   --field-surface: #ffffff;
-  --field-surface-muted: #f8fbf9;
-  --field-ink: #17211d;
+  --field-surface-muted: #f7faf8;
+  --field-ink: #15221c;
   --field-ink-soft: #34483f;
-  --field-muted: #65736c;
-  --field-faint: #909a94;
-  --field-line: #dce5df;
+  --field-muted: #607067;
+  --field-faint: #8c9892;
+  --field-line: #d9e4dd;
   --field-line-strong: #c9d8ce;
-  --field-accent: #176b52;
-  --field-accent-strong: #115640;
-  --field-accent-soft: #e6f2ec;
-  --field-dark: #103b2d;
+  --field-accent: #17654b;
+  --field-accent-strong: #10553e;
+  --field-accent-soft: #e7f1eb;
+  --field-dark: #113b2d;
   --field-danger: #a33e37;
   --field-danger-soft: #f8ebe9;
   --field-warning: #9a641f;
   --field-warning-soft: #fbf1df;
   --field-success: #2f7656;
   --field-success-soft: #eaf3ec;
-  --field-shadow: 0 12rpx 36rpx rgba(18, 34, 27, 0.06);
+  --field-shadow: 0 12rpx 32rpx rgba(18, 34, 27, 0.055);
 }
 
 page {
   min-height: 100%;
-  background: #f4f7f5;
-  color: #17211d;
+  background: #f3f6f4;
+  color: #15221c;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
     sans-serif;
   font-size: max(13.5px, 28rpx);
@@ -65,13 +65,13 @@ button::after {
 .page {
   min-height: 100vh;
   padding-bottom: calc(164rpx + env(safe-area-inset-bottom));
-  background: #f4f7f5;
+  background: #f3f6f4;
 }
 
 .detail-page {
   min-height: 100vh;
   padding-bottom: calc(152rpx + env(safe-area-inset-bottom));
-  background: #f4f7f5;
+  background: #f3f6f4;
 }
 
 .page-content {
@@ -82,15 +82,16 @@ button::after {
 }
 
 .card {
-  border: 1rpx solid #dde7e0;
-  border-radius: 20rpx !important;
+  border: 1rpx solid #e1e9e4;
+  border-radius: 24rpx !important;
   background: #ffffff;
+  box-shadow: 0 4rpx 14rpx rgba(18, 34, 27, 0.025);
 }
 
 .card-muted {
-  border: 1rpx solid #dde7e0;
+  border: 1rpx solid #e1e9e4;
   border-radius: 20rpx !important;
-  background: #f8fbf9;
+  background: #f7faf8;
 }
 
 .dark-band {
@@ -108,16 +109,16 @@ button::after {
 
 .section-title {
   display: block;
-  color: #17211d;
+  color: #15221c;
   font-size: max(15px, 30rpx);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.3;
 }
 
 .section-copy {
   display: block;
   margin-top: 6rpx;
-  color: #65736c;
+  color: #607067;
   font-size: max(12px, 22rpx);
   line-height: 1.5;
 }
@@ -163,32 +164,38 @@ button::after {
   min-height: 46rpx;
   padding: 0 15rpx;
   border-radius: 999px;
+  border: 1rpx solid transparent;
   font-size: max(12px, 21rpx);
   font-weight: 600;
   white-space: nowrap;
 }
 
 .status-pending {
+  border-color: #edd8d5;
   background: #f8ebe9;
   color: #a33e37;
 }
 
 .status-active {
+  border-color: #eadfc9;
   background: #fbf1df;
   color: #9a641f;
 }
 
 .status-done {
+  border-color: #d5e6db;
   background: #eaf3ec;
   color: #2f7656;
 }
 
 .status-danger {
+  border-color: #edd8d5;
   background: #f8ebe9;
   color: #a33e37;
 }
 
 .status-neutral {
+  border-color: #dfe5e0;
   background: #eef1ed;
   color: #596660;
 }
@@ -208,8 +215,9 @@ button::after {
 }
 
 .btn-primary {
-  background: #103b2d;
+  background: #11583f;
   color: #ffffff;
+  box-shadow: 0 8rpx 20rpx rgba(16, 72, 52, 0.14);
 }
 
 .btn-primary[disabled] {
@@ -217,8 +225,8 @@ button::after {
 }
 
 .btn-secondary {
-  border: 1rpx solid #c9d8ce;
-  background: #ffffff;
+  border: 1rpx solid #cddcd2;
+  background: #f9fbfa;
   color: #24352e;
 }
 
@@ -253,9 +261,9 @@ button::after {
 .field-textarea,
 .field-select {
   width: 100%;
-  border: 1rpx solid #d7e2da;
+  border: 1rpx solid #d6e1da;
   border-radius: 16rpx !important;
-  background: #ffffff;
+  background: #fbfcfb;
   color: #17211d;
   font-size: 26rpx;
 }

@@ -1488,7 +1488,7 @@ onShow(() => {
 
 /* Unified field-console visual system */
 .detail-page {
-  background: #f4f7f5;
+  background: #f3f6f4;
 }
 
 .order-hero {

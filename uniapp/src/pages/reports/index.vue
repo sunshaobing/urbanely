@@ -275,7 +275,7 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .reports-page {
-  background: #f4f7f5;
+  background: #f3f6f4;
 }
 
 .header-refresh {

@@ -379,7 +379,7 @@ function showResetHelp() {
 .login-page {
   padding: calc(30rpx + env(safe-area-inset-top)) 36rpx
     calc(28rpx + env(safe-area-inset-bottom));
-  background: #f4f7f5;
+  background: #f3f6f4;
 }
 
 .system-label {

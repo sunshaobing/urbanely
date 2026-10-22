@@ -232,7 +232,7 @@ onLoad((query) => {
 .checkin-page {
   min-height: 100vh;
   padding-bottom: calc(138rpx + env(safe-area-inset-bottom));
-  background: #f4f7f5;
+  background: #f3f6f4;
 }
 
 .checkin-content {

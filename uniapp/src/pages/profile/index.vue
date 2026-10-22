@@ -225,7 +225,7 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .profile-page {
-  background: #f4f7f5;
+  background: #f3f6f4;
 }
 
 .profile-hero {

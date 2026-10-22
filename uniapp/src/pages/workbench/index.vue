@@ -292,12 +292,21 @@ onPullDownRefresh(async () => {
 
       <view v-else-if="visibleTasks.length" class="task-list">
         <view
-          v-for="task in visibleTasks"
+          v-for="(task, taskIndex) in visibleTasks"
           :key="task.id"
           class="task-card card pressable"
+          :class="{
+            'task-card--featured': taskIndex === 0 && activeGroup === 'open',
+          }"
           @tap="openTask(task)"
         >
           <view class="task-card-body">
+            <text
+              v-if="taskIndex === 0 && activeGroup === 'open'"
+              class="task-feature-label"
+            >
+              当前任务
+            </text>
             <view class="task-topline">
               <StatusPill :status="taskDisplayStatus(task)" />
               <text class="task-no mono">{{ task.report_no }}</text>
@@ -314,9 +323,17 @@ onPullDownRefresh(async () => {
               </view>
             </view>
             <text class="task-address">{{ task.service_address || "服务地址待补充" }}</text>
-            <view class="task-action" @tap.stop="openTask(task)">
+            <view
+              v-if="taskIndex === 0 && activeGroup === 'open'"
+              class="task-action"
+              @tap.stop="openTask(task)"
+            >
               <text>{{ actionText }}</text>
               <UniIcons type="right" size="16" color="#ffffff" />
+            </view>
+            <view v-else class="task-link" @tap.stop="openTask(task)">
+              <text>查看任务</text>
+              <UniIcons type="right" size="14" color="#176b52" />
             </view>
             <view class="task-footer">{{ task.sites.length }} 个封堵部位</view>
           </view>
@@ -338,7 +355,7 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .workbench-page {
-  background: #f4f7f5;
+  background: #f3f6f4;
 }
 
 .workbench-header {
@@ -656,6 +673,25 @@ onPullDownRefresh(async () => {
   box-shadow: none;
 }
 
+.task-card--featured {
+  border-color: #bfd7ca;
+  box-shadow: 0 16rpx 36rpx rgba(18, 63, 46, 0.09);
+}
+
+.task-feature-label {
+  display: inline-flex;
+  min-height: 34rpx;
+  align-items: center;
+  margin-bottom: 14rpx;
+  padding: 0 14rpx;
+  border: 1rpx solid #cfe2d6;
+  border-radius: 999px;
+  background: #edf6f0;
+  color: #17654b;
+  font-size: max(11px, 18rpx);
+  font-weight: 600;
+}
+
 .task-accent {
   display: none;
 }
@@ -716,6 +752,18 @@ onPullDownRefresh(async () => {
   color: #ffffff;
   font-size: max(14px, 26rpx);
   font-weight: 700;
+}
+
+.task-link {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4rpx;
+  min-height: 44px;
+  margin-top: 14rpx;
+  color: #17654b;
+  font-size: max(13px, 22rpx);
+  font-weight: 600;
 }
 
 .task-footer {
