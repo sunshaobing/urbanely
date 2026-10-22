@@ -3,6 +3,7 @@ $ErrorActionPreference = "Stop"
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $manifestPath = Join-Path $projectRoot "src\manifest.json"
 $modulePath = Join-Path $projectRoot "harmony-configs\entry\src\main\module.json5"
+$locationHarPath = Join-Path $projectRoot "harmony-configs\libs\uni_modules__uni_location_system.har"
 
 Write-Host "HarmonyOS environment check"
 Write-Host "Project: $projectRoot"
@@ -13,6 +14,10 @@ if (-not (Test-Path -LiteralPath $manifestPath)) {
 
 if (-not (Test-Path -LiteralPath $modulePath)) {
   throw "harmony-configs module.json5 not found"
+}
+
+if (-not (Test-Path -LiteralPath $locationHarPath)) {
+  throw "HarmonyOS location module HAR not found: $locationHarPath"
 }
 
 $devEcoCandidates = @(
@@ -47,5 +52,6 @@ if (Test-Path -LiteralPath $hbuilder) {
   Write-Warning "HBuilderX CLI was not found at $hbuilder"
 }
 
+Write-Host "Location module HAR: $locationHarPath"
 Write-Host "Required permissions are present in harmony-configs/entry/src/main/module.json5."
 Write-Host "Do not commit .p12, .cer, .p7b, passwords, or AGC private credentials."

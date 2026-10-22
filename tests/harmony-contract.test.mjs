@@ -12,6 +12,7 @@ test("HarmonyOS internal-test packaging config is complete", () => {
   const app = read("uniapp/harmony-configs/AppScope/app.json5");
   const docs = read("docs/10-harmony-internal-release.md");
   const check = read("uniapp/scripts/check-harmony-env.ps1");
+  const locationPackage = read("uniapp/uni_modules/uni-location-system/package.json");
 
   assert.match(manifest, /"app-harmony"/);
   assert.match(manifest, /"name"\s*:\s*"申汰封堵勘测系统"/);
@@ -30,4 +31,11 @@ test("HarmonyOS internal-test packaging config is complete", () => {
   assert.match(docs, /cn\.sunrgw\.pco/);
   assert.match(check, /devecostudio64\.exe/);
   assert.doesNotMatch(check, /deveco-studio64\.exe/);
+  assert.match(check, /uni_modules__uni_location_system\.har/);
+  assert.match(locationPackage, /"app-harmony"\s*:\s*"u"/);
+  assert.ok(
+    fs.statSync(new URL("../uniapp/harmony-configs/libs/uni_modules__uni_location_system.har", import.meta.url)).size > 0
+  );
+  assert.ok(fs.statSync(new URL("../uniapp/uni_modules/uni-location/LICENSE", import.meta.url)).size > 0);
+  assert.ok(fs.statSync(new URL("../uniapp/uni_modules/uni-location-system/LICENSE", import.meta.url)).size > 0);
 });

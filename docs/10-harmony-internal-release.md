@@ -19,15 +19,15 @@
 - 定位权限仅在进入页面后的主动签到操作中使用，不申请后台定位。
 - 已准备中文、英文权限用途文案。
 - 已添加环境检查脚本 `scripts/check-harmony-env.ps1`。
+- 已从 DCloud 官方 `uni-api` 仓库提交 `d98313b`（`HBuilderX 5.32 / 2026-10-13` 对应版本）补入 `uni-location` 和 `uni-location-system` 源码及上游许可证。
+- 已在 `harmony-configs/libs` 固化编译后的 `uni_modules__uni_location_system.har`，解决 HBuilderX 本地打包缺少定位 HAR 的问题。
+- 已使用 DevEco Studio 5.1.0.849 或更高版本构建；本机实际版本为 `26.0.0.851`，并已使用 AGC 发布证书、发布 Profile 完成签名 `.app` 构建。
 
 仍需在具备华为企业账号的电脑上完成：
 
-- 安装 DevEco Studio 5.1.0.849 或更高版本。
-- 注册/登录华为开发者账号并完成企业实名认证。
-- 在 AppGallery Connect 创建 HarmonyOS 应用。
-- 申请企业内测证书和 Profile。
 - 连接 HarmonyOS NEXT 真机完成功能测试。
-- 生成签名 `.app/.hap` 并上传 AppGallery Connect。
+- 上传签名 `.app` 到 AppGallery Connect 内部测试版本。
+- 添加内部测试人员并提交邀请测试。
 
 ## 3. AGC 创建应用信息
 
@@ -70,9 +70,9 @@
 2. 完成企业开发者认证。
 3. 创建 HarmonyOS 应用，填写 `cn.sunrgw.pco`。
 4. 在“证书、APP ID 和 Profile”中申请企业内测证书与 Profile。
-5. 将签名三件套放到本机安全目录，并在 DevEco Studio 中配置签名。
-6. 使用 HBuilderX：`发行 -> App-Harmony -> 本地打包`。
-7. 上传 `.app/.hap` 到 AGC 内部测试版本。
+5. 将签名三件套放到本机安全目录，并在 `harmony-configs/build-profile.json5` 中配置发布签名。
+6. 执行 `pnpm check:harmony` 和 `pnpm pack:harmony`；签名产物位于 `dist/build/app-harmony/build/outputs/release/app-harmony-release-signed.app`。
+7. 使用 `hap-sign-tool verify-app` 校验签名，并上传 `.app` 到 AGC 内部测试版本。
 8. 添加企业测试人员华为账号，设置测试有效期和下载范围。
 9. 提交内部测试分发，不进入公开应用市场审核。
 
@@ -98,3 +98,5 @@ pnpm type-check
 ```
 
 DevEco Studio 安装后，在 HBuilderX 中设置其安装路径，再配置签名并执行本地打包。
+
+签名密码会由 Hvigor 加密，并在私钥目录下生成 `material`。`harmony-configs/build-profile.json5`、`config/`、`.p12`、`.cer`、`.p7b` 和 `material` 均已排除在 Git 之外。
