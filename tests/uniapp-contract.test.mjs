@@ -314,6 +314,10 @@ test("the field client follows an MHP-inspired deep-green service hierarchy", ()
   assert.match(app, /button[\s\S]*?border-radius:\s*999px\s*!important/);
   assert.match(app, /font-size:\s*max\(15px,\s*30rpx\)/);
   assert.match(app, /font-size:\s*max\(13\.5px,\s*28rpx\)/);
+  assert.match(
+    app,
+    /font-family:\s*"PingFang SC",\s*"Microsoft YaHei",\s*"Noto Sans CJK SC"/,
+  );
   assert.match(tabbar, /background:\s*#ffffff/);
   assert.match(tabbar, /color:\s*#115640/);
   assert.match(header, /background:\s*#ffffff/);

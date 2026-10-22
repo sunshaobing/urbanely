@@ -30,8 +30,8 @@ page {
   min-height: 100%;
   background: #f3f6f4;
   color: #15221c;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
-    sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC",
+    "Source Han Sans SC", sans-serif;
   font-size: max(13.5px, 28rpx);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
