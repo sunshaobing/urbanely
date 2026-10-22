@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { onLoad, onPullDownRefresh, onShow } from "@dcloudio/uni-app";
+import {
+  onHide,
+  onLoad,
+  onPullDownRefresh,
+  onShow,
+  onUnload,
+} from "@dcloudio/uni-app";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 import AppTabBar from "../../components/AppTabBar.vue";
 import BrandLogo from "../../components/BrandLogo.vue";
@@ -41,6 +47,7 @@ const serviceReports = ref<ServiceReport[]>([]);
 const loading = ref(false);
 const error = ref("");
 const updatedAt = ref("");
+let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 const effectiveKind = computed<"" | "risk" | "sealing">(() => {
   if (roleView.value === "survey") return "risk";
@@ -183,6 +190,19 @@ function selectGroup(group: "open" | "done") {
   activeGroup.value = group;
 }
 
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => {
+    if (!loading.value) void load();
+  }, 30_000);
+}
+
+function stopAutoRefresh() {
+  if (!refreshTimer) return;
+  clearInterval(refreshTimer);
+  refreshTimer = null;
+}
+
 function taskServiceReport(task: WorkOrder) {
   return serviceReports.value.find((report) =>
     reportMatchesTask(report, task),
@@ -276,7 +296,11 @@ onLoad((query) => {
 
 onShow(() => {
   void load();
+  startAutoRefresh();
 });
+
+onHide(stopAutoRefresh);
+onUnload(stopAutoRefresh);
 
 onPullDownRefresh(async () => {
   await load();

@@ -52,7 +52,6 @@ export function DispatchSurveyDialog({
   const [engineers, setEngineers] = useState<PersonnelRecord[]>([]);
   const [engineerId, setEngineerId] = useState("");
   const [serviceDate, setServiceDate] = useState(todayString);
-  const [serviceType, setServiceType] = useState("现场勘测");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -107,7 +106,7 @@ export function DispatchSurveyDialog({
         service_address: site?.address || customer.address || "",
         contact: customer.contact || "",
         contact_phone: customer.phone || "",
-        service_type: serviceType.trim() || "现场勘测",
+        service_type: "现场勘测",
         service_company: "上海申汰实业有限公司",
         service_date: serviceDate,
         weather: "",
@@ -199,14 +198,8 @@ export function DispatchSurveyDialog({
             />
           </label>
           <label>
-            <span>服务类型</span>
-            <select
-              value={serviceType}
-              onChange={(event) => setServiceType(event.target.value)}
-            >
-              <option value="现场勘测">现场勘测</option>
-              <option value="上门封堵">上门封堵</option>
-            </select>
+            <span>派单类型</span>
+            <input value="现场勘测" readOnly />
           </label>
           <label className="personnel-form-wide">
             <span>派单备注</span>
@@ -220,7 +213,7 @@ export function DispatchSurveyDialog({
         </div>
 
         <p className="dispatch-hint">
-          派单后，工单会进入该师傅微信小程序的工作台。若对方已打开小程序，下拉刷新或重新进入即可看到。
+          派单后，工单会自动进入对应勘测工程师的手机工作台；已打开工作台时会自动同步新任务。
         </p>
         {error ? <div className="personnel-modal-error">{error}</div> : null}
         <div className="personnel-modal-actions">

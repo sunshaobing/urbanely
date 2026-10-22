@@ -312,7 +312,10 @@ Returns site profile, risk level, next service, open findings count.
 ### 5.3 封堵派单与服务单
 
 - Web 管理员从 `status=approved` 的勘测记录派单。存在由勘测审批生成的待派单报告时，使用 `PUT /service-reports/{id}` 写入 `service_person` 并将状态改为 `assigned`；不存在时使用 `POST /service-reports` 创建。
+- 勘测派单固定创建 `service_type=现场勘测` 的作业单，并写入 `engineer_id`；后端只允许选择已启用的勘测角色账号。
+- 封堵派单写入 `service_person` 和 `assigned`；后端只允许选择已启用的封堵角色账号。角色不匹配时返回明确的 `400` 业务错误。
 - `service_person` 保存封堵师傅姓名；封堵工程师的 `GET /workorders` 范围包含其已分配服务单对应的客户，确保手机端能收到派单。
+- uni-app 工作台在可见状态下每 30 秒自动刷新一次，管理员新派发的勘测或封堵任务无需用户手动下拉即可出现。
 - 封堵师傅的签到、接单、双签、提交和 PDF 下载均通过 `service_person` 校验；服务单列表按 `service_person`/客户归属过滤。
 - 封堵服务单的 `risk_photos` 表示封堵前照片，`photos` 表示封堵后照片；Web 预览和 PDF 都使用实际图片 URL。
 - 封堵审批以服务单 `PUT /service-reports/{id}` 的 `status=approved` 为准，不再额外调用作业单 `/review`。作业单未处于 `pending` 时不会影响封堵报告审批和生成。

@@ -18,8 +18,8 @@
 
 ## WeChat release
 
-- Uploaded version: `3.2.6`, version code `326`.
-- Upload package size: 793,313 bytes.
+- Uploaded version: `3.2.7`, version code `327`.
+- Upload package size: 798,613 bytes.
 - Production AppID: `wx9469d5e631279f7b`.
 - The archive page now normalizes backend relative PDF URLs before `uni.downloadFile`.
 - Survey photo upload now tries the original picker path first and falls back to the persisted local copy.
@@ -28,7 +28,10 @@
 - HBuilderX real-device testing on OPPO PGX110 verified multiple `/api/risk-surveys/upload` requests returning `200`, image preview/readback and survey report generation.
 - HBuilderX real-device recheck confirmed submitted survey `STFD-2026-015` no longer appears in the open/current list; the workbench reported 6 open and 4 completed tasks, while sealing task `STFD-2026-014` remained open with its service-report status.
 - Sealing approval now uses the service-report status only. Real-device verification showed sealing report `#4` as `approved`, both signatures complete and the task at step 14/14 with the generated report, without the former "current status cannot approve" error.
-- Remaining manual step: submit version `3.2.6` for review and publish it from the WeChat platform console.
+- Web survey dispatch now creates only `现场勘测` work orders and assigns an active survey-role user; sealing dispatch assigns an active sealing-role user. Backend role validation was exercised with valid and invalid accounts.
+- The workbench refreshes every 30 seconds while visible, so dispatched work appears automatically on the target engineer device.
+- Production Web now serves `index-BZqVrLet.js`; the previous static directory is backed up at `/home/ubuntu/pco/static_web.bak-20261022-174420`.
+- Remaining manual step: submit version `3.2.7` for review and publish it from the WeChat platform console.
 
 ## Backend data links
 
