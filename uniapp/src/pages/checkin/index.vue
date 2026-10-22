@@ -276,7 +276,7 @@ onLoad((query) => {
   display: block;
   margin-top: 22rpx;
   color: #17211d;
-  font-size: max(17px, 28rpx);
+  font-size: max(16px, 27rpx);
   font-weight: 700;
 }
 

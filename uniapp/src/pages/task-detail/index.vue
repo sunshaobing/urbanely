@@ -2096,7 +2096,7 @@ onShow(() => {
 }
 
 .order-customer {
-  font-size: max(21px, 34rpx);
+  font-size: max(20px, 32rpx);
 }
 
 .order-service,

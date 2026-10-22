@@ -1631,7 +1631,7 @@ onLoad(async (query) => {
 }
 
 .site-name {
-  font-size: max(17px, 28rpx);
+  font-size: max(16px, 27rpx);
 }
 
 .site-address,

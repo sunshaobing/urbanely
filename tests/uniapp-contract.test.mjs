@@ -195,7 +195,7 @@ test("workbench follows the approved task-first hierarchy", () => {
   assert.match(workbench, /:name-size="16"/);
   assert.match(workbench, /今天还有 \$\{openCount\.value\} 个任务/);
   assert.match(workbench, /class="task-action"/);
-  assert.match(workbench, /\.page-title\s*\{[\s\S]*?font-size:\s*max\(23px,\s*40rpx\)/);
+  assert.match(workbench, /\.page-title\s*\{[\s\S]*?font-size:\s*max\(20px,\s*38rpx\)/);
   assert.match(workbench, /\.task-action\s*\{[\s\S]*?background:\s*#145a3a/);
   assert.doesNotMatch(workbench, /class="metric-strip"/);
 });
@@ -212,7 +212,7 @@ test("workbench status tabs and task cards use uniform, uncrowded spacing", () =
     /\.task-list,[\s\S]*?gap:\s*18rpx;[\s\S]*?margin-top:\s*20rpx;/,
   );
   assert.match(workbench, /\.status-tab\s*\{[\s\S]*?min-height:\s*48px/);
-  assert.match(workbench, /\.task-customer\s*\{[\s\S]*?font-size:\s*max\(18px,\s*32rpx\)/);
+  assert.match(workbench, /\.task-customer\s*\{[\s\S]*?font-size:\s*max\(16px,\s*30rpx\)/);
   assert.match(workbench, /#ifdef APP-PLUS[\s\S]*?\.workbench-header/);
 });
 
@@ -309,7 +309,7 @@ test("the field client follows an MHP-inspired deep-green service hierarchy", ()
   assert.match(app, /--field-accent-soft:\s*#e6f2ec/);
   assert.match(app, /background:\s*#f4f7f5/);
   assert.match(app, /border-radius:\s*12rpx/);
-  assert.match(app, /font-size:\s*max\(16px,\s*32rpx\)/);
+  assert.match(app, /font-size:\s*max\(15px,\s*30rpx\)/);
   assert.match(app, /font-size:\s*max\(13\.5px,\s*28rpx\)/);
   assert.match(tabbar, /background:\s*#ffffff/);
   assert.match(tabbar, /color:\s*#115640/);

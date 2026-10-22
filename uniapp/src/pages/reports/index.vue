@@ -678,7 +678,7 @@ onPullDownRefresh(async () => {
 .archive-customer {
   margin-top: 10rpx;
   color: #17211d;
-  font-size: max(17px, 28rpx);
+  font-size: max(16px, 27rpx);
   line-height: 1.35;
 }
 

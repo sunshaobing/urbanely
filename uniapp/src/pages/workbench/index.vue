@@ -409,7 +409,7 @@ onPullDownRefresh(async () => {
 
 .page-title {
   color: #17211d;
-  font-size: max(23px, 40rpx);
+  font-size: max(20px, 38rpx);
   font-weight: 700;
   line-height: 1.2;
 }
@@ -678,7 +678,7 @@ onPullDownRefresh(async () => {
   display: block;
   margin-top: 16rpx;
   color: #17211d;
-  font-size: max(18px, 32rpx);
+  font-size: max(16px, 30rpx);
   font-weight: 700;
   line-height: 1.35;
 }
