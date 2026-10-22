@@ -249,6 +249,7 @@ test("the field workflow follows survey approval, dispatch, check-in, sealing an
     "施工前影像",
     "施工后影像",
     "封堵报告双签",
+    "现场签出",
     "封堵审批",
     "生成报告",
   ]) {
@@ -268,6 +269,7 @@ test("the field workflow follows survey approval, dispatch, check-in, sealing an
   assert.match(detail, /sealingListPayload/);
   assert.match(detail, /acceptSealing/);
   assert.match(detail, /openCheckin/);
+  assert.match(detail, /checkout/);
   assert.match(detail, /approveSealing/);
   assert.match(detail, /openReportPdf/);
   assert.match(
@@ -323,7 +325,7 @@ test("the field client follows an MHP-inspired deep-green service hierarchy", ()
   assert.match(survey, /第 \{\{ step \+ 1 \}\} 步 \/ 共 \{\{ steps\.length \}\} 步/);
   assert.match(service, /第 \{\{ step \+ 1 \}\} 步 \/ 共 \{\{ steps\.length \}\} 步/);
   assert.match(survey, /"现场信息",[\s\S]*?"检查范围",[\s\S]*?"风险点",[\s\S]*?"现场照片",[\s\S]*?"治理方案",[\s\S]*?"签字提交"/);
-  assert.match(service, /"服务信息",[\s\S]*?"材料与部位",[\s\S]*?"封堵前照片",[\s\S]*?"封堵后照片",[\s\S]*?"服务记录",[\s\S]*?"签字提交"/);
+  assert.match(service, /"服务信息",[\s\S]*?"材料与部位",[\s\S]*?"封堵前照片",[\s\S]*?"封堵后照片",[\s\S]*?"服务记录",[\s\S]*?"双方签字",[\s\S]*?"签出确认"/);
   assert.match(workbench, /reportMatchesTask/);
   assert.match(workbench, /taskDisplayStatus/);
   assert.match(tabbar, /label: "任务"/);
@@ -476,6 +478,69 @@ test("sealing signatures use the backend service role", () => {
   assert.match(service, /role: "service"/);
   assert.doesNotMatch(service, /role: "responsible"/);
   assert.match(service, /signServiceReport/);
+});
+
+test("sealing checkout requires a camera photo and precise location before submission", () => {
+  const service = read("src/pages/service-report/index.vue");
+  const checkoutIndex = service.indexOf("await checkoutServiceReport(");
+  const submitIndex = service.indexOf("await submitServiceReport(activeReportId)");
+
+  assert.match(service, /checkoutServiceReport/);
+  assert.match(service, /getPreciseLocation/);
+  assert.match(service, /sourceType:\s*\["camera"\]/);
+  assert.match(service, /签出拍照确认/);
+  assert.match(service, /请拍摄签出确认照片/);
+  assert.match(service, /checkoutPhotoUrl/);
+  assert.ok(checkoutIndex >= 0);
+  assert.ok(submitIndex > checkoutIndex);
+});
+
+test("survey and sealing payloads retain every report field exposed by the forms", () => {
+  const survey = read("src/pages/risk-survey/index.vue");
+  const service = read("src/pages/service-report/index.vue");
+
+  for (const field of [
+    "survey_range",
+    "structure_conditions",
+    "pest_evidence",
+    "comprehensive_plan",
+    "disinfection_plan",
+    "environment_suggestions",
+    "prevention_measures",
+    "review_date",
+    "risk_level",
+    "conclusion",
+    "items",
+    "photos",
+    "signatures",
+  ]) {
+    assert.match(survey, new RegExp(field));
+  }
+
+  for (const field of [
+    "customer_name",
+    "address",
+    "contact",
+    "contact_phone",
+    "service_project",
+    "task_tag",
+    "service_date",
+    "start_time",
+    "end_time",
+    "service_person",
+    "content",
+    "follow_up",
+    "risk_follow",
+    "customer_comment",
+    "materials",
+    "photos",
+    "risk_photos",
+  ]) {
+    assert.match(service, new RegExp(field));
+  }
+  assert.match(service, /material\.target/);
+  assert.match(service, /material\.area_size/);
+  assert.match(service, /包含服务信息、封堵部位、材料与用量、封堵前照片、封堵后照片、服务记录、客户意见、双方签字、到场签到、签出时间和签出照片/);
 });
 
 test("login requires agreement to the service and privacy policies", () => {

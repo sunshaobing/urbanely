@@ -222,6 +222,8 @@ export interface ServiceReport {
   checked_in_at?: string;
   checkout_at?: string;
   checkin_location?: string;
+  checkout_location?: string;
+  checkout_photo?: string;
   checkin?: {
     checkin_time: string;
     checkin_location: string;

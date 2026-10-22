@@ -17,6 +17,7 @@ export type WorkflowStageKey =
   | "beforePhotos"
   | "afterPhotos"
   | "sealSign"
+  | "checkout"
   | "sealApproval"
   | "generateReport";
 
@@ -51,6 +52,17 @@ function reportCheckedIn(report: ServiceReport | null) {
       ["checked_in", "in_progress", "submitted", "approved", "completed"].includes(
         report.status,
       ),
+  );
+}
+
+function reportCheckedOut(report: ServiceReport | null) {
+  if (!report) return false;
+  return Boolean(
+    report.checkin?.checkout_time ||
+      report.checkout_at ||
+      report.checkout_location ||
+      report.checkout_photo ||
+      report.status === "completed",
   );
 }
 
@@ -148,6 +160,7 @@ export function deriveWorkflow(
   const beforeDone = Boolean(report?.risk_photos?.length);
   const afterDone = Boolean(report?.photos?.length);
   const sealSigned = signaturesComplete(report?.signatures);
+  const checkedOut = reportCheckedOut(report);
   const sealApproved = Boolean(
     report &&
       (approvedStatuses.has(report.status) ||
@@ -238,6 +251,14 @@ export function deriveWorkflow(
       label: "封堵报告双签",
       hint: sealSigned ? "责任人与客户代表已签" : "完成封堵责任人与客户签字",
       done: sealSigned,
+    },
+    {
+      key: "checkout",
+      label: "现场签出",
+      hint: checkedOut
+        ? "签出定位与确认照片已保存"
+        : "离开现场前完成签出拍照确认",
+      done: checkedOut,
     },
     {
       key: "sealApproval",

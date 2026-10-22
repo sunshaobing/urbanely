@@ -766,6 +766,12 @@ onLoad(async (query) => {
         </view>
 
         <view v-else class="step-panel">
+          <view class="hint-card">
+            <text class="hint-title">提交后生成完整勘测报告</text>
+            <text class="hint-copy">
+              包含现场信息、勘测范围、结构情况、鼠害证据、风险等级、风险点、现场照片、治理方案、复检日期、勘测结论和双方签字。
+            </text>
+          </view>
           <view class="submit-summary card">
             <text class="summary-title">提交前确认</text>
             <view class="summary-grid">

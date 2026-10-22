@@ -17,7 +17,7 @@
 - Page background `#f4f7f5`, white work surfaces, deep green primary actions.
 - Content column centered with consistent `32rpx` side padding.
 - Page titles and primary actions centered; long copy and form labels left aligned.
-- Body text at least `30rpx`; secondary text at least `24rpx`.
+- Body text uses `28rpx` with a `13.5px` floor; secondary text uses `20–22rpx` with a `12px` floor.
 - Inputs and primary actions at least `96rpx` high.
 - Card radius `12rpx`, one-pixel neutral borders, no decorative gradients.
 - One primary action per screen.
@@ -29,7 +29,8 @@
 - Workbench: headline task count, current task card, uniform status tabs, simplified queue.
 - Task detail: current action and progress first, supporting data below.
 - Survey: six explicit steps: site information, inspection scope, risk points, photos, treatment plan, signatures.
-- Sealing: six explicit steps: service information, materials and locations, before photos, after photos, service record, signatures.
+- Sealing: seven explicit steps: service information, materials and locations, before photos, after photos, service record, signatures, and checkout confirmation.
+- The final checkout step requires a camera photo and a fresh precise location, then writes the existing checkout data before submission.
 - Reports and profile: lower density, centered hierarchy, larger tap targets.
 
 ## Verification

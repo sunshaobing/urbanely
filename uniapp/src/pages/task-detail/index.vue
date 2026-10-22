@@ -77,6 +77,7 @@ const visibleStepKeys = computed(() => {
       "beforePhotos",
       "afterPhotos",
       "sealSign",
+      "checkout",
       "sealApproval",
       "generateReport",
     ];
@@ -188,6 +189,7 @@ const actionLabel = computed(() => {
   if (key === "beforePhotos") return "补拍施工前影像";
   if (key === "afterPhotos") return "补拍施工后影像";
   if (key === "sealSign") return "完成封堵报告双签";
+  if (key === "checkout") return "签出拍照确认";
   if (key === "sealApproval") return canApprove.value ? "审批封堵报告" : "提交审批";
   return "生成报告";
 });
@@ -301,15 +303,17 @@ function openServiceReport() {
     uni.showToast({ title: "请先完成勘测审批并派单", icon: "none" });
     return;
   }
+  const key = currentStep.value?.key;
   const step =
-    currentStep.value?.key === "sealSign"
+    key === "sealSign"
       ? 5
-      : currentStep.value?.key === "beforePhotos" ||
-          currentStep.value?.key === "afterPhotos"
-        ? currentStep.value?.key === "afterPhotos"
+      : key === "checkout"
+        ? 6
+        : key === "afterPhotos"
           ? 3
-          : 2
-        : 0;
+          : key === "beforePhotos"
+            ? 2
+            : 0;
   uni.navigateTo({
     url: `/pages/service-report/index?taskId=${task.value.id}&reportId=${serviceReport.value.id}&step=${step}`,
   });
@@ -472,7 +476,7 @@ async function runCurrentAction() {
     await openDispatchSheet();
     return;
   }
-  if (["beforePhotos", "afterPhotos", "sealSign"].includes(key)) {
+  if (["beforePhotos", "afterPhotos", "sealSign", "checkout"].includes(key)) {
     openServiceReport();
     return;
   }

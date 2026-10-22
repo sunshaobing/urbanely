@@ -6,6 +6,7 @@ import PageHeader from "../../components/PageHeader.vue";
 import PhotoGrid from "../../components/PhotoGrid.vue";
 import SignaturePad from "../../components/SignaturePad.vue";
 import {
+  checkoutServiceReport,
   getServiceReport,
   getWorkOrder,
   saveDraft,
@@ -17,8 +18,11 @@ import {
   uploadedUrl,
 } from "../../utils/api";
 import { getSession } from "../../utils/auth";
+import { persistLocalFile } from "../../utils/files";
 import { readLocalDraft, removeLocalDraft, writeLocalDraft } from "../../utils/localDraft";
+import { getPreciseLocation } from "../../utils/location";
 import { nowTime, today } from "../../utils/present";
+import { ensurePrivacyAuthorized } from "../../utils/privacy";
 import { canUseSealing, fieldHome } from "../../utils/roles";
 import type {
   PhotoDraft,
@@ -46,6 +50,7 @@ interface ServiceDraft {
   responsibleSignature: string;
   customerSignature: string;
   customerSignatureDepartment: string;
+  checkoutPhoto: string;
 }
 
 const steps = [
@@ -54,7 +59,8 @@ const steps = [
   "封堵前照片",
   "封堵后照片",
   "服务记录",
-  "签字提交",
+  "双方签字",
+  "签出确认",
 ];
 const step = ref(0);
 const taskId = ref(0);
@@ -64,6 +70,8 @@ const loading = ref(true);
 const error = ref("");
 const saving = ref(false);
 const submitting = ref(false);
+const checkoutUploading = ref(false);
+const checkoutUploadError = ref("");
 const originalSignatures = ref<Record<string, string>>({});
 
 const form = reactive<ServiceDraft>({
@@ -84,6 +92,7 @@ const form = reactive<ServiceDraft>({
   responsibleSignature: "",
   customerSignature: "",
   customerSignatureDepartment: "",
+  checkoutPhoto: "",
 });
 
 const progress = computed(() => Math.round(((step.value + 1) / steps.length) * 100));
@@ -114,6 +123,7 @@ function hydrate(saved: ServiceDraft) {
   form.customerSignature = saved.customerSignature || "";
   form.customerSignatureDepartment =
     saved.customerSignatureDepartment || "";
+  form.checkoutPhoto = saved.checkoutPhoto || "";
 }
 
 function hydrateReport(report: ServiceReport) {
@@ -148,6 +158,10 @@ function hydrateReport(report: ServiceReport) {
   form.responsibleSignature = signatures.responsible || signatures.service || "";
   form.customerSignature = signatures.customer || "";
   form.customerSignatureDepartment = "";
+  form.checkoutPhoto =
+    report.checkin?.checkout_photo ||
+    report.checkout_photo ||
+    "";
 }
 
 function addMaterial() {
@@ -188,6 +202,10 @@ function validateStep() {
   }
   if (step.value === 3 && !form.afterPhotos.length) {
     uni.showToast({ title: "请至少拍摄一张封堵后照片", icon: "none" });
+    return false;
+  }
+  if (step.value === 6 && !form.checkoutPhoto) {
+    uni.showToast({ title: "请拍摄签出确认照片", icon: "none" });
     return false;
   }
   return true;
@@ -252,6 +270,58 @@ async function uploadSignature(path: string) {
   const url = uploadedUrl(payload);
   if (!url) throw new Error("签字图片上传失败");
   return url;
+}
+
+async function chooseCheckoutPhoto() {
+  if (checkoutUploading.value) return;
+  try {
+    await ensurePrivacyAuthorized();
+  } catch (privacyError) {
+    uni.showToast({
+      title:
+        privacyError instanceof Error
+          ? privacyError.message
+          : "请先同意隐私保护指引后再拍照",
+      icon: "none",
+    });
+    return;
+  }
+  uni.chooseImage({
+    count: 1,
+    sizeType: ["compressed"],
+    sourceType: ["camera"],
+    success: async (result) => {
+      const selected = Array.isArray(result.tempFilePaths)
+        ? result.tempFilePaths[0]
+        : result.tempFilePaths;
+      if (!selected) return;
+      checkoutUploading.value = true;
+      checkoutUploadError.value = "";
+      try {
+        const savedPath = await persistLocalFile(String(selected));
+        try {
+          form.checkoutPhoto = await uploadPhoto(
+            savedPath,
+            "签出确认照片",
+          );
+        } catch (uploadError) {
+          form.checkoutPhoto = savedPath;
+          checkoutUploadError.value =
+            uploadError instanceof Error
+              ? uploadError.message
+              : "签出照片暂未上传，提交时会重试";
+        }
+      } finally {
+        checkoutUploading.value = false;
+      }
+    },
+  });
+}
+
+function removeCheckoutPhoto() {
+  if (checkoutUploading.value) return;
+  form.checkoutPhoto = "";
+  checkoutUploadError.value = "";
 }
 
 async function uploadPhotoGroup(photos: PhotoDraft[], prefix: string) {
@@ -320,6 +390,10 @@ async function submit() {
     });
     return;
   }
+  if (!form.checkoutPhoto) {
+    uni.showToast({ title: "请拍摄签出确认照片", icon: "none" });
+    return;
+  }
   submitting.value = true;
   uni.showLoading({ title: "正在提交记录", mask: true });
   try {
@@ -353,12 +427,22 @@ async function submit() {
         image_url: signature.image_url,
       });
     }
+    const checkoutPhotoUrl = await uploadPhoto(
+      form.checkoutPhoto,
+      "签出确认照片",
+    );
+    const checkoutLocation = await getPreciseLocation();
+    await checkoutServiceReport(
+      activeReportId,
+      checkoutLocation.label,
+      checkoutPhotoUrl,
+    );
     await submitServiceReport(activeReportId);
     removeLocalDraft(draftKey());
     uni.hideLoading();
     uni.showModal({
       title: "封堵记录已提交",
-      content: "封堵前后照片、材料和双方签字已保存。",
+      content: "封堵前后照片、签出照片、材料、定位和双方签字已保存。",
       showCancel: false,
       success: () => {
         uni.reLaunch({ url: "/pages/workbench/index" });
@@ -625,6 +709,18 @@ onLoad(async (query) => {
                 placeholder-class="field-placeholder"
               />
               <input
+                v-model="material.target"
+                class="field-input item-field"
+                placeholder="使用部位，例如仓储区穿墙孔"
+                placeholder-class="field-placeholder"
+              />
+              <input
+                v-model="material.area_size"
+                class="field-input item-field"
+                placeholder="施工面积，例如 0.3 平方米"
+                placeholder-class="field-placeholder"
+              />
+              <input
                 v-model="material.region"
                 class="field-input item-field"
                 placeholder="使用区域"
@@ -723,7 +819,7 @@ onLoad(async (query) => {
           </view>
         </view>
 
-        <view v-else class="step-panel">
+        <view v-else-if="step === 5" class="step-panel">
           <view class="submit-summary card">
             <text class="summary-title">提交前确认</text>
             <view class="summary-grid">
@@ -771,6 +867,84 @@ onLoad(async (query) => {
             :signer="`${form.contact || task.contact || '客户代表'} · 客户代表`"
             hint="客户签字需补充签字部门，结果自动进入报告"
           />
+        </view>
+
+        <view v-else class="step-panel">
+          <view class="section-head">
+            <view>
+              <text class="section-title">签出拍照确认</text>
+              <text class="section-copy">离开门店前拍摄现场照片，并重新确认当前位置</text>
+            </view>
+          </view>
+          <view class="report-completeness card">
+            <text class="report-completeness-title">提交后生成完整封堵报告</text>
+            <text class="report-completeness-copy">
+              包含服务信息、封堵部位、材料与用量、封堵前照片、封堵后照片、服务记录、客户意见、双方签字、到场签到、签出时间和签出照片。
+            </text>
+          </view>
+          <view class="checkout-card card">
+            <view class="checkout-copy">
+              <view class="checkout-icon">
+                <UniIcons type="camera-filled" size="24" color="#176b52" />
+              </view>
+              <view>
+                <text class="checkout-title">
+                  {{ form.checkoutPhoto ? "签出照片已准备" : "请拍摄签出照片" }}
+                </text>
+                <text class="checkout-hint">
+                  照片用于确认施工人员已完成现场作业并离开门店。
+                </text>
+              </view>
+            </view>
+
+            <view v-if="form.checkoutPhoto" class="checkout-preview">
+              <image
+                class="checkout-image"
+                :src="form.checkoutPhoto"
+                mode="aspectFill"
+              />
+              <view class="checkout-preview-actions">
+                <button
+                  class="checkout-secondary"
+                  :disabled="checkoutUploading"
+                  @tap="chooseCheckoutPhoto"
+                >
+                  重新拍照
+                </button>
+                <button
+                  class="checkout-remove"
+                  :disabled="checkoutUploading"
+                  @tap="removeCheckoutPhoto"
+                >
+                  删除
+                </button>
+              </view>
+            </view>
+
+            <button
+              v-else
+              class="checkout-camera"
+              :disabled="checkoutUploading"
+              @tap="chooseCheckoutPhoto"
+            >
+              <UniIcons type="camera-filled" size="22" color="#ffffff" />
+              <text>{{ checkoutUploading ? "正在上传" : "打开相机拍照" }}</text>
+            </button>
+
+            <text v-if="checkoutUploadError" class="error-copy">
+              {{ checkoutUploadError }}
+            </text>
+          </view>
+
+          <view class="checkout-location card">
+            <UniIcons type="location-filled" size="20" color="#176b52" />
+            <view>
+              <text class="checkout-location-title">提交时获取签出定位</text>
+              <text class="checkout-location-copy">
+                签出时间和定位将写入封堵服务单，无法获取定位时不会提交。
+              </text>
+            </view>
+          </view>
         </view>
       </view>
 
@@ -1471,5 +1645,150 @@ onLoad(async (query) => {
 .choice-count,
 .signature-note-title {
   font-size: max(12px, 18rpx);
+}
+
+.checkout-card {
+  padding: 26rpx;
+}
+
+.report-completeness {
+  padding: 22rpx 24rpx;
+  border-color: #d5e5db;
+  background: #f5faf7;
+}
+
+.report-completeness-title,
+.report-completeness-copy {
+  display: block;
+}
+
+.report-completeness-title {
+  color: #176b52;
+  font-size: max(14px, 24rpx);
+  font-weight: 700;
+}
+
+.report-completeness-copy {
+  margin-top: 6rpx;
+  color: #53635a;
+  font-size: max(12px, 20rpx);
+  line-height: 1.6;
+}
+
+.checkout-copy {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.checkout-icon {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12rpx;
+  background: #e8f2ed;
+}
+
+.checkout-title,
+.checkout-hint {
+  display: block;
+}
+
+.checkout-title {
+  color: #24352e;
+  font-size: max(15px, 28rpx);
+  font-weight: 700;
+}
+
+.checkout-hint {
+  margin-top: 6rpx;
+  color: #65736c;
+  font-size: max(12px, 20rpx);
+  line-height: 1.55;
+}
+
+.checkout-camera {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  margin-top: 24rpx;
+  border-radius: 9rpx;
+  background: #145a3a;
+  color: #ffffff;
+  font-size: max(14px, 26rpx);
+  font-weight: 700;
+}
+
+.checkout-camera[disabled] {
+  opacity: 0.55;
+}
+
+.checkout-preview {
+  margin-top: 22rpx;
+}
+
+.checkout-image {
+  width: 100%;
+  height: 280rpx;
+  display: block;
+  border-radius: 10rpx;
+  background: #eef3ef;
+}
+
+.checkout-preview-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+
+.checkout-secondary,
+.checkout-remove {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid #d5e0d7;
+  border-radius: 9rpx;
+  background: #ffffff;
+  color: #176b52;
+  font-size: max(13px, 22rpx);
+  font-weight: 600;
+}
+
+.checkout-remove {
+  border-color: #ead2ce;
+  color: #a33e37;
+}
+
+.checkout-location {
+  display: flex;
+  align-items: flex-start;
+  gap: 14rpx;
+  padding: 20rpx 22rpx;
+}
+
+.checkout-location-title,
+.checkout-location-copy {
+  display: block;
+}
+
+.checkout-location-title {
+  color: #24352e;
+  font-size: max(14px, 24rpx);
+  font-weight: 700;
+}
+
+.checkout-location-copy {
+  margin-top: 5rpx;
+  color: #65736c;
+  font-size: max(12px, 20rpx);
+  line-height: 1.55;
 }
 </style>
