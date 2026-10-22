@@ -211,6 +211,7 @@ test("workbench status tabs and task cards use uniform, uncrowded spacing", () =
     workbench,
     /\.task-list,[\s\S]*?gap:\s*18rpx;[\s\S]*?margin-top:\s*20rpx;/,
   );
+  assert.match(workbench, /\.status-tab\s*\{[\s\S]*?min-height:\s*48px/);
   assert.match(workbench, /\.task-customer\s*\{[\s\S]*?font-size:\s*max\(21px,\s*36rpx\)/);
   assert.match(workbench, /#ifdef APP-PLUS[\s\S]*?\.workbench-header/);
 });

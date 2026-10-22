@@ -608,7 +608,7 @@ onPullDownRefresh(async () => {
 
 .status-tab {
   flex: 1;
-  min-height: 74rpx;
+  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
