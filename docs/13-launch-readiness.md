@@ -18,11 +18,16 @@
 
 ## WeChat release
 
-- Uploaded version: `3.2.1`, version code `321`.
-- Upload package size: 755,563 bytes.
+- Uploaded version: `3.2.5`, version code `325`.
+- Upload package size: 793,313 bytes.
 - Production AppID: `wx9469d5e631279f7b`.
 - The archive page now normalizes backend relative PDF URLs before `uni.downloadFile`.
-- Remaining manual step: submit version `3.2.1` for review and publish it from the WeChat platform console.
+- Survey photo upload now tries the original picker path first and falls back to the persisted local copy.
+- Reopening or retrying a survey submission now resolves the existing server record and uses `PUT`; duplicate `POST` requests return `409`.
+- Workbench grouping now checks task type first and then uses the linked survey or service-report status. Submitted survey tasks move from "未完成/当前任务" to "已完成" with a "待审核" status, while sealing tasks cannot be misclassified by a same-customer survey.
+- HBuilderX real-device testing on OPPO PGX110 verified multiple `/api/risk-surveys/upload` requests returning `200`, image preview/readback and survey report generation.
+- HBuilderX real-device recheck confirmed submitted survey `STFD-2026-015` no longer appears in the open/current list; the workbench reported 6 open and 4 completed tasks, while sealing task `STFD-2026-014` remained open with its service-report status.
+- Remaining manual step: submit version `3.2.5` for review and publish it from the WeChat platform console.
 
 ## Backend data links
 

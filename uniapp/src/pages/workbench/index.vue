@@ -7,8 +7,10 @@ import BrandLogo from "../../components/BrandLogo.vue";
 import CartoonAvatar from "../../components/CartoonAvatar.vue";
 import StatusPill from "../../components/StatusPill.vue";
 import {
+  getRiskSurveys,
   getServiceReports,
   getWorkOrders,
+  normalizeRiskSurveys,
   normalizeServiceReports,
 } from "../../utils/api";
 import { getSession } from "../../utils/auth";
@@ -21,13 +23,20 @@ import {
   roleMode,
   type FieldMode,
 } from "../../utils/roles";
-import type { ServiceReport, Session, WorkOrder } from "../../utils/types";
+import { relatedRiskSurvey } from "../../utils/workflow";
+import type {
+  RiskSurvey,
+  ServiceReport,
+  Session,
+  WorkOrder,
+} from "../../utils/types";
 
 const session = ref<Session | null>(null);
 const fieldKind = ref<"" | "risk" | "sealing">("");
 const roleView = ref<FieldMode>("both");
 const activeGroup = ref<"open" | "done">("open");
 const allTasks = ref<WorkOrder[]>([]);
+const riskSurveys = ref<RiskSurvey[]>([]);
 const serviceReports = ref<ServiceReport[]>([]);
 const loading = ref(false);
 const error = ref("");
@@ -75,14 +84,16 @@ const scopedTasks = computed(() =>
 );
 const visibleTasks = computed(() =>
   scopedTasks.value.filter((task) =>
-    activeGroup.value === "done" ? isCompletedTask(task) : !isCompletedTask(task),
+    activeGroup.value === "done"
+      ? taskIsCompleted(task)
+      : !taskIsCompleted(task),
   ),
 );
 const openCount = computed(
-  () => scopedTasks.value.filter((task) => !isCompletedTask(task)).length,
+  () => scopedTasks.value.filter((task) => !taskIsCompleted(task)).length,
 );
 const doneCount = computed(
-  () => scopedTasks.value.filter((task) => isCompletedTask(task)).length,
+  () => scopedTasks.value.filter((task) => taskIsCompleted(task)).length,
 );
 const totalHoles = computed(() =>
   scopedTasks.value.reduce((sum, task) => sum + (task.sites?.length || 0), 0),
@@ -137,6 +148,14 @@ async function load() {
       200,
       roleView.value === "survey" ? current.id : 0,
     );
+    let surveys: RiskSurvey[] = [];
+    if (roleView.value === "survey" || roleView.value === "both") {
+      try {
+        surveys = normalizeRiskSurveys(await getRiskSurveys());
+      } catch {
+        surveys = [];
+      }
+    }
     let reports: ServiceReport[] = [];
     if (roleView.value === "sealing" || roleView.value === "both") {
       try {
@@ -145,6 +164,7 @@ async function load() {
         reports = [];
       }
     }
+    riskSurveys.value = surveys;
     serviceReports.value = reports;
     allTasks.value = ownTasks(orders.items, current, roleView.value, reports);
     const now = new Date();
@@ -169,12 +189,63 @@ function taskServiceReport(task: WorkOrder) {
   );
 }
 
-function taskDisplayStatus(task: WorkOrder) {
-  if (effectiveKind.value !== "sealing") return task.status;
+function taskRiskSurvey(task: WorkOrder) {
+  return relatedRiskSurvey(task, riskSurveys.value);
+}
+
+function taskIsCompleted(task: WorkOrder) {
+  if (isCompletedTask(task)) return true;
+  const survey = taskRiskSurvey(task);
   const report = taskServiceReport(task);
-  if (!report) return task.status;
-  if (report.status === "pending" && !report.service_person) return "unassigned";
-  return report.status;
+  const isSealingTask =
+    roleView.value === "sealing" ||
+    effectiveKind.value === "sealing" ||
+    task.service_type?.includes("封堵");
+  const isSurveyTask =
+    roleView.value === "survey" ||
+    effectiveKind.value === "risk" ||
+    task.service_type?.includes("勘测");
+  if (isSealingTask) {
+    return (
+      Boolean(report) &&
+      ["approved", "completed"].includes(report?.status || "")
+    );
+  }
+  if (isSurveyTask) {
+    return (
+      Boolean(survey) &&
+      ["submitted", "reviewed", "approved", "completed"].includes(
+        survey?.status || "",
+      )
+    );
+  }
+  if (report) return ["approved", "completed"].includes(report.status);
+  if (survey) {
+    return ["submitted", "reviewed", "approved", "completed"].includes(
+      survey.status,
+    );
+  }
+  return false;
+}
+
+function taskDisplayStatus(task: WorkOrder) {
+  const survey = taskRiskSurvey(task);
+  const sealingTask =
+    roleView.value === "sealing" ||
+    effectiveKind.value === "sealing" ||
+    task.service_type?.includes("封堵");
+  if (sealingTask) {
+    const report = taskServiceReport(task);
+    if (!report) return task.status;
+    if (report.status === "pending" && !report.service_person) {
+      return "unassigned";
+    }
+    return report.status;
+  }
+  if (survey?.status) {
+    return survey.status;
+  }
+  return task.status;
 }
 
 function openTask(task: WorkOrder) {

@@ -57,6 +57,7 @@ async function choosePhotos() {
       const next: PhotoDraft[] = [...props.photos];
       const startIndex = props.photos.length;
       let failed = 0;
+      let firstError = "";
       try {
         for (let index = 0; index < paths.length; index += 1) {
           const caption = `现场照片 ${startIndex + index + 1}`;
@@ -65,22 +66,57 @@ async function choosePhotos() {
           if (props.upload) {
             try {
               uploadPath = await props.upload(savedPath, caption);
-            } catch {
+            } catch (error) {
               failed += 1;
+              if (!firstError) {
+                firstError =
+                  error instanceof Error
+                    ? error.message
+                    : "照片上传失败，请检查网络后重试";
+              }
             }
           }
           next.push({ path: uploadPath, caption });
           emit("update:photos", [...next]);
         }
         if (failed) {
-          uni.showToast({
-            title: `${failed} 张图片暂未上传，提交时会重试`,
-            icon: "none",
-          });
+          if (failed === paths.length) {
+            uni.showModal({
+              title: "照片上传失败",
+              content: firstError || "请检查网络后重新选择图片",
+              showCancel: false,
+            });
+          } else {
+            uni.showToast({
+              title: `${failed} 张图片暂未上传，提交时会重试`,
+              icon: "none",
+            });
+          }
         }
       } finally {
         uploading.value = false;
       }
+    },
+    fail: (error) => {
+      const message = error?.errMsg || "";
+      if (message.includes("cancel")) return;
+      const permissionDenied =
+        message.includes("auth deny") ||
+        message.includes("permission") ||
+        message.includes("authorize");
+      uni.showModal({
+        title: permissionDenied ? "需要相机或相册权限" : "无法选择照片",
+        content: permissionDenied
+          ? "请在设置中允许使用相机和相册后重试。"
+          : "请重新选择照片，或检查手机相机和相册是否可用。",
+        confirmText: permissionDenied ? "去设置" : "知道了",
+        showCancel: permissionDenied,
+        success: (result) => {
+          if (permissionDenied && result.confirm) {
+            uni.openSetting({});
+          }
+        },
+      });
     },
   });
 }

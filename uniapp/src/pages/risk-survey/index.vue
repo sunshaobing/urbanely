@@ -8,8 +8,10 @@ import SignaturePad from "../../components/SignaturePad.vue";
 import {
   getQuickPhrases,
   getRiskSurvey,
+  getRiskSurveys,
   getWorkOrder,
   listQuickPhrases,
+  normalizeRiskSurveys,
   saveDraft,
   saveRiskSurvey,
   submitRiskSurvey,
@@ -409,11 +411,24 @@ async function submit() {
       },
     ];
     const payload = surveyPayload(photos, signatures);
-    const saved = await saveRiskSurvey(surveyId.value, payload);
+    let saved;
+    try {
+      saved = await saveRiskSurvey(surveyId.value, payload);
+    } catch (saveError) {
+      if (surveyId.value) throw saveError;
+      const existing = normalizeRiskSurveys(
+        await getRiskSurveys({ customer_id: task.value.customer_id }),
+      ).find((item) => item.code === task.value?.report_no);
+      if (!existing) throw saveError;
+      surveyId.value = existing.id;
+      saved = await saveRiskSurvey(existing.id, payload);
+    }
     const activeSurveyId = surveyId.value || toId(saved);
     if (!activeSurveyId) {
       throw new Error("服务端未返回勘测记录编号");
     }
+    surveyId.value = activeSurveyId;
+    surveyStatus.value = "submitted";
     await submitRiskSurvey(activeSurveyId);
     removeLocalDraft(draftKey());
     uni.showLoading({ title: "正在生成报告", mask: true });
@@ -481,8 +496,16 @@ onLoad(async (query) => {
     if (surveyId.value) {
       hydrateSurvey(await getRiskSurvey(surveyId.value));
     } else {
-      const saved = readLocalDraft<RiskDraft>(draftKey());
-      if (saved) hydrate(saved);
+      const existing = normalizeRiskSurveys(
+        await getRiskSurveys({ customer_id: task.value.customer_id }),
+      ).find((item) => item.code === task.value?.report_no);
+      if (existing) {
+        surveyId.value = existing.id;
+        hydrateSurvey(await getRiskSurvey(existing.id));
+      } else {
+        const saved = readLocalDraft<RiskDraft>(draftKey());
+        if (saved) hydrate(saved);
+      }
     }
     try {
       quickPhrases.value = listQuickPhrases(

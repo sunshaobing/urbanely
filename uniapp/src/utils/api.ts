@@ -16,6 +16,8 @@ export const API_BASE_URL =
 
 type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
 
+class UploadTransportError extends Error {}
+
 interface RequestOptions {
   method?: RequestMethod;
   data?: string | Record<string, unknown> | ArrayBuffer;
@@ -158,20 +160,16 @@ async function prepareUploadPath(path: string) {
   // #endif
 }
 
-export async function uploadMedia(
+function uploadMediaOnce(
   path: string,
   filePath: string,
-  formData: Record<string, string | number> = {},
+  formData: Record<string, string | number>,
+  session: ReturnType<typeof getSession>,
 ) {
-  const durablePath = isPersistedFile(filePath)
-    ? filePath
-    : await persistLocalFile(filePath);
-  const uploadPath = await prepareUploadPath(durablePath);
-  const session = getSession();
   return new Promise<Record<string, unknown>>((resolve, reject) => {
     uni.uploadFile({
       url: `${API_BASE_URL}${path}`,
-      filePath: uploadPath,
+      filePath,
       name: "file",
       formData,
       timeout: 60000,
@@ -192,10 +190,51 @@ export async function uploadMedia(
         reject(new Error(errorMessage(response.statusCode, payload)));
       },
       fail: (error) => {
-        reject(new Error(error.errMsg || "文件上传失败"));
+        reject(
+          new UploadTransportError(
+            error.errMsg || "照片上传失败，请检查网络后重试",
+          ),
+        );
       },
     });
   });
+}
+
+export async function uploadMedia(
+  path: string,
+  filePath: string,
+  formData: Record<string, string | number> = {},
+) {
+  const durablePath = isPersistedFile(filePath)
+    ? filePath
+    : await persistLocalFile(filePath);
+  const uploadPath = await prepareUploadPath(durablePath);
+  const session = getSession();
+  const candidates: string[] = [];
+  if (
+    !filePath.startsWith("data:") &&
+    !filePath.startsWith("blob:")
+  ) {
+    candidates.push(filePath);
+  }
+  if (uploadPath !== filePath) candidates.push(uploadPath);
+  if (!candidates.length) candidates.push(uploadPath);
+
+  let lastError: Error | null = null;
+  for (const candidate of candidates) {
+    try {
+      return await uploadMediaOnce(path, candidate, formData, session);
+    } catch (error) {
+      lastError =
+        error instanceof Error ? error : new Error("照片上传失败");
+      if (!(error instanceof UploadTransportError)) {
+        throw lastError;
+      }
+    }
+  }
+  throw new Error(
+    lastError?.message || "照片上传失败，请检查网络或重新选择图片后重试",
+  );
 }
 
 export function login(identifier: string, password: string) {

@@ -303,6 +303,10 @@ Returns site profile, risk level, next service, open findings count.
 - `RiskSurvey.employee_id` 指向员工档案表，不是登录用户 ID。移动端不传该字段；服务端会拒绝写入不存在的员工 ID 并将其置空。
 - 报告中的“勘测人员”优先取员工档案姓名；没有员工档案时回退到 `engineer` 角色的手写签字姓名。
 - `POST /risk-surveys/{id}/submit` 返回完整记录（包含 `items`、`photos`、`signatures`），便于客户端立即生成报告。
+- 移动端打开勘测表时先按客户和 `report_no` 查找已有记录；找到后直接进入编辑，不再新建同编号记录。
+- 首次创建成功后客户端立即保存服务端 `surveyId`，后续提交和重试统一走 `PUT /risk-surveys/{id}`。
+- `POST /risk-surveys` 遇到已存在编号返回 `409` 和明确的业务提示，不再抛出 500；客户端收到冲突后会重新解析已有记录并继续提交。
+- 工作台任务分组同时读取勘测报告状态；勘测为 `submitted`、`reviewed`、`approved` 或 `completed` 时，勘测人员任务进入“已完成”分组并显示“待审核/已完成”，不再占据“当前任务”。
 - `GET /risk-surveys/{id}`、`GET /risk-surveys/{id}/pdf`、作业单详情和封堵报告详情/PDF 都执行客户归属校验；封堵工程师可通过 `service_person` 访问自己的服务单。
 
 ### 5.3 封堵派单与服务单

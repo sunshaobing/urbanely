@@ -31,8 +31,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.2\.1"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"321"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.2\.5"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"325"/);
   assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
   assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /"NSLocationWhenInUseUsageDescription"/);
@@ -684,7 +684,38 @@ test("picked photos persist and upload before temporary files expire", () => {
   assert.match(files, /copyFileSync/);
   assert.match(files, /uni\.saveFile/);
   assert.match(api, /persistLocalFile\(filePath\)/);
+  assert.match(api, /UploadTransportError/);
+  assert.match(api, /const candidates: string\[\] = \[\]/);
+  assert.match(api, /candidates\.push\(filePath\)/);
+  assert.match(api, /candidates\.push\(uploadPath\)/);
   assert.match(api, /图片文件未上传成功/);
+  assert.match(grid, /title: "照片上传失败"/);
+  assert.match(grid, /title: permissionDenied \? "需要相机或相册权限" : "无法选择照片"/);
+  assert.match(grid, /uni\.openSetting/);
+});
+
+test("survey submission reopens an existing record instead of creating a duplicate", () => {
+  const survey = read("src/pages/risk-survey/index.vue");
+
+  assert.match(survey, /getRiskSurveys/);
+  assert.match(survey, /normalizeRiskSurveys/);
+  assert.match(survey, /item\.code === task\.value\?\.report_no/);
+  assert.match(survey, /surveyId\.value = existing\.id/);
+  assert.match(survey, /surveyId\.value = activeSurveyId/);
+  assert.match(survey, /surveyStatus\.value = "submitted"/);
+});
+
+test("workbench moves submitted surveys into the completed group", () => {
+  const workbench = read("src/pages/workbench/index.vue");
+
+  assert.match(workbench, /getRiskSurveys/);
+  assert.match(workbench, /normalizeRiskSurveys/);
+  assert.match(workbench, /relatedRiskSurvey/);
+  assert.match(workbench, /function taskIsCompleted/);
+  assert.match(workbench, /"submitted", "reviewed", "approved", "completed"/);
+  assert.match(workbench, /const isSealingTask =[\s\S]*task\.service_type\?\.includes\("封堵"\)/);
+  assert.match(workbench, /if \(isSealingTask\) \{[\s\S]*report\?\.status/);
+  assert.match(workbench, /taskIsCompleted\(task\)/);
 });
 
 test("location check-in declares WeChat privacy permission and retries", () => {
