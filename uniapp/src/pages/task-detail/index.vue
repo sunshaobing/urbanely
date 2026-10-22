@@ -2060,11 +2060,11 @@ onShow(() => {
 
 .next-step-kicker,
 .workflow-kicker {
-  font-size: max(13px, 22rpx);
+  font-size: max(12px, 20rpx);
 }
 
 .next-step-title {
-  font-size: max(22px, 38rpx);
+  font-size: max(19px, 32rpx);
 }
 
 .next-step-hint,
@@ -2072,14 +2072,14 @@ onShow(() => {
 .info-value,
 .phone-value,
 .person-value {
-  font-size: max(14px, 25rpx);
+  font-size: max(13px, 23rpx);
 }
 
 .checkin-target-title,
 .related-name,
 .site-name,
 .material-name {
-  font-size: max(15px, 27rpx);
+  font-size: max(14px, 24rpx);
 }
 
 .checkin-target-meta,
@@ -2088,11 +2088,11 @@ onShow(() => {
 .site-type,
 .site-remark,
 .workflow-hint {
-  font-size: max(13px, 22rpx);
+  font-size: max(12px, 20rpx);
 }
 
 .order-customer {
-  font-size: max(24px, 40rpx);
+  font-size: max(21px, 34rpx);
 }
 
 .order-service,
@@ -2102,14 +2102,14 @@ onShow(() => {
 
 .order-address,
 .quick-value {
-  font-size: max(14px, 24rpx);
+  font-size: max(13px, 22rpx);
 }
 
 .process-label {
-  font-size: max(13px, 20rpx);
+  font-size: max(12px, 18rpx);
 }
 
 .process-state {
-  font-size: max(12px, 18rpx);
+  font-size: max(11px, 16rpx);
 }
 </style>

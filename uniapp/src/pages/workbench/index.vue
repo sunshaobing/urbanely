@@ -409,7 +409,7 @@ onPullDownRefresh(async () => {
 
 .page-title {
   color: #17211d;
-  font-size: max(26px, 44rpx);
+  font-size: max(23px, 40rpx);
   font-weight: 700;
   line-height: 1.2;
 }
@@ -417,7 +417,7 @@ onPullDownRefresh(async () => {
 .page-subtitle {
   margin-top: 8rpx;
   color: #65736c;
-  font-size: max(13px, 24rpx);
+  font-size: max(12px, 22rpx);
   line-height: 1.5;
 }
 
@@ -615,7 +615,7 @@ onPullDownRefresh(async () => {
   gap: 8rpx;
   border-radius: 9rpx;
   color: #65736c;
-  font-size: max(15px, 26rpx);
+  font-size: max(14px, 24rpx);
 }
 
 .tab-count {
@@ -671,14 +671,14 @@ onPullDownRefresh(async () => {
 
 .task-no {
   color: #79867f;
-  font-size: max(12px, 22rpx);
+  font-size: max(11px, 20rpx);
 }
 
 .task-customer {
   display: block;
   margin-top: 16rpx;
   color: #17211d;
-  font-size: max(21px, 36rpx);
+  font-size: max(18px, 32rpx);
   font-weight: 700;
   line-height: 1.35;
 }
@@ -692,14 +692,14 @@ onPullDownRefresh(async () => {
 .task-meta-item {
   gap: 7rpx;
   color: #65736c;
-  font-size: max(13px, 24rpx);
+  font-size: max(12px, 22rpx);
 }
 
 .task-address {
   display: block;
   margin-top: 12rpx;
   color: #5d6e65;
-  font-size: max(14px, 26rpx);
+  font-size: max(13px, 24rpx);
   line-height: 1.5;
 }
 
@@ -713,7 +713,7 @@ onPullDownRefresh(async () => {
   border-radius: 12rpx;
   background: #145a3a;
   color: #ffffff;
-  font-size: max(15px, 28rpx);
+  font-size: max(14px, 26rpx);
   font-weight: 700;
 }
 
@@ -723,7 +723,7 @@ onPullDownRefresh(async () => {
   padding-top: 12rpx;
   border-top: 1rpx solid #e5ece7;
   color: #79867f;
-  font-size: max(13px, 22rpx);
+  font-size: max(12px, 20rpx);
   text-align: center;
 }
 

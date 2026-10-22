@@ -91,7 +91,7 @@ function goBack() {
   display: block;
   margin-top: 3rpx;
   color: #17211d;
-  font-size: max(21px, 36rpx);
+  font-size: max(19px, 32rpx);
   font-weight: 700;
   line-height: 1.3;
 }
@@ -100,7 +100,7 @@ function goBack() {
   display: block;
   margin-top: 6rpx;
   color: #65736c;
-  font-size: max(13px, 24rpx);
+  font-size: max(12px, 22rpx);
   line-height: 1.5;
 }
 

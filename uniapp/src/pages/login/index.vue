@@ -402,7 +402,7 @@ function showResetHelp() {
 
 .login-title {
   color: #17211d;
-  font-size: 44rpx;
+  font-size: 40rpx;
   line-height: 1.24;
 }
 
@@ -435,7 +435,7 @@ function showResetHelp() {
 
 .input {
   height: 88rpx;
-  font-size: 28rpx;
+  font-size: 26rpx;
 }
 
 .login-submit {

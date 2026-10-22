@@ -688,7 +688,7 @@ onPullDownRefresh(async () => {
 
 .menu-title {
   color: #24352e;
-  font-size: max(15px, 24rpx);
+  font-size: max(14px, 23rpx);
 }
 
 .menu-sub {

@@ -268,7 +268,7 @@ onLoad((query) => {
   display: block;
   margin-top: 24rpx;
   color: #17211d;
-  font-size: max(21px, 36rpx);
+  font-size: max(19px, 32rpx);
   font-weight: 700;
 }
 
@@ -276,7 +276,7 @@ onLoad((query) => {
   display: block;
   margin-top: 22rpx;
   color: #17211d;
-  font-size: max(18px, 32rpx);
+  font-size: max(17px, 28rpx);
   font-weight: 700;
 }
 
@@ -285,7 +285,7 @@ onLoad((query) => {
   display: block;
   margin-top: 8rpx;
   color: #65736c;
-  font-size: max(14px, 26rpx);
+  font-size: max(13px, 23rpx);
   line-height: 1.6;
 }
 
@@ -305,14 +305,14 @@ onLoad((query) => {
 
 .location-note-title {
   color: #24352e;
-  font-size: max(15px, 27rpx);
+  font-size: max(14px, 24rpx);
   font-weight: 700;
 }
 
 .location-note-copy {
   margin-top: 7rpx;
   color: #65736c;
-  font-size: max(13px, 24rpx);
+  font-size: max(12px, 21rpx);
   line-height: 1.6;
 }
 
@@ -328,7 +328,7 @@ onLoad((query) => {
   gap: 24rpx;
   padding: 20rpx 0;
   border-bottom: 1rpx solid #e5ece7;
-  font-size: max(14px, 25rpx);
+  font-size: max(13px, 22rpx);
   text-align: left;
 }
 

@@ -146,7 +146,7 @@ function navigate(key: TabKey, url: string) {
 }
 
 .app-tab-label {
-  font-size: max(13px, 22rpx);
+  font-size: max(12px, 20rpx);
   line-height: 1.2;
 }
 

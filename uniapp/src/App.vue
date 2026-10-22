@@ -32,7 +32,7 @@ page {
   color: #17211d;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
     sans-serif;
-  font-size: max(14px, 30rpx);
+  font-size: max(13.5px, 28rpx);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -108,7 +108,7 @@ button::after {
 .section-title {
   display: block;
   color: #17211d;
-  font-size: max(17px, 34rpx);
+  font-size: max(16px, 32rpx);
   font-weight: 700;
   line-height: 1.3;
 }
@@ -117,7 +117,7 @@ button::after {
   display: block;
   margin-top: 6rpx;
   color: #65736c;
-  font-size: max(13px, 22rpx);
+  font-size: max(12px, 22rpx);
   line-height: 1.5;
 }
 
@@ -162,7 +162,7 @@ button::after {
   min-height: 46rpx;
   padding: 0 15rpx;
   border-radius: 8rpx;
-  font-size: max(13px, 22rpx);
+  font-size: max(12px, 21rpx);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -202,7 +202,7 @@ button::after {
   min-height: 48px;
   padding: 0 26rpx;
   border-radius: 12rpx;
-  font-size: max(15px, 28rpx);
+  font-size: max(14px, 26rpx);
   font-weight: 600;
 }
 
@@ -244,7 +244,7 @@ button::after {
   display: block;
   margin-bottom: 9rpx;
   color: #4f5f72;
-  font-size: max(13px, 22rpx);
+  font-size: max(12px, 21rpx);
   font-weight: 600;
 }
 
@@ -263,13 +263,13 @@ button::after {
 .field-select {
   height: 48px;
   padding: 0 18rpx;
-  font-size: max(14px, 28rpx);
+  font-size: max(13px, 26rpx);
 }
 
 .field-textarea {
   min-height: 168rpx;
   padding: 16rpx 18rpx;
-  font-size: max(14px, 28rpx);
+  font-size: max(13px, 26rpx);
   line-height: 1.6;
 }
 
@@ -293,7 +293,7 @@ button::after {
   border-radius: 10rpx;
   background: #ffffff;
   color: #50635a;
-  font-size: max(13px, 24rpx);
+  font-size: max(12px, 22rpx);
 }
 
 .chip.active {

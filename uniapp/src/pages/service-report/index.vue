@@ -1388,7 +1388,7 @@ onLoad(async (query) => {
   border-radius: 9rpx;
   background: #ffffff;
   color: #176b52;
-  font-size: max(13px, 22rpx);
+  font-size: max(12px, 20rpx);
   font-weight: 600;
   line-height: 1;
 }
@@ -1401,7 +1401,7 @@ onLoad(async (query) => {
 .bottom-primary {
   width: 100%;
   min-height: 96px;
-  font-size: max(15px, 28rpx);
+  font-size: max(14px, 26rpx);
 }
 
 .service-page {
@@ -1453,23 +1453,23 @@ onLoad(async (query) => {
 }
 
 .step-meta {
-  font-size: max(13px, 23rpx);
+  font-size: max(12px, 20rpx);
 }
 
 .site-name {
-  font-size: max(18px, 30rpx);
+  font-size: max(17px, 28rpx);
 }
 
 .site-address,
 .contact-value,
 .hint-copy,
 .signature-note-copy {
-  font-size: max(14px, 22rpx);
+  font-size: max(13px, 21rpx);
 }
 
 .contact-label,
 .choice-count,
 .signature-note-title {
-  font-size: max(13px, 20rpx);
+  font-size: max(12px, 18rpx);
 }
 </style>
