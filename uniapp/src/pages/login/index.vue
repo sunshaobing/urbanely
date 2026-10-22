@@ -257,7 +257,7 @@ function showResetHelp() {
   align-items: center;
   padding: 0 24rpx;
   border: 1rpx solid #d5ddd7;
-  border-radius: 16rpx;
+  border-radius: 999px;
   background: #ffffff;
 }
 
@@ -385,7 +385,7 @@ function showResetHelp() {
 .system-label {
   padding: 7rpx 12rpx;
   border: 1rpx solid #dbe4dd;
-  border-radius: 8rpx;
+  border-radius: 999px;
   background: #ffffff;
   color: #6b7770;
   font-size: 19rpx;
@@ -430,7 +430,7 @@ function showResetHelp() {
   height: 96rpx;
   padding: 0 20rpx;
   border-color: #d7e2da;
-  border-radius: 12rpx;
+  border-radius: 999px;
 }
 
 .input {
@@ -441,7 +441,7 @@ function showResetHelp() {
 .login-submit {
   height: 96rpx;
   margin-top: 34rpx;
-  border-radius: 12rpx;
+  border-radius: 999px;
   background: #103b2d;
   font-size: 28rpx;
 }

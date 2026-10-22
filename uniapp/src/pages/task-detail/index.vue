@@ -2116,4 +2116,26 @@ onShow(() => {
 .process-state {
   font-size: max(11px, 16rpx);
 }
+
+/* Soft rounded business surfaces */
+.call-button,
+.workflow-report-link,
+.sheet-close {
+  border-radius: 999px;
+}
+
+.workflow-hint,
+.checkin-target,
+.related-card,
+.engineer-row {
+  border-radius: 18rpx;
+}
+
+.checkin-target-icon {
+  border-radius: 16rpx;
+}
+
+.dispatch-sheet {
+  border-radius: 32rpx 32rpx 0 0;
+}
 </style>

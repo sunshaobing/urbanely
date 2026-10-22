@@ -252,10 +252,14 @@ function goBack() {
   align-items: center;
   justify-content: center;
   margin-top: 28rpx;
-  border-radius: 12rpx;
+  border-radius: 999px;
   background: #103b2d;
   color: #ffffff;
   font-size: 26rpx;
   font-weight: 700;
+}
+
+.agreement-page {
+  background: #f4f7f5;
 }
 </style>

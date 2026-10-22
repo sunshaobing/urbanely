@@ -344,6 +344,7 @@ onPullDownRefresh(async () => {
 .workbench-header {
   padding: calc(26rpx + env(safe-area-inset-top)) 32rpx 28rpx;
   border-bottom: 1rpx solid #dce5df;
+  border-radius: 0 0 24rpx 24rpx;
   background: #ffffff;
 }
 
@@ -381,7 +382,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border: 1rpx solid #d8e4dc;
-  border-radius: 12rpx;
+  border-radius: 999px;
   background: #ffffff;
 }
 
@@ -501,7 +502,7 @@ onPullDownRefresh(async () => {
   margin-top: 4rpx;
   padding: 16rpx 18rpx;
   border: 1rpx solid #e1e9e4;
-  border-radius: 12rpx;
+  border-radius: 20rpx;
   background: rgba(255, 255, 255, 0.82);
   justify-content: space-between;
   gap: 18rpx;
@@ -542,7 +543,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border: 1rpx solid #d8e4dc;
-  border-radius: 12rpx;
+  border-radius: 999px;
   background: #ffffff;
 }
 
@@ -553,7 +554,7 @@ onPullDownRefresh(async () => {
   margin-top: 24rpx;
   padding: 18rpx 20rpx;
   border: 1rpx solid #ebd0cd;
-  border-radius: 16rpx;
+  border-radius: 20rpx;
   background: #f8ebe9;
 }
 
@@ -602,7 +603,7 @@ onPullDownRefresh(async () => {
   margin-top: 18rpx;
   padding: 8rpx;
   border: 1rpx solid #dce5df;
-  border-radius: 12rpx;
+  border-radius: 999px;
   background: #eaf0ec;
 }
 
@@ -613,7 +614,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  border-radius: 9rpx;
+  border-radius: 999px;
   color: #65736c;
   font-size: max(14px, 24rpx);
 }
@@ -624,7 +625,7 @@ onPullDownRefresh(async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8rpx;
+  border-radius: 999px;
   background: #e6f2ec;
   color: #115640;
   font-family: "SFMono-Regular", "Cascadia Code", monospace;
@@ -710,7 +711,7 @@ onPullDownRefresh(async () => {
   justify-content: center;
   gap: 8rpx;
   margin-top: 22rpx;
-  border-radius: 12rpx;
+  border-radius: 999px;
   background: #145a3a;
   color: #ffffff;
   font-size: max(14px, 26rpx);
@@ -764,7 +765,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   margin: 0 auto 14rpx;
-  border-radius: 16rpx;
+  border-radius: 999px;
   background: #e6f2ec;
 }
 

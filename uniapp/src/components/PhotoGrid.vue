@@ -252,7 +252,7 @@ function preview(index: number) {
   width: calc(20% - 8rpx);
   height: 116rpx;
   border-color: #dce3de;
-  border-radius: 9rpx;
+  border-radius: 16rpx;
   background: #f5f9f6;
 }
 

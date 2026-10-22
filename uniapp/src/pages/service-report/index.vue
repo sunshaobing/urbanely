@@ -1791,4 +1791,21 @@ onLoad(async (query) => {
   font-size: max(12px, 20rpx);
   line-height: 1.55;
 }
+
+.picker-value,
+.seal-index,
+.checkout-icon {
+  border-radius: 999px;
+}
+
+.hint-card,
+.signature-note,
+.report-completeness,
+.checkout-image {
+  border-radius: 18rpx;
+}
+
+.summary-item {
+  border-radius: 16rpx;
+}
 </style>

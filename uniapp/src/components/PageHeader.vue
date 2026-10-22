@@ -46,6 +46,7 @@ function goBack() {
 .page-header {
   padding: calc(26rpx + env(safe-area-inset-top)) 32rpx 24rpx;
   border-bottom: 1rpx solid #dce5df;
+  border-radius: 0 0 24rpx 24rpx;
   background: #ffffff;
 }
 
@@ -69,7 +70,7 @@ function goBack() {
   justify-content: center;
   transform: translateY(-50%);
   border: 1rpx solid #d8e4dc;
-  border-radius: 12rpx;
+  border-radius: 999px;
   background: #ffffff;
 }
 

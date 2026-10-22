@@ -140,7 +140,7 @@ function navigate(key: TabKey, url: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12rpx;
+  border-radius: 999px;
   background: transparent;
   transition: background 120ms ease;
 }

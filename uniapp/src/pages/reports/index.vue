@@ -275,7 +275,7 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .reports-page {
-  background: #f2f6f3;
+  background: #f4f7f5;
 }
 
 .header-refresh {
@@ -720,5 +720,18 @@ onPullDownRefresh(async () => {
 
 .empty-icon {
   background: #e6f2ec;
+}
+
+.header-refresh,
+.search-input,
+.search-button,
+.archive-tabs,
+.archive-tab,
+.tab-count {
+  border-radius: 999px;
+}
+
+.risk-line {
+  border-radius: 999px;
 }
 </style>

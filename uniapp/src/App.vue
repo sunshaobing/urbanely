@@ -55,6 +55,7 @@ button {
   color: inherit;
   font-size: inherit;
   line-height: inherit;
+  border-radius: 999px !important;
 }
 
 button::after {
@@ -82,13 +83,13 @@ button::after {
 
 .card {
   border: 1rpx solid #dde7e0;
-  border-radius: 12rpx;
+  border-radius: 20rpx !important;
   background: #ffffff;
 }
 
 .card-muted {
   border: 1rpx solid #dde7e0;
-  border-radius: 12rpx;
+  border-radius: 20rpx !important;
   background: #f8fbf9;
 }
 
@@ -161,7 +162,7 @@ button::after {
   justify-content: center;
   min-height: 46rpx;
   padding: 0 15rpx;
-  border-radius: 8rpx;
+  border-radius: 999px;
   font-size: max(12px, 21rpx);
   font-weight: 600;
   white-space: nowrap;
@@ -201,7 +202,7 @@ button::after {
   gap: 8rpx;
   min-height: 48px;
   padding: 0 26rpx;
-  border-radius: 12rpx;
+  border-radius: 999px;
   font-size: max(14px, 26rpx);
   font-weight: 600;
 }
@@ -232,7 +233,7 @@ button::after {
   align-items: center;
   justify-content: center;
   border: 1rpx solid #d7e2da;
-  border-radius: 12rpx;
+  border-radius: 999px;
   background: #ffffff;
 }
 
@@ -253,7 +254,7 @@ button::after {
 .field-select {
   width: 100%;
   border: 1rpx solid #d7e2da;
-  border-radius: 12rpx;
+  border-radius: 16rpx !important;
   background: #ffffff;
   color: #17211d;
   font-size: 26rpx;
@@ -290,7 +291,7 @@ button::after {
   min-height: 64rpx;
   padding: 0 20rpx;
   border: 1rpx solid #d7e0da;
-  border-radius: 10rpx;
+  border-radius: 999px;
   background: #ffffff;
   color: #50635a;
   font-size: max(12px, 22rpx);
@@ -311,7 +312,7 @@ button::after {
 .empty-state {
   padding: 52rpx 28rpx;
   border: 1rpx dashed #c9d8ce;
-  border-radius: 16rpx;
+  border-radius: 20rpx !important;
   background: #f8fbf9;
   text-align: center;
 }

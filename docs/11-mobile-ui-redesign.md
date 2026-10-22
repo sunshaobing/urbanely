@@ -18,8 +18,8 @@
 - Content column centered with consistent `32rpx` side padding.
 - Page titles and primary actions centered; long copy and form labels left aligned.
 - Body text uses `28rpx` with a `13.5px` floor; secondary text uses `20–22rpx` with a `12px` floor.
-- Inputs and primary actions at least `96rpx` high.
-- Card radius `12rpx`, one-pixel neutral borders, no decorative gradients.
+- Inputs and primary actions use a `48px` minimum hit height.
+- The soft-business style uses capsule buttons (`999px`), `18–20rpx` cards/sections, `16rpx` form controls, one-pixel neutral borders and rounded lower page headers. No decorative gradients.
 - One primary action per screen.
 - Status uses text plus restrained red, amber, or green.
 

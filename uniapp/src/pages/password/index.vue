@@ -251,4 +251,20 @@ async function submit() {
   color: #65736c;
   font-size: 20rpx;
 }
+
+.password-page {
+  background: #f4f7f5;
+}
+
+.security-icon {
+  border-radius: 999px;
+}
+
+.security-note {
+  border-radius: 18rpx;
+}
+
+.submit-button {
+  border-radius: 999px;
+}
 </style>

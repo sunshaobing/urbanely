@@ -308,7 +308,8 @@ test("the field client follows an MHP-inspired deep-green service hierarchy", ()
   assert.match(app, /--field-accent:\s*#176b52/);
   assert.match(app, /--field-accent-soft:\s*#e6f2ec/);
   assert.match(app, /background:\s*#f4f7f5/);
-  assert.match(app, /border-radius:\s*12rpx/);
+  assert.match(app, /border-radius:\s*20rpx\s*!important/);
+  assert.match(app, /button[\s\S]*?border-radius:\s*999px\s*!important/);
   assert.match(app, /font-size:\s*max\(15px,\s*30rpx\)/);
   assert.match(app, /font-size:\s*max\(13\.5px,\s*28rpx\)/);
   assert.match(tabbar, /background:\s*#ffffff/);
@@ -604,6 +605,26 @@ test("two-step form actions remain centered and uncrowded", () => {
     assert.match(source, /class="bottom-secondary-stack"/);
     assert.match(source, /class="btn-primary bottom-primary"/);
   }
+});
+
+test("mobile controls use a soft rounded business surface", () => {
+  const app = read("src/App.vue");
+  const header = read("src/components/PageHeader.vue");
+  const tabbar = read("src/components/AppTabBar.vue");
+  const workbench = read("src/pages/workbench/index.vue");
+  const service = read("src/pages/service-report/index.vue");
+  const reports = read("src/pages/reports/index.vue");
+
+  assert.match(app, /button\s*\{[\s\S]*?border-radius:\s*999px\s*!important/);
+  assert.match(app, /\.card\s*\{[\s\S]*?border-radius:\s*20rpx\s*!important/);
+  assert.match(app, /\.field-input,[\s\S]*?border-radius:\s*16rpx\s*!important/);
+  assert.match(header, /border-radius:\s*0 0 24rpx 24rpx/);
+  assert.match(header, /\.header-back\s*\{[\s\S]*?border-radius:\s*999px/);
+  assert.match(tabbar, /\.app-tab-icon\s*\{[\s\S]*?border-radius:\s*999px/);
+  assert.match(workbench, /\.status-tab\s*\{[\s\S]*?border-radius:\s*999px/);
+  assert.match(workbench, /\.task-action\s*\{[\s\S]*?border-radius:\s*999px/);
+  assert.match(service, /\.picker-value,[\s\S]*?border-radius:\s*999px/);
+  assert.match(reports, /\.archive-tabs,[\s\S]*?border-radius:\s*999px/);
 });
 
 test("mobile redesign keeps a centered layout with readable tap targets", () => {

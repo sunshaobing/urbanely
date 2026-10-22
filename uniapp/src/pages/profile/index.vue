@@ -225,7 +225,7 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .profile-page {
-  background: #f2f6f3;
+  background: #f4f7f5;
 }
 
 .profile-hero {
@@ -723,5 +723,16 @@ onPullDownRefresh(async () => {
   .metric-card:nth-last-child(-n + 2) {
     border-bottom: 0;
   }
+}
+
+.profile-header {
+  border-radius: 0 0 24rpx 24rpx;
+}
+
+.profile-refresh,
+.online-badge,
+.sync-icon,
+.menu-icon {
+  border-radius: 999px;
 }
 </style>

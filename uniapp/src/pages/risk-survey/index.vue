@@ -1536,4 +1536,22 @@ onLoad(async (query) => {
 .signature-note-title {
   font-size: max(12px, 18rpx);
 }
+
+.picker-value,
+.segmented,
+.segment,
+.risk-index {
+  border-radius: 999px;
+}
+
+.hint-card,
+.quick-phrases,
+.signature-note,
+.choice-section {
+  border-radius: 18rpx;
+}
+
+.summary-item {
+  border-radius: 16rpx;
+}
 </style>

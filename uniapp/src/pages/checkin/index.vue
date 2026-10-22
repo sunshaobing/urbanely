@@ -293,7 +293,7 @@ onLoad((query) => {
   margin-top: 30rpx;
   padding: 22rpx;
   border: 1rpx solid #dce5df;
-  border-radius: 12rpx;
+  border-radius: 18rpx;
   background: #f7faf8;
   text-align: left;
 }
