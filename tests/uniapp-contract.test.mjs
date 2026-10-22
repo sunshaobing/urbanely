@@ -31,8 +31,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.2\.5"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"325"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.2\.6"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"326"/);
   assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
   assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /"NSLocationWhenInUseUsageDescription"/);
@@ -716,6 +716,16 @@ test("workbench moves submitted surveys into the completed group", () => {
   assert.match(workbench, /const isSealingTask =[\s\S]*task\.service_type\?\.includes\("封堵"\)/);
   assert.match(workbench, /if \(isSealingTask\) \{[\s\S]*report\?\.status/);
   assert.match(workbench, /taskIsCompleted\(task\)/);
+});
+
+test("sealing approval is driven by the service report, not work-order review", () => {
+  const detail = read("src/pages/task-detail/index.vue");
+
+  assert.doesNotMatch(detail, /reviewWorkOrder/);
+  assert.match(
+    detail,
+    /async function approveSealing\(\)[\s\S]*saveServiceReport\([\s\S]*status: "approved"/,
+  );
 });
 
 test("location check-in declares WeChat privacy permission and retries", () => {

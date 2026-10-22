@@ -14,7 +14,6 @@ import {
   getWorkOrder,
   normalizeRiskSurveys,
   normalizeServiceReports,
-  reviewWorkOrder,
   saveRiskSurvey,
   saveServiceReport,
   toId,
@@ -461,7 +460,6 @@ async function approveSealing() {
       status: "approved",
     }),
   );
-  await reviewWorkOrder(task.value.id, "approve", "封堵报告审批通过");
   uni.showToast({ title: "封堵报告已审批", icon: "success" });
 }
 

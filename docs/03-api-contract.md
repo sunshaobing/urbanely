@@ -315,6 +315,7 @@ Returns site profile, risk level, next service, open findings count.
 - `service_person` 保存封堵师傅姓名；封堵工程师的 `GET /workorders` 范围包含其已分配服务单对应的客户，确保手机端能收到派单。
 - 封堵师傅的签到、接单、双签、提交和 PDF 下载均通过 `service_person` 校验；服务单列表按 `service_person`/客户归属过滤。
 - 封堵服务单的 `risk_photos` 表示封堵前照片，`photos` 表示封堵后照片；Web 预览和 PDF 都使用实际图片 URL。
+- 封堵审批以服务单 `PUT /service-reports/{id}` 的 `status=approved` 为准，不再额外调用作业单 `/review`。作业单未处于 `pending` 时不会影响封堵报告审批和生成。
 
 ### 5.4 PDF 报告表头
 
