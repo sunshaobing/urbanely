@@ -47,6 +47,8 @@ test("approved reports receive a final-page seal without changing workflow", () 
 
   assert.match(contract, /仅在状态为 `approved` 或 `completed` 时自动绘制报告专用章/);
   assert.match(contract, /未审批、待审核、已驳回或草稿状态不绘制印章/);
-  assert.match(contract, /最后一页右下角页脚文字区域/);
+  assert.match(contract, /“致谢\/联系方式”卡片的独立右侧栏/);
+  assert.match(contract, /联系电话、地址、邮箱和页脚打印时间保留在左侧或页脚区域/);
+  assert.match(contract, /不与印章重叠/);
   assert.match(contract, /不改变签字、审批、报告数据和下载接口/);
 });

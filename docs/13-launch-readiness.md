@@ -31,6 +31,13 @@
 - Risk survey PDFs continue to use `/api/risk-surveys/{id}/pdf` and require the bearer token.
 - Work-order and service-report check-ins persist precise coordinates, accuracy, address, timestamp and optional photo URL.
 
+## Report seal
+
+- Approved survey, sealing and work-order PDFs draw the 22mm seal inside a dedicated right column of the thanks/contact card.
+- Phone, address, email and footer print time stay outside the seal column.
+- Production survey and sealing PDFs were regenerated after restart; both final pages reported zero text intersections with the seal.
+- Backend rollback backup: `/home/ubuntu/pco/app/services/.bak-20261022-122120`.
+
 ## Release boundary
 
 - Authenticated production write tests were not run without user-supplied review credentials.
