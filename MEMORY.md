@@ -238,4 +238,5 @@
 - Mobile version `3.2.0/320` adds a dedicated `/pages/checkin/index` UI route that reuses the existing work-order/service-report check-in APIs and ownership rules. Survey input now has 6 explicit steps; sealing input has 6 explicit steps with封堵前 and 封堵后 photos on separate pages.
 - The mobile redesign preserves all API paths, request payloads, workflow state transitions, role permissions, local drafts and the dedicated landscape signature page/PNG upload contract. The new page and presentation rules are documented in `docs/11-mobile-ui-redesign.md`.
 - Mocked H5 verification covered login, workbench, task detail, check-in, survey step 1, and both sealing photo steps at 320, 375 and 390 px with no horizontal overflow; mobile primary/secondary touch targets were raised to explicit pixel minimums for older field staff.
+- Real-device typography was tuned on an OPPO PGX110 at a `360 × 788` CSS viewport and 3x pixel ratio. After the user feedback that the first pass was too large, the settled scale is 13.5px body, 23px workbench headline, 18px task title, 16px section title and 12px tab label; primary task controls remain at least 48px high.
 
