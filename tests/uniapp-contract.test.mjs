@@ -31,8 +31,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.2\.0"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"320"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.2\.1"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"321"/);
   assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
   assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /"NSLocationWhenInUseUsageDescription"/);
@@ -88,6 +88,8 @@ test("uni-app uses production APIs for tasks, records, uploads and signatures", 
   assert.match(api, /engineer_id/);
   assert.match(pdf, /\/api\/risk-surveys\/\$\{id\}\/pdf/);
   assert.match(pdf, /\/api\/service-reports\/\$\{id\}\/pdf/);
+  assert.match(pdf, /export function absoluteReportUrl/);
+  assert.match(pdf, /url: absoluteReportUrl\(url\)/);
   assert.match(auth, /access_token/);
   assert.match(auth, /token/);
 });

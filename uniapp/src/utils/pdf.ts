@@ -7,6 +7,11 @@ export function reportPdfPath(kind: "risk" | "service", id: number) {
     : `${API_BASE_URL}/api/service-reports/${id}/pdf`;
 }
 
+export function absoluteReportUrl(url: string) {
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
 function downloadPdf(url: string) {
   const session = getSession();
   if (!session?.token) {
@@ -14,7 +19,7 @@ function downloadPdf(url: string) {
   }
   return new Promise<string>((resolve, reject) => {
     uni.downloadFile({
-      url,
+      url: absoluteReportUrl(url),
       header: { Authorization: `Bearer ${session.token}` },
       success: (result) => {
         if (result.statusCode === 200) {

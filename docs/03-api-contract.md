@@ -318,6 +318,7 @@ Returns site profile, risk level, next service, open findings count.
 - 封堵完成 PDF 的表头固定为 `结构漏洞(鼠洞)封堵报告`，标题在页面水平居中，报告编号保持在右上区域；不再使用 `现场服务报告` 或 `现场服务管理报告`。
 - `GET /service-reports/{id}/pdf` 每次请求都按当前模板重新生成 PDF，并返回 `Cache-Control: no-store`，防止历史文件或浏览器缓存继续显示旧标题。
 - 表头调整只影响 PDF 模板和响应缓存策略，不改变报告数据、签字、照片、下载地址或其它前后端交互。
+- 服务单列表返回的 `pdf_url` 可以是相对地址；uni-app 客户端在调用 `uni.downloadFile` 前统一补全 `https://sunrgw.cn`，避免真机把相对路径当成非法下载地址。
 
 ### 5.5 PDF 照片版式
 
