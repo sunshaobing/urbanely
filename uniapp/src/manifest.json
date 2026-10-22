@@ -2,8 +2,8 @@
     "name" : "申汰封堵勘测系统",
     "appid" : "__UNI__D1F98CA",
     "description" : "申汰 PCO 现场服务系统",
-    "versionName" : "3.1.4",
-    "versionCode" : "314",
+    "versionName" : "3.2.0",
+    "versionCode" : "320",
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
@@ -14,7 +14,7 @@
         "statusbar" : {
             "immersed" : "none",
             "style" : "dark",
-            "background" : "#f2f6f3"
+            "background" : "#f4f7f5"
         },
         "splashscreen" : {
             "alwaysShowBeforeRender" : true,

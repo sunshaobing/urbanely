@@ -48,7 +48,14 @@ interface ServiceDraft {
   customerSignatureDepartment: string;
 }
 
-const steps = ["服务信息", "材料与部位", "前后照片", "服务记录", "签字提交"];
+const steps = [
+  "服务信息",
+  "材料与部位",
+  "封堵前照片",
+  "封堵后照片",
+  "服务记录",
+  "签字提交",
+];
 const step = ref(0);
 const taskId = ref(0);
 const reportId = ref(0);
@@ -175,8 +182,12 @@ function validateStep() {
     uni.showToast({ title: "请至少登记一项材料", icon: "none" });
     return false;
   }
-  if (step.value === 2 && (!form.beforePhotos.length || !form.afterPhotos.length)) {
-    uni.showToast({ title: "请补齐封堵前后照片", icon: "none" });
+  if (step.value === 2 && !form.beforePhotos.length) {
+    uni.showToast({ title: "请至少拍摄一张封堵前照片", icon: "none" });
+    return false;
+  }
+  if (step.value === 3 && !form.afterPhotos.length) {
+    uni.showToast({ title: "请至少拍摄一张封堵后照片", icon: "none" });
     return false;
   }
   return true;
@@ -626,8 +637,8 @@ onLoad(async (query) => {
         <view v-else-if="step === 2" class="step-panel">
           <view class="section-head">
             <view>
-              <text class="section-title">封堵前后照片</text>
-              <text class="section-copy">前图记录孔洞全貌，后图记录封堵边缘与完成状态</text>
+              <text class="section-title">封堵前照片</text>
+              <text class="section-copy">拍摄孔洞、鼠道和周边环境，完成后再进入下一页面</text>
             </view>
           </view>
           <view class="photo-card card">
@@ -639,11 +650,20 @@ onLoad(async (query) => {
               :upload="uploadPhoto"
             />
           </view>
+        </view>
+
+        <view v-else-if="step === 3" class="step-panel">
+          <view class="section-head">
+            <view>
+              <text class="section-title">封堵后照片</text>
+              <text class="section-copy">请在同一位置拍摄，清楚记录封堵边缘和完成状态</text>
+            </view>
+          </view>
           <view class="photo-card card">
             <PhotoGrid
               v-model:photos="form.afterPhotos"
               title="封堵后图片"
-              hint="与封堵前照片成对归档"
+              hint="完成后检查照片是否清晰、完整"
               :max="100"
               :upload="uploadPhoto"
             />
@@ -656,7 +676,7 @@ onLoad(async (query) => {
           </view>
         </view>
 
-        <view v-else-if="step === 3" class="step-panel">
+        <view v-else-if="step === 4" class="step-panel">
           <view class="section-head">
             <view>
               <text class="section-title">服务记录</text>
@@ -755,26 +775,28 @@ onLoad(async (query) => {
       </view>
 
       <view class="bottom-actions safe-bottom">
-        <button
-          class="btn-secondary action-button"
-          :disabled="step === 0"
-          @tap="previousStep"
-        >
-          上一步
-        </button>
-        <button class="draft-button" :disabled="saving" @tap="persistDraft">
-          {{ saving ? "保存中" : "存草稿" }}
-        </button>
+        <view class="bottom-secondary-stack">
+          <button
+            class="bottom-secondary"
+            :disabled="step === 0"
+            @tap="previousStep"
+          >
+            上一步
+          </button>
+          <button class="bottom-secondary" :disabled="saving" @tap="persistDraft">
+            {{ saving ? "保存中" : "保存草稿" }}
+          </button>
+        </view>
         <button
           v-if="step < steps.length - 1"
-          class="btn-primary action-button"
+          class="btn-primary bottom-primary"
           @tap="nextStep"
         >
           下一步
         </button>
         <button
           v-else
-          class="btn-primary action-button"
+          class="btn-primary bottom-primary"
           :disabled="submitting"
           @tap="submit"
         >
@@ -1341,28 +1363,113 @@ onLoad(async (query) => {
 }
 
 .bottom-actions {
-  gap: 8rpx;
-  padding: 14rpx 24rpx;
-  border-top-color: #dde7e0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr);
+  gap: 12rpx;
+  padding: 14rpx 28rpx calc(14rpx + env(safe-area-inset-bottom));
+  border-top-color: #dce5df;
   background: #ffffff;
   box-shadow: 0 -10rpx 32rpx rgba(18, 34, 27, 0.07);
 }
 
-.action-button {
-  min-height: 84rpx;
+.bottom-secondary-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
-.draft-button {
-  min-width: 108rpx;
-  min-height: 84rpx;
+.bottom-secondary {
+  width: 100%;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 14rpx;
-  border-color: #d5e0d7;
-  border-radius: 12rpx;
+  border: 1rpx solid #d5e0d7;
+  border-radius: 9rpx;
+  background: #ffffff;
   color: #176b52;
-  font-size: 21rpx;
+  font-size: max(13px, 22rpx);
+  font-weight: 600;
   line-height: 1;
+}
+
+.bottom-secondary[disabled] {
+  color: #a8b2ac;
+  opacity: 0.7;
+}
+
+.bottom-primary {
+  width: 100%;
+  min-height: 96px;
+  font-size: max(15px, 28rpx);
+}
+
+.service-page {
+  padding-bottom: calc(170rpx + env(safe-area-inset-bottom));
+  background: #f4f7f5;
+}
+
+.service-content {
+  padding: 24rpx 32rpx;
+}
+
+.step-panel {
+  gap: 24rpx;
+}
+
+.step-summary {
+  margin-top: 22rpx;
+}
+
+.step-meta {
+  color: #65736c;
+  font-size: 23rpx;
+}
+
+.step-meta text:last-child {
+  color: #176b52;
+  font-size: 25rpx;
+}
+
+.site-card,
+.form-card,
+.photo-card,
+.submit-summary {
+  padding: 28rpx;
+}
+
+.section-head {
+  margin-bottom: 0;
+}
+
+.photo-card + .hint-card {
+  margin-top: 0;
+}
+
+.signature-note {
+  padding: 22rpx 24rpx;
+  border-color: #eadcc4;
+  border-radius: 12rpx;
+}
+
+.step-meta {
+  font-size: max(13px, 23rpx);
+}
+
+.site-name {
+  font-size: max(18px, 30rpx);
+}
+
+.site-address,
+.contact-value,
+.hint-copy,
+.signature-note-copy {
+  font-size: max(14px, 22rpx);
+}
+
+.contact-label,
+.choice-count,
+.signature-note-title {
+  font-size: max(13px, 20rpx);
 }
 </style>

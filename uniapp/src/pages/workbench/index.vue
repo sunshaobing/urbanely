@@ -94,6 +94,17 @@ const taskMetricLabel = computed(() =>
       ? "任务总数"
       : "我的任务",
 );
+const workbenchLead = computed(() =>
+  activeGroup.value === "open"
+    ? `今天还有 ${openCount.value} 个任务`
+    : `已完成 ${doneCount.value} 个任务`,
+);
+const workbenchSub = computed(
+  () =>
+    `${todayLabel()} · ${session.value?.name || "现场人员"} · ${roleLabel(
+      session.value?.role || "",
+    )}`,
+);
 const groupOptions = computed(() => [
   { value: "open" as const, label: "未完成", count: openCount.value },
   { value: "done" as const, label: "已完成", count: doneCount.value },
@@ -206,7 +217,8 @@ onPullDownRefresh(async () => {
   <view class="page workbench-page">
     <view class="workbench-header">
       <view class="brand-row">
-        <BrandLogo :size="34" show-name :name-size="15" />
+        <view class="brand-spacer" />
+        <BrandLogo :size="36" show-name :name-size="16" />
         <view class="profile-shortcut" @tap="openProfile">
           <CartoonAvatar :name="session?.name || '现场人员'" :size="30" />
           <view class="profile-online" />
@@ -215,29 +227,8 @@ onPullDownRefresh(async () => {
 
       <view class="page-heading">
         <view class="heading-copy">
-          <text class="page-title">{{ pageTitle }}</text>
-          <text class="page-subtitle">
-            {{ todayLabel() }} · {{ session?.name || "现场人员" }}
-          </text>
-        </view>
-        <view class="role-chip">
-          <UniIcons type="person-filled" size="13" color="#176b52" />
-          <text>{{ roleLabel(session?.role || "") }}</text>
-        </view>
-      </view>
-
-      <view class="metric-strip">
-        <view class="metric-primary">
-          <text class="metric-label">{{ taskMetricLabel }}</text>
-          <text class="metric-value">{{ loading ? "--" : allTasks.length }}</text>
-        </view>
-        <view class="metric-item">
-          <text class="metric-label">待处理</text>
-          <text class="metric-value small">{{ loading ? "--" : openCount }}</text>
-        </view>
-        <view class="metric-item">
-          <text class="metric-label">已完成</text>
-          <text class="metric-value small">{{ loading ? "--" : doneCount }}</text>
+          <text class="page-title">{{ workbenchLead }}</text>
+          <text class="page-subtitle">{{ workbenchSub }}</text>
         </view>
       </view>
     </view>
@@ -269,8 +260,8 @@ onPullDownRefresh(async () => {
 
       <view class="task-section-head">
         <view>
-          <text class="section-title">工作清单</text>
-          <text class="section-copy">{{ activeLabel }}任务与现场安排</text>
+          <text class="section-title">我的任务</text>
+          <text class="section-copy">{{ taskMetricLabel }} · {{ activeLabel }}</text>
         </view>
         <view v-if="roleView === 'both'" class="reports-link" @tap="openReports">
           <text>全部报告</text>
@@ -306,11 +297,10 @@ onPullDownRefresh(async () => {
           class="task-card card pressable"
           @tap="openTask(task)"
         >
-          <view class="task-accent" />
           <view class="task-card-body">
             <view class="task-topline">
-              <text class="task-no mono">{{ task.report_no }}</text>
               <StatusPill :status="taskDisplayStatus(task)" />
+              <text class="task-no mono">{{ task.report_no }}</text>
             </view>
             <text class="task-customer">{{ task.customer_name }}</text>
             <view class="task-meta">
@@ -324,13 +314,11 @@ onPullDownRefresh(async () => {
               </view>
             </view>
             <text class="task-address">{{ task.service_address || "服务地址待补充" }}</text>
-            <view class="task-footer">
-              <text>{{ task.sites.length }} 个封堵部位</text>
-              <view class="task-open" @tap.stop="openTask(task)">
-                <text>{{ actionText }}</text>
-                <UniIcons type="right" size="13" color="#176b52" />
-              </view>
+            <view class="task-action" @tap.stop="openTask(task)">
+              <text>{{ actionText }}</text>
+              <UniIcons type="right" size="16" color="#ffffff" />
             </view>
+            <view class="task-footer">{{ task.sites.length }} 个封堵部位</view>
           </view>
         </view>
       </view>
@@ -350,13 +338,13 @@ onPullDownRefresh(async () => {
 
 <style scoped>
 .workbench-page {
-  background: #f2f6f3;
+  background: #f4f7f5;
 }
 
 .workbench-header {
   padding: calc(26rpx + env(safe-area-inset-top)) 32rpx 28rpx;
-  border-bottom: 1rpx solid #dde7e0;
-  background: #f8fbf9;
+  border-bottom: 1rpx solid #dce5df;
+  background: #ffffff;
 }
 
 .brand-row,
@@ -376,8 +364,13 @@ onPullDownRefresh(async () => {
 }
 
 .brand-row {
-  justify-content: space-between;
+  justify-content: center;
   gap: 24rpx;
+}
+
+.brand-spacer {
+  width: 62rpx;
+  height: 1rpx;
 }
 
 .profile-shortcut {
@@ -388,7 +381,7 @@ onPullDownRefresh(async () => {
   align-items: center;
   justify-content: center;
   border: 1rpx solid #d8e4dc;
-  border-radius: 50%;
+  border-radius: 12rpx;
   background: #ffffff;
 }
 
@@ -404,9 +397,9 @@ onPullDownRefresh(async () => {
 }
 
 .page-heading {
-  justify-content: space-between;
-  gap: 24rpx;
-  margin-top: 36rpx;
+  justify-content: center;
+  margin-top: 30rpx;
+  text-align: center;
 }
 
 .page-title,
@@ -416,7 +409,7 @@ onPullDownRefresh(async () => {
 
 .page-title {
   color: #17211d;
-  font-size: 42rpx;
+  font-size: max(26px, 44rpx);
   font-weight: 700;
   line-height: 1.2;
 }
@@ -424,7 +417,8 @@ onPullDownRefresh(async () => {
 .page-subtitle {
   margin-top: 8rpx;
   color: #65736c;
-  font-size: 22rpx;
+  font-size: max(13px, 24rpx);
+  line-height: 1.5;
 }
 
 .role-chip {
@@ -500,7 +494,7 @@ onPullDownRefresh(async () => {
 }
 
 .workbench-content {
-  padding-top: 22rpx;
+  padding-top: 24rpx;
 }
 
 .sync-row {
@@ -591,7 +585,7 @@ onPullDownRefresh(async () => {
   align-items: flex-end;
   justify-content: space-between;
   gap: 20rpx;
-  margin-top: 24rpx;
+  margin-top: 6rpx;
 }
 
 .reports-link {
@@ -602,25 +596,26 @@ onPullDownRefresh(async () => {
 }
 
 .status-tabs {
-  display: flex;
-  gap: 6rpx;
-  margin-top: 14rpx;
-  padding: 6rpx;
-  border: 1rpx solid #dde7e0;
-  border-radius: 14rpx;
-  background: #eff4f0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8rpx;
+  margin-top: 18rpx;
+  padding: 8rpx;
+  border: 1rpx solid #dce5df;
+  border-radius: 12rpx;
+  background: #eaf0ec;
 }
 
 .status-tab {
   flex: 1;
-  min-height: 62rpx;
+  min-height: 74rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  border-radius: 10rpx;
+  border-radius: 9rpx;
   color: #65736c;
-  font-size: 23rpx;
+  font-size: max(15px, 26rpx);
 }
 
 .tab-count {
@@ -647,29 +642,26 @@ onPullDownRefresh(async () => {
 .task-skeleton {
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
-  margin-top: 16rpx;
+  gap: 18rpx;
+  margin-top: 20rpx;
 }
 
 .task-card {
   position: relative;
-  display: flex;
+  display: block;
   overflow: hidden;
   border-color: #e0e9e3;
   background: #ffffff;
-  box-shadow: 0 4rpx 14rpx rgba(18, 34, 27, 0.04);
+  box-shadow: none;
 }
 
 .task-accent {
-  width: 4rpx;
-  flex: none;
-  background: #176b52;
+  display: none;
 }
 
 .task-card-body {
-  flex: 1;
-  min-width: 0;
-  padding: 20rpx 20rpx 18rpx;
+  width: 100%;
+  padding: 24rpx;
 }
 
 .task-topline {
@@ -679,46 +671,60 @@ onPullDownRefresh(async () => {
 
 .task-no {
   color: #79867f;
-  font-size: 20rpx;
+  font-size: max(12px, 22rpx);
 }
 
 .task-customer {
   display: block;
-  margin-top: 7rpx;
+  margin-top: 16rpx;
   color: #17211d;
-  font-size: 31rpx;
+  font-size: max(21px, 36rpx);
   font-weight: 700;
   line-height: 1.35;
 }
 
 .task-meta {
   flex-wrap: wrap;
-  gap: 8rpx 18rpx;
-  margin-top: 12rpx;
+  gap: 10rpx 20rpx;
+  margin-top: 14rpx;
 }
 
 .task-meta-item {
-  gap: 5rpx;
+  gap: 7rpx;
   color: #65736c;
-  font-size: 20rpx;
+  font-size: max(13px, 24rpx);
 }
 
 .task-address {
   display: block;
-  margin-top: 10rpx;
+  margin-top: 12rpx;
   color: #5d6e65;
-  font-size: 22rpx;
+  font-size: max(14px, 26rpx);
   line-height: 1.5;
 }
 
+.task-action {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  margin-top: 22rpx;
+  border-radius: 12rpx;
+  background: #145a3a;
+  color: #ffffff;
+  font-size: max(15px, 28rpx);
+  font-weight: 700;
+}
+
 .task-footer {
-  justify-content: space-between;
-  gap: 16rpx;
-  margin-top: 16rpx;
-  padding-top: 14rpx;
+  display: block;
+  margin-top: 14rpx;
+  padding-top: 12rpx;
   border-top: 1rpx solid #e5ece7;
   color: #79867f;
-  font-size: 20rpx;
+  font-size: max(13px, 22rpx);
+  text-align: center;
 }
 
 .task-open {

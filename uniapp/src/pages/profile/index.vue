@@ -673,7 +673,8 @@ onPullDownRefresh(async () => {
 
 .menu-row {
   gap: 14rpx;
-  padding: 20rpx 0;
+  min-height: 56px;
+  padding: 12px 0;
   border-bottom-color: #e5ece7;
 }
 
@@ -687,12 +688,12 @@ onPullDownRefresh(async () => {
 
 .menu-title {
   color: #24352e;
-  font-size: 24rpx;
+  font-size: max(15px, 24rpx);
 }
 
 .menu-sub {
   color: #79867f;
-  font-size: 19rpx;
+  font-size: max(12px, 19rpx);
 }
 
 .menu-row.danger .menu-title {

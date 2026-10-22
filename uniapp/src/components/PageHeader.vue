@@ -45,59 +45,71 @@ function goBack() {
 <style scoped>
 .page-header {
   padding: calc(26rpx + env(safe-area-inset-top)) 32rpx 24rpx;
-  border-bottom: 1rpx solid #dde7e0;
-  background: #f8fbf9;
+  border-bottom: 1rpx solid #dce5df;
+  background: #ffffff;
 }
 
 .page-header-top {
+  position: relative;
   display: flex;
-  align-items: flex-start;
-  gap: 20rpx;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
 }
 
 .header-back {
-  width: 62rpx;
-  height: 62rpx;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 48px;
+  height: 48px;
   display: flex;
   flex: none;
   align-items: center;
   justify-content: center;
-  margin-top: 2rpx;
+  transform: translateY(-50%);
   border: 1rpx solid #d8e4dc;
   border-radius: 12rpx;
   background: #ffffff;
 }
 
 .header-copy {
-  flex: 1;
+  width: 100%;
   min-width: 0;
+  padding: 0 150rpx;
+  text-align: center;
 }
 
 .header-kicker {
   display: block;
-  color: #176b52;
+  color: #65736c;
   font-size: 20rpx;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .header-title {
   display: block;
-  margin-top: 4rpx;
-  font-size: 38rpx;
+  margin-top: 3rpx;
+  color: #17211d;
+  font-size: max(21px, 36rpx);
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .header-subtitle {
   display: block;
   margin-top: 6rpx;
   color: #65736c;
-  font-size: 22rpx;
+  font-size: max(13px, 24rpx);
   line-height: 1.5;
 }
 
 .header-action {
-  flex: none;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  max-width: 190rpx;
+  transform: translateY(-50%);
 }
 
 /* #ifdef APP-PLUS */

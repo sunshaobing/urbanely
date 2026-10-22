@@ -199,14 +199,16 @@ function showResetHelp() {
 }
 
 .login-brand-row {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 24rpx;
 }
 
 .system-label {
-  flex: none;
+  position: absolute;
+  right: 0;
   color: #79867f;
   font-size: 22rpx;
 }
@@ -377,7 +379,7 @@ function showResetHelp() {
 .login-page {
   padding: calc(30rpx + env(safe-area-inset-top)) 36rpx
     calc(28rpx + env(safe-area-inset-bottom));
-  background: #f2f6f3;
+  background: #f4f7f5;
 }
 
 .system-label {
@@ -390,16 +392,17 @@ function showResetHelp() {
 }
 
 .login-content {
-  padding-top: 118rpx;
+  padding-top: 88rpx;
 }
 
 .login-copy {
-  margin-bottom: 34rpx;
+  margin-bottom: 36rpx;
+  text-align: center;
 }
 
 .login-title {
   color: #17211d;
-  font-size: 46rpx;
+  font-size: 44rpx;
   line-height: 1.24;
 }
 
@@ -410,7 +413,7 @@ function showResetHelp() {
 }
 
 .login-form {
-  padding: 28rpx;
+  padding: 30rpx;
 }
 
 .form-field + .form-field {
@@ -424,23 +427,23 @@ function showResetHelp() {
 }
 
 .login-input {
-  height: 94rpx;
+  height: 96rpx;
   padding: 0 20rpx;
   border-color: #d7e2da;
   border-radius: 12rpx;
 }
 
 .input {
-  height: 86rpx;
-  font-size: 26rpx;
+  height: 88rpx;
+  font-size: 28rpx;
 }
 
 .login-submit {
-  height: 92rpx;
+  height: 96rpx;
   margin-top: 34rpx;
   border-radius: 12rpx;
   background: #103b2d;
-  font-size: 26rpx;
+  font-size: 28rpx;
 }
 
 .login-help {

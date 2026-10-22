@@ -19,7 +19,7 @@ test("HarmonyOS internal-test packaging config is complete", () => {
   assert.match(manifest, /"bundleName"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /"deviceArchs"\s*:\s*\[\s*"arm64-v8a"\s*\]/);
   assert.match(app, /"bundleName"\s*:\s*"cn\.sunrgw\.pco"/);
-  assert.match(app, /"versionName"\s*:\s*"3\.1\.4"/);
+  assert.match(app, /"versionName"\s*:\s*"3\.2\.0"/);
   assert.match(module, /ohos\.permission\.INTERNET/);
   assert.match(module, /ohos\.permission\.APPROXIMATELY_LOCATION/);
   assert.match(module, /ohos\.permission\.LOCATION/);

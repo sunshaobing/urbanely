@@ -101,17 +101,17 @@ function navigate(key: TabKey, url: string) {
   bottom: 0;
   left: 0;
   z-index: 50;
-  border-top: 1rpx solid #dde7e0;
+  border-top: 1rpx solid #dce5df;
   background: #ffffff;
   box-shadow: 0 -10rpx 32rpx rgba(18, 34, 27, 0.07);
 }
 
 .app-tabbar-inner {
-  height: 126rpx;
+  height: 122rpx;
   display: flex;
   align-items: stretch;
   justify-content: space-around;
-  padding: 10rpx 20rpx 8rpx;
+  padding: 10rpx 24rpx 8rpx;
 }
 
 .app-tab {
@@ -122,7 +122,7 @@ function navigate(key: TabKey, url: string) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4rpx;
+  gap: 5rpx;
   color: #7c8982;
 }
 
@@ -135,8 +135,8 @@ function navigate(key: TabKey, url: string) {
 }
 
 .app-tab-icon {
-  width: 58rpx;
-  height: 46rpx;
+  width: max(30px, 64rpx);
+  height: max(24px, 50rpx);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -146,7 +146,7 @@ function navigate(key: TabKey, url: string) {
 }
 
 .app-tab-label {
-  font-size: 20rpx;
+  font-size: max(13px, 22rpx);
   line-height: 1.2;
 }
 

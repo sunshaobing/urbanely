@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { onLoad } from "@dcloudio/uni-app";
+import { onLoad, onShow } from "@dcloudio/uni-app";
 import UniIcons from "@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue";
 import CartoonAvatar from "../../components/CartoonAvatar.vue";
 import PageHeader from "../../components/PageHeader.vue";
 import StatusPill from "../../components/StatusPill.vue";
 import {
-  checkinWorkOrder,
-  checkinServiceReport,
   getRiskSurvey,
   getRiskSurveys,
   getPersonnel,
@@ -21,7 +19,7 @@ import {
   saveServiceReport,
   toId,
 } from "../../utils/api";
-import { formatAccuracy, getPreciseLocation } from "../../utils/location";
+import { formatAccuracy } from "../../utils/location";
 import { getSession } from "../../utils/auth";
 import { ensureBrand } from "../../utils/brand";
 import { openReportPdf, reportPdfPath } from "../../utils/pdf";
@@ -200,6 +198,9 @@ const actionDisabled = computed(
     relatedLoading.value ||
     approvalWaiting.value,
 );
+const isCheckinStep = computed(() =>
+  ["surveyCheckin", "checkin"].includes(currentStep.value?.key || ""),
+);
 
 function errorText(value: unknown) {
   return value instanceof Error ? value.message : "任务加载失败";
@@ -282,7 +283,7 @@ function copyAddress() {
 function openRiskSurvey() {
   if (!task.value) return;
   const targetStep =
-    survey.value && currentStep.value?.key === "surveySign" ? 4 : 0;
+    survey.value && currentStep.value?.key === "surveySign" ? 5 : 0;
   const surveyQuery = survey.value ? `&surveyId=${survey.value.id}` : "";
   uni.navigateTo({
     url: `/pages/risk-survey/index?taskId=${task.value.id}${surveyQuery}&step=${targetStep}`,
@@ -302,14 +303,35 @@ function openServiceReport() {
   }
   const step =
     currentStep.value?.key === "sealSign"
-      ? 4
+      ? 5
       : currentStep.value?.key === "beforePhotos" ||
           currentStep.value?.key === "afterPhotos"
-        ? 2
+        ? currentStep.value?.key === "afterPhotos"
+          ? 3
+          : 2
         : 0;
   uni.navigateTo({
     url: `/pages/service-report/index?taskId=${task.value.id}&reportId=${serviceReport.value.id}&step=${step}`,
   });
+}
+
+function openCheckin() {
+  if (!task.value || !currentStep.value) return;
+  const sealing = currentStep.value.key === "checkin";
+  if (sealing && !serviceReport.value) {
+    uni.showToast({ title: "尚未生成封堵单", icon: "none" });
+    return;
+  }
+  const query = [
+    `taskId=${task.value.id}`,
+    `kind=${sealing ? "sealing" : "survey"}`,
+    sealing && serviceReport.value
+      ? `reportId=${serviceReport.value.id}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("&");
+  uni.navigateTo({ url: `/pages/checkin/index?${query}` });
 }
 
 async function approveSurvey() {
@@ -424,54 +446,6 @@ async function acceptSealing() {
   uni.showToast({ title: "已接单", icon: "success" });
 }
 
-async function checkIn() {
-  if (!serviceReport.value) {
-    throw new Error("尚未生成封堵单");
-  }
-  const location = await getPreciseLocation();
-  if (task.value) {
-    await checkinWorkOrder(task.value.id, {
-      role: "sealing",
-      latitude: location.latitude,
-      longitude: location.longitude,
-      accuracy: location.accuracy,
-      address: task.value.service_address || "",
-    });
-  }
-  await checkinServiceReport(
-    serviceReport.value.id,
-    location.label,
-    "",
-    {
-      latitude: location.latitude,
-      longitude: location.longitude,
-      accuracy: location.accuracy,
-    },
-  );
-  uni.showToast({
-    title: `签到成功 · ${formatAccuracy(location.accuracy)}`,
-    icon: "success",
-  });
-}
-
-async function checkInSurvey() {
-  if (!task.value) {
-    throw new Error("作业单未加载");
-  }
-  const location = await getPreciseLocation();
-  await checkinWorkOrder(task.value.id, {
-    role: "surveyor",
-    latitude: location.latitude,
-    longitude: location.longitude,
-    accuracy: location.accuracy,
-    address: task.value.service_address || "",
-  });
-  uni.showToast({
-    title: `签到成功 · ${formatAccuracy(location.accuracy)}`,
-    icon: "success",
-  });
-}
-
 async function approveSealing() {
   if (!serviceReport.value || !task.value) {
     throw new Error("尚未生成封堵报告");
@@ -502,13 +476,15 @@ async function runCurrentAction() {
     openServiceReport();
     return;
   }
+  if (["surveyCheckin", "checkin"].includes(key)) {
+    openCheckin();
+    return;
+  }
   actionLoading.value = true;
   try {
-    if (key === "surveyCheckin") await checkInSurvey();
-    else if (key === "surveyApproval") await approveSurvey();
+    if (key === "surveyApproval") await approveSurvey();
     else if (key === "sealingList") await ensureSealingList();
     else if (key === "accept") await acceptSealing();
-    else if (key === "checkin") await checkIn();
     else if (key === "sealApproval") await approveSealing();
     else if (key === "generateReport" && serviceReport.value) {
       openReportPdf(reportPdfPath("service", serviceReport.value.id));
@@ -538,6 +514,10 @@ onLoad((query) => {
   session.value = getSession();
   void ensureBrand();
   void load();
+});
+
+onShow(() => {
+  if (taskId.value && !loading.value) void load();
 });
 </script>
 
@@ -600,6 +580,36 @@ onLoad((query) => {
 
     <template v-else-if="task">
       <view class="page-content detail-content">
+        <view class="next-step-card card">
+          <text class="next-step-kicker">
+            当前步骤 · {{ visibleCurrentIndex + 1 }} / {{ visibleSteps.length }}
+          </text>
+          <text class="next-step-title">{{ currentStep?.label || actionLabel }}</text>
+          <text class="next-step-hint">
+            {{ currentStep?.hint || "当前角色无需处理后续节点" }}
+          </text>
+          <view class="next-step-progress">
+            <view
+              class="next-step-progress-fill"
+              :style="{ width: `${progress}%` }"
+            />
+          </view>
+          <view v-if="isCheckinStep" class="checkin-target">
+            <view class="checkin-target-icon">
+              <UniIcons type="location-filled" size="23" color="#176b52" />
+            </view>
+            <view class="checkin-target-copy">
+              <text class="checkin-target-title">确认到达门店后签到</text>
+              <text class="checkin-target-address">
+                {{ task.service_address || "服务地址待补充" }}
+              </text>
+              <text class="checkin-target-meta">
+                {{ checkinDisplay ? "已完成现场签到" : "将记录定位精度和签到时间" }}
+              </text>
+            </view>
+          </view>
+        </view>
+
         <view class="workflow-card card">
           <view class="workflow-head">
             <view>
@@ -1474,7 +1484,7 @@ onLoad((query) => {
 
 /* Unified field-console visual system */
 .detail-page {
-  background: #f2f6f3;
+  background: #f4f7f5;
 }
 
 .order-hero {
@@ -1554,6 +1564,102 @@ onLoad((query) => {
 
 .detail-content {
   padding-top: 20rpx;
+}
+
+.next-step-card {
+  padding: 28rpx;
+  text-align: center;
+}
+
+.next-step-kicker {
+  display: block;
+  color: #176b52;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.next-step-title {
+  display: block;
+  margin-top: 8rpx;
+  color: #17211d;
+  font-size: 38rpx;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.next-step-hint {
+  display: block;
+  margin-top: 10rpx;
+  color: #65736c;
+  font-size: 25rpx;
+  line-height: 1.6;
+}
+
+.next-step-progress {
+  height: 8rpx;
+  overflow: hidden;
+  margin-top: 22rpx;
+  border-radius: 8rpx;
+  background: #e4ebe6;
+}
+
+.next-step-progress-fill {
+  height: 100%;
+  border-radius: 8rpx;
+  background: #176b52;
+}
+
+.checkin-target {
+  display: flex;
+  align-items: flex-start;
+  gap: 14rpx;
+  margin-top: 24rpx;
+  padding: 18rpx;
+  border: 1rpx solid #d9e6de;
+  border-radius: 12rpx;
+  background: #f5f9f6;
+  text-align: left;
+}
+
+.checkin-target-icon {
+  width: 52rpx;
+  height: 52rpx;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10rpx;
+  background: #e6f2ec;
+}
+
+.checkin-target-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.checkin-target-title,
+.checkin-target-address,
+.checkin-target-meta {
+  display: block;
+}
+
+.checkin-target-title {
+  color: #24352e;
+  font-size: 27rpx;
+  font-weight: 700;
+}
+
+.checkin-target-address {
+  margin-top: 6rpx;
+  color: #53635a;
+  font-size: 25rpx;
+  line-height: 1.55;
+}
+
+.checkin-target-meta {
+  margin-top: 5rpx;
+  color: #79867f;
+  font-size: 22rpx;
 }
 
 .workflow-card {
@@ -1818,7 +1924,7 @@ onLoad((query) => {
 }
 
 .bottom-button {
-  min-height: 84rpx;
+  min-height: 48px;
 }
 
 .skeleton-line {
@@ -1950,5 +2056,60 @@ onLoad((query) => {
   margin-top: 6rpx;
   color: #79867f;
   font-size: 20rpx;
+}
+
+.next-step-kicker,
+.workflow-kicker {
+  font-size: max(13px, 22rpx);
+}
+
+.next-step-title {
+  font-size: max(22px, 38rpx);
+}
+
+.next-step-hint,
+.checkin-target-address,
+.info-value,
+.phone-value,
+.person-value {
+  font-size: max(14px, 25rpx);
+}
+
+.checkin-target-title,
+.related-name,
+.site-name,
+.material-name {
+  font-size: max(15px, 27rpx);
+}
+
+.checkin-target-meta,
+.info-label,
+.related-meta,
+.site-type,
+.site-remark,
+.workflow-hint {
+  font-size: max(13px, 22rpx);
+}
+
+.order-customer {
+  font-size: max(24px, 40rpx);
+}
+
+.order-service,
+.quick-label {
+  font-size: max(12px, 20rpx);
+}
+
+.order-address,
+.quick-value {
+  font-size: max(14px, 24rpx);
+}
+
+.process-label {
+  font-size: max(13px, 20rpx);
+}
+
+.process-state {
+  font-size: max(12px, 18rpx);
 }
 </style>

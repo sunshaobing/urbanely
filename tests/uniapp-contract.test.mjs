@@ -18,6 +18,7 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
     "pages/signature/index",
     "pages/workbench/index",
     "pages/task-detail/index",
+    "pages/checkin/index",
     "pages/reports/index",
     "pages/profile/index",
     "pages/risk-survey/index",
@@ -30,8 +31,8 @@ test("uni-app registers the redesigned field pages and production AppID", () => 
   assert.equal(pages.pages[1].style.disableScroll, true);
   assert.match(manifest, /"appid"\s*:\s*"wx9469d5e631279f7b"/);
   assert.match(manifest, /"urlCheck"\s*:\s*true/);
-  assert.match(manifest, /"versionName"\s*:\s*"3\.1\.4"/);
-  assert.match(manifest, /"versionCode"\s*:\s*"314"/);
+  assert.match(manifest, /"versionName"\s*:\s*"3\.2\.0"/);
+  assert.match(manifest, /"versionCode"\s*:\s*"320"/);
   assert.match(manifest, /"appid"\s*:\s*"__UNI__[A-F0-9]+"/);
   assert.match(manifest, /"packagename"\s*:\s*"cn\.sunrgw\.pco"/);
   assert.match(manifest, /"NSLocationWhenInUseUsageDescription"/);
@@ -178,7 +179,7 @@ test("login keeps a focused business layout without marketing content", () => {
   assert.match(login, /class="login-help"/);
   assert.match(login, /showResetHelp/);
   assert.match(login, /login\(identifier\.value\.trim\(\), password\.value\)/);
-  assert.match(login, /background:\s*#f2f6f3/);
+  assert.match(login, /background:\s*#f4f7f5/);
   assert.match(login, /\.login-submit\s*\{[\s\S]*?background:\s*#103b2d/);
   assert.doesNotMatch(
     login,
@@ -187,27 +188,30 @@ test("login keeps a focused business layout without marketing content", () => {
   assert.doesNotMatch(login, /hero-(?:points|title|kicker)|login-sheet|form-head/);
 });
 
-test("workbench brand title is enlarged for field readability", () => {
+test("workbench follows the approved task-first hierarchy", () => {
   const workbench = read("src/pages/workbench/index.vue");
 
-  assert.match(workbench, /:size="34"/);
-  assert.match(workbench, /:name-size="15"/);
-  assert.match(workbench, /\.page-title\s*\{[\s\S]*?font-size:\s*42rpx/);
-  assert.match(workbench, /class="metric-strip"/);
+  assert.match(workbench, /:size="36"/);
+  assert.match(workbench, /:name-size="16"/);
+  assert.match(workbench, /今天还有 \$\{openCount\.value\} 个任务/);
+  assert.match(workbench, /class="task-action"/);
+  assert.match(workbench, /\.page-title\s*\{[\s\S]*?font-size:\s*max\(26px,\s*44rpx\)/);
+  assert.match(workbench, /\.task-action\s*\{[\s\S]*?background:\s*#145a3a/);
+  assert.doesNotMatch(workbench, /class="metric-strip"/);
 });
 
-test("workbench metrics use equal three-column spacing", () => {
+test("workbench status tabs and task cards use uniform, uncrowded spacing", () => {
   const workbench = read("src/pages/workbench/index.vue");
 
   assert.match(
     workbench,
-    /\.metric-strip\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/,
+    /\.status-tabs\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
   );
   assert.match(
     workbench,
-    /\.metric-primary,\s*\.metric-item\s*\{[\s\S]*?flex-direction:\s*row;[\s\S]*?align-items:\s*center;[\s\S]*?justify-content:\s*center;[\s\S]*?min-height:\s*72rpx;[\s\S]*?border-radius:\s*10rpx;/,
+    /\.task-list,[\s\S]*?gap:\s*18rpx;[\s\S]*?margin-top:\s*20rpx;/,
   );
-  assert.doesNotMatch(workbench, /\.metric-item\s*\{[^}]*text-align:\s*right/);
+  assert.match(workbench, /\.task-customer\s*\{[\s\S]*?font-size:\s*max\(21px,\s*36rpx\)/);
   assert.match(workbench, /#ifdef APP-PLUS[\s\S]*?\.workbench-header/);
 });
 
@@ -262,7 +266,7 @@ test("the field workflow follows survey approval, dispatch, check-in, sealing an
   assert.match(detail, /openDispatchSheet/);
   assert.match(detail, /sealingListPayload/);
   assert.match(detail, /acceptSealing/);
-  assert.match(detail, /checkIn/);
+  assert.match(detail, /openCheckin/);
   assert.match(detail, /approveSealing/);
   assert.match(detail, /openReportPdf/);
   assert.match(
@@ -300,23 +304,25 @@ test("the field client follows an MHP-inspired deep-green service hierarchy", ()
   assert.match(app, /--field-dark:\s*#103b2d/);
   assert.match(app, /--field-accent:\s*#176b52/);
   assert.match(app, /--field-accent-soft:\s*#e6f2ec/);
-  assert.match(app, /background:\s*#f2f6f3/);
-  assert.match(app, /border-radius:\s*16rpx/);
-  assert.match(app, /font-size:\s*32rpx/);
-  assert.match(app, /font-size:\s*28rpx/);
+  assert.match(app, /background:\s*#f4f7f5/);
+  assert.match(app, /border-radius:\s*12rpx/);
+  assert.match(app, /font-size:\s*max\(17px,\s*34rpx\)/);
+  assert.match(app, /font-size:\s*max\(14px,\s*30rpx\)/);
   assert.match(tabbar, /background:\s*#ffffff/);
   assert.match(tabbar, /color:\s*#115640/);
-  assert.match(header, /background:\s*#f8fbf9/);
+  assert.match(header, /background:\s*#ffffff/);
   assert.doesNotMatch(header, /dark\?:/);
   assert.match(workbench, /class="workbench-header"/);
   assert.match(workbench, /class="sync-row"/);
-  assert.match(workbench, /class="task-accent"/);
+  assert.match(workbench, /class="task-action"/);
   assert.match(detail, /<scroll-view[\s\S]*?scroll-x/);
   assert.match(detail, /class="process-track"/);
   assert.match(reports, /class="archive-summary card"/);
   assert.match(profile, /class="metric-grid card"/);
   assert.match(survey, /第 \{\{ step \+ 1 \}\} 步 \/ 共 \{\{ steps\.length \}\} 步/);
   assert.match(service, /第 \{\{ step \+ 1 \}\} 步 \/ 共 \{\{ steps\.length \}\} 步/);
+  assert.match(survey, /"现场信息",[\s\S]*?"检查范围",[\s\S]*?"风险点",[\s\S]*?"现场照片",[\s\S]*?"治理方案",[\s\S]*?"签字提交"/);
+  assert.match(service, /"服务信息",[\s\S]*?"材料与部位",[\s\S]*?"封堵前照片",[\s\S]*?"封堵后照片",[\s\S]*?"服务记录",[\s\S]*?"签字提交"/);
   assert.match(workbench, /reportMatchesTask/);
   assert.match(workbench, /taskDisplayStatus/);
   assert.match(tabbar, /label: "任务"/);
@@ -440,10 +446,11 @@ test("mobile credentials are not embedded in the uni-app source", () => {
   assert.doesNotMatch(source, /password\s*:\s*["'][^"']+["']/);
 });
 
-test("both field roles check in with high-accuracy GPS before work", () => {
+test("both field roles check in from the dedicated page with high-accuracy GPS", () => {
   const location = read("src/utils/location.ts");
   const api = read("src/utils/api.ts");
   const detail = read("src/pages/task-detail/index.vue");
+  const checkin = read("src/pages/checkin/index.vue");
   const workflow = read("src/utils/workflow.ts");
 
   assert.match(location, /highAccuracy:\s*true/);
@@ -452,9 +459,10 @@ test("both field roles check in with high-accuracy GPS before work", () => {
   assert.match(location, /MAX_ACCURACY_METERS/);
   assert.match(location, /定位精度不足/);
   assert.doesNotMatch(detail, /service_address \|\| "现场签到"/);
-  assert.match(detail, /role: "surveyor"/);
-  assert.match(detail, /role: "sealing"/);
-  assert.match(detail, /checkinWorkOrder/);
+  assert.match(checkin, /\? "sealing" : "surveyor"/);
+  assert.match(checkin, /const role = isSealing\.value/);
+  assert.match(checkin, /checkinWorkOrder/);
+  assert.match(detail, /pages\/checkin\/index/);
   assert.match(api, /\/api\/workorders\/\$\{orderId\}\/checkin/);
   assert.match(api, /latitude: coordinates\?\.latitude/);
   assert.match(workflow, /surveyCheckin/);
@@ -520,14 +528,34 @@ test("app login restores the saved session and requests a long-lived token", () 
   assert.match(api, /client:\s*"app"/);
 });
 
-test("draft buttons center their label", () => {
+test("two-step form actions remain centered and uncrowded", () => {
   for (const page of ["risk-survey", "service-report"]) {
     const source = read(`src/pages/${page}/index.vue`);
     assert.match(
       source,
-      /\.draft-button\s*\{[\s\S]*?display:\s*flex;[\s\S]*?align-items:\s*center;[\s\S]*?justify-content:\s*center;/,
+      /\.bottom-secondary\s*\{[\s\S]*?display:\s*flex;[\s\S]*?align-items:\s*center;[\s\S]*?justify-content:\s*center;/,
     );
+    assert.match(source, /class="bottom-secondary-stack"/);
+    assert.match(source, /class="btn-primary bottom-primary"/);
   }
+});
+
+test("mobile redesign keeps a centered layout with readable tap targets", () => {
+  const app = read("src/App.vue");
+  const header = read("src/components/PageHeader.vue");
+  const tabbar = read("src/components/AppTabBar.vue");
+  const checkin = read("src/pages/checkin/index.vue");
+
+  assert.match(app, /\.page-content\s*\{[\s\S]*?max-width:\s*820rpx;[\s\S]*?margin:\s*0 auto/);
+  assert.match(app, /\.btn-primary,[\s\S]*?min-height:\s*48px/);
+  assert.match(app, /font-size:\s*max\(14px,\s*30rpx\)/);
+  assert.match(header, /\.header-copy\s*\{[\s\S]*?text-align:\s*center/);
+  assert.match(header, /\.header-back\s*\{[\s\S]*?width:\s*48px;[\s\S]*?height:\s*48px/);
+  assert.match(tabbar, /font-size:\s*max\(13px,\s*22rpx\)/);
+  assert.match(checkin, /class="checkin-panel card"/);
+  assert.match(checkin, /class="btn-primary checkin-button"/);
+  assert.match(checkin, /\.checkin-button\s*\{[\s\S]*?min-height:\s*52px/);
+  assert.match(checkin, /用于确认本次服务到达现场/);
 });
 
 test("picked photos persist and upload before temporary files expire", () => {

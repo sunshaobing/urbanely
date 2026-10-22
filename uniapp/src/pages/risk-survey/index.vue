@@ -58,7 +58,14 @@ interface RiskDraft {
   customerSignatureDepartment: string;
 }
 
-const steps = ["现场信息", "风险点", "影像证据", "治理方案", "签字提交"];
+const steps = [
+  "现场信息",
+  "检查范围",
+  "风险点",
+  "现场照片",
+  "治理方案",
+  "签字提交",
+];
 const step = ref(0);
 const taskId = ref(0);
 const surveyId = ref(0);
@@ -192,18 +199,18 @@ function onReviewDateChange(event: { detail: { value: string } }) {
 }
 
 function validateStep() {
-  if (step.value === 0 && !form.scope.length) {
+  if (step.value === 1 && !form.scope.length) {
     uni.showToast({ title: "请选择至少一个勘测范围", icon: "none" });
     return false;
   }
   if (
-    step.value === 1 &&
+    step.value === 2 &&
     !form.items.some((item) => item.location.trim() || item.description.trim())
   ) {
     uni.showToast({ title: "请至少填写一个风险点", icon: "none" });
     return false;
   }
-  if (step.value === 2 && !form.photos.length) {
+  if (step.value === 3 && !form.photos.length) {
     uni.showToast({ title: "请至少添加一张结构风险图片", icon: "none" });
     return false;
   }
@@ -527,7 +534,15 @@ onLoad(async (query) => {
               </picker>
             </view>
           </view>
+        </view>
 
+        <view v-else-if="step === 1" class="step-panel">
+          <view class="section-head step-section-head">
+            <view>
+              <text class="section-title">本次检查范围</text>
+              <text class="section-copy">按现场实际情况选择，不要求一次填写全部内容</text>
+            </view>
+          </view>
           <view class="choice-section">
             <view class="section-head">
               <view>
@@ -607,7 +622,7 @@ onLoad(async (query) => {
           </view>
         </view>
 
-        <view v-else-if="step === 1" class="step-panel">
+        <view v-else-if="step === 2" class="step-panel">
           <view class="section-head">
             <view>
               <text class="section-title">结构风险点</text>
@@ -654,7 +669,7 @@ onLoad(async (query) => {
           </view>
         </view>
 
-        <view v-else-if="step === 2" class="step-panel">
+        <view v-else-if="step === 3" class="step-panel">
           <view class="section-head">
             <view>
               <text class="section-title">结构风险图片</text>
@@ -679,7 +694,7 @@ onLoad(async (query) => {
           </view>
         </view>
 
-        <view v-else-if="step === 3" class="step-panel">
+        <view v-else-if="step === 4" class="step-panel">
           <view class="section-head">
             <view>
               <text class="section-title">治理方案</text>
@@ -802,26 +817,28 @@ onLoad(async (query) => {
       </view>
 
       <view class="bottom-actions safe-bottom">
-        <button
-          class="btn-secondary action-button"
-          :disabled="step === 0"
-          @tap="previousStep"
-        >
-          上一步
-        </button>
-        <button class="draft-button" :disabled="saving" @tap="persistDraft">
-          {{ saving ? "保存中" : "存草稿" }}
-        </button>
+        <view class="bottom-secondary-stack">
+          <button
+            class="bottom-secondary"
+            :disabled="step === 0"
+            @tap="previousStep"
+          >
+            上一步
+          </button>
+          <button class="bottom-secondary" :disabled="saving" @tap="persistDraft">
+            {{ saving ? "保存中" : "保存草稿" }}
+          </button>
+        </view>
         <button
           v-if="step < steps.length - 1"
-          class="btn-primary action-button"
+          class="btn-primary bottom-primary"
           @tap="nextStep"
         >
           下一步
         </button>
         <button
           v-else
-          class="btn-primary action-button"
+          class="btn-primary bottom-primary"
           :disabled="submitting"
           @tap="submit"
         >
@@ -1392,28 +1409,125 @@ onLoad(async (query) => {
 }
 
 .bottom-actions {
-  gap: 8rpx;
-  padding: 14rpx 24rpx;
-  border-top-color: #dde7e0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr);
+  gap: 12rpx;
+  padding: 14rpx 28rpx calc(14rpx + env(safe-area-inset-bottom));
+  border-top-color: #dce5df;
   background: #ffffff;
   box-shadow: 0 -10rpx 32rpx rgba(18, 34, 27, 0.07);
 }
 
-.action-button {
-  min-height: 84rpx;
+.bottom-secondary-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
-.draft-button {
-  min-width: 108rpx;
-  min-height: 84rpx;
+.bottom-secondary {
+  width: 100%;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 14rpx;
-  border-color: #d5e0d7;
-  border-radius: 12rpx;
+  border: 1rpx solid #d5e0d7;
+  border-radius: 9rpx;
+  background: #ffffff;
   color: #176b52;
-  font-size: 21rpx;
+  font-size: max(13px, 22rpx);
+  font-weight: 600;
   line-height: 1;
+}
+
+.bottom-secondary[disabled] {
+  color: #a8b2ac;
+  opacity: 0.7;
+}
+
+.bottom-primary {
+  width: 100%;
+  min-height: 96px;
+  font-size: max(15px, 28rpx);
+}
+
+.survey-page {
+  padding-bottom: calc(170rpx + env(safe-area-inset-bottom));
+  background: #f4f7f5;
+}
+
+.survey-content {
+  padding: 24rpx 32rpx;
+}
+
+.step-panel {
+  gap: 24rpx;
+}
+
+.step-summary {
+  margin-top: 22rpx;
+}
+
+.step-meta {
+  color: #65736c;
+  font-size: 23rpx;
+}
+
+.step-meta text:last-child {
+  color: #176b52;
+  font-size: 25rpx;
+}
+
+.site-card,
+.form-card,
+.plan-card,
+.photo-card,
+.submit-summary {
+  padding: 28rpx;
+}
+
+.step-section-head {
+  margin-bottom: 0;
+}
+
+.choice-section {
+  padding: 24rpx 26rpx;
+  border: 1rpx solid #dce5df;
+  border-radius: 12rpx;
+  background: #ffffff;
+}
+
+.choice-section .section-head {
+  margin-bottom: 18rpx;
+}
+
+.choice-section .chip-row {
+  gap: 14rpx;
+}
+
+.signature-note {
+  padding: 22rpx 24rpx;
+  border-color: #eadcc4;
+  border-radius: 12rpx;
+}
+
+.step-meta {
+  font-size: max(13px, 23rpx);
+}
+
+.site-name {
+  font-size: max(18px, 30rpx);
+}
+
+.site-address,
+.contact-value,
+.hint-copy,
+.signature-note-copy {
+  font-size: max(14px, 22rpx);
+}
+
+.contact-label,
+.choice-count,
+.signature-note-title {
+  font-size: max(13px, 20rpx);
 }
 </style>

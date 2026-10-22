@@ -390,14 +390,14 @@ onPullDownRefresh(async () => {
 
 .archive-tab {
   flex: 1;
-  min-height: 62rpx;
+  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8rpx;
   border-radius: 12rpx;
   color: #65736c;
-  font-size: 24rpx;
+  font-size: max(14px, 24rpx);
 }
 
 .archive-tab.active {
@@ -672,19 +672,19 @@ onPullDownRefresh(async () => {
 
 .archive-code {
   color: #176b52;
-  font-size: 20rpx;
+  font-size: max(12px, 20rpx);
 }
 
 .archive-customer {
   margin-top: 10rpx;
   color: #17211d;
-  font-size: 30rpx;
+  font-size: max(18px, 30rpx);
   line-height: 1.35;
 }
 
 .archive-meta {
   color: #65736c;
-  font-size: 20rpx;
+  font-size: max(13px, 20rpx);
 }
 
 .risk-line {
@@ -703,15 +703,15 @@ onPullDownRefresh(async () => {
 
 .archive-source {
   color: #79867f;
-  font-size: 20rpx;
+  font-size: max(13px, 20rpx);
 }
 
 .pdf-button {
-  min-height: 54rpx;
+  min-height: 44px;
   padding: 0 16rpx;
   border-radius: 9rpx;
   background: #103b2d;
-  font-size: 20rpx;
+  font-size: max(13px, 20rpx);
 }
 
 .skeleton-line {

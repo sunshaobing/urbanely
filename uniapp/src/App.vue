@@ -4,14 +4,14 @@ export default {};
 
 <style>
 :root {
-  --field-canvas: #f2f6f3;
+  --field-canvas: #f4f7f5;
   --field-surface: #ffffff;
   --field-surface-muted: #f8fbf9;
   --field-ink: #17211d;
   --field-ink-soft: #34483f;
   --field-muted: #65736c;
   --field-faint: #909a94;
-  --field-line: #dde7e0;
+  --field-line: #dce5df;
   --field-line-strong: #c9d8ce;
   --field-accent: #176b52;
   --field-accent-strong: #115640;
@@ -28,11 +28,11 @@ export default {};
 
 page {
   min-height: 100%;
-  background: #f2f6f3;
+  background: #f4f7f5;
   color: #17211d;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
     sans-serif;
-  font-size: 28rpx;
+  font-size: max(14px, 30rpx);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -64,28 +64,31 @@ button::after {
 .page {
   min-height: 100vh;
   padding-bottom: calc(164rpx + env(safe-area-inset-bottom));
-  background: #f2f6f3;
+  background: #f4f7f5;
 }
 
 .detail-page {
   min-height: 100vh;
   padding-bottom: calc(152rpx + env(safe-area-inset-bottom));
-  background: #f2f6f3;
+  background: #f4f7f5;
 }
 
 .page-content {
+  width: 100%;
+  max-width: 820rpx;
+  margin: 0 auto;
   padding: 32rpx;
 }
 
 .card {
   border: 1rpx solid #dde7e0;
-  border-radius: 16rpx;
+  border-radius: 12rpx;
   background: #ffffff;
 }
 
 .card-muted {
   border: 1rpx solid #dde7e0;
-  border-radius: 16rpx;
+  border-radius: 12rpx;
   background: #f8fbf9;
 }
 
@@ -105,7 +108,7 @@ button::after {
 .section-title {
   display: block;
   color: #17211d;
-  font-size: 32rpx;
+  font-size: max(17px, 34rpx);
   font-weight: 700;
   line-height: 1.3;
 }
@@ -114,7 +117,7 @@ button::after {
   display: block;
   margin-top: 6rpx;
   color: #65736c;
-  font-size: 22rpx;
+  font-size: max(13px, 22rpx);
   line-height: 1.5;
 }
 
@@ -156,10 +159,10 @@ button::after {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 42rpx;
-  padding: 0 13rpx;
-  border-radius: 10rpx;
-  font-size: 20rpx;
+  min-height: 46rpx;
+  padding: 0 15rpx;
+  border-radius: 8rpx;
+  font-size: max(13px, 22rpx);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -196,10 +199,10 @@ button::after {
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  min-height: 88rpx;
+  min-height: 48px;
   padding: 0 26rpx;
   border-radius: 12rpx;
-  font-size: 26rpx;
+  font-size: max(15px, 28rpx);
   font-weight: 600;
 }
 
@@ -241,7 +244,7 @@ button::after {
   display: block;
   margin-bottom: 9rpx;
   color: #4f5f72;
-  font-size: 22rpx;
+  font-size: max(13px, 22rpx);
   font-weight: 600;
 }
 
@@ -258,13 +261,15 @@ button::after {
 
 .field-input,
 .field-select {
-  height: 88rpx;
+  height: 48px;
   padding: 0 18rpx;
+  font-size: max(14px, 28rpx);
 }
 
 .field-textarea {
   min-height: 168rpx;
   padding: 16rpx 18rpx;
+  font-size: max(14px, 28rpx);
   line-height: 1.6;
 }
 
@@ -282,13 +287,13 @@ button::after {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 58rpx;
-  padding: 0 18rpx;
+  min-height: 64rpx;
+  padding: 0 20rpx;
   border: 1rpx solid #d7e0da;
   border-radius: 10rpx;
   background: #ffffff;
   color: #50635a;
-  font-size: 22rpx;
+  font-size: max(13px, 24rpx);
 }
 
 .chip.active {

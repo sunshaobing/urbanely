@@ -2,8 +2,8 @@
   "app": {
     "bundleName": "cn.sunrgw.pco",
     "vendor": "Shanghai Shentai Industrial Co., Ltd.",
-    "versionCode": 314,
-    "versionName": "3.1.4",
+    "versionCode": 320,
+    "versionName": "3.2.0",
     "icon": "$media:layered_image",
     "label": "$string:app_name"
   }

@@ -5,7 +5,7 @@
 - 应用名称：申汰封堵勘测系统
 - 应用形态：HarmonyOS NEXT 原生企业应用
 - Bundle Name：`cn.sunrgw.pco`
-- 当前版本：`3.1.4 / 314`
+- 当前版本：`3.2.0 / 320`
 - 分发方式：AppGallery Connect 企业内部测试或企业应用分发
 - 不发布 Android APK 到 HarmonyOS NEXT
 
